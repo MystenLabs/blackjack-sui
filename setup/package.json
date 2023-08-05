@@ -12,7 +12,9 @@
   "dependencies": {
     "@mysten/sui.js": "^0.34.1",
     "dotenv": "^16.0.3",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "@noble/bls12-381": "^1.4.0",
+    "futoin-hkdf": "^1.5.1"
   },
   "devDependencies": {
     "env-cmd": "^10.1.0",
