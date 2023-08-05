@@ -78,14 +78,6 @@ const doInitialDeal = async () => {
 
                 console.log("executed! status = ", status);
                 if (status === "success") {
-                    res?.objectChanges?.find((obj) => {
-                        // if (obj.type === "created" && obj.objectType.endsWith("single_player_blackjack::HouseData")) {
-                        //     const houseDataString = `HOUSE_DATA_ID=${obj.objectId}`;
-                        //     console.log(houseDataString);
-                        //     fs.writeFileSync("./tx_res.json", JSON.stringify(res));
-                        //     fs.appendFileSync("./.env", houseDataString);
-                        // }
-                    });
                     process.exit(0);
                 }
                 if (status == "failure") {
