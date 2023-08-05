@@ -7,11 +7,13 @@ import {
 } from "@mysten/sui.js";
 import {
     PACKAGE_ADDRESS,
-    SUI_NETWORK, ADMIN_SECRET_KEY, GAME_ID, HOUSE_DATA_ID,
+    SUI_NETWORK, ADMIN_SECRET_KEY, GAME_ID, HOUSE_DATA_ID, deriveBLS_SecretKey,
 } from "./config";
 
 import * as bls from "@noble/bls12-381";
 import hkdf from "futoin-hkdf";
+import {bytesToHex} from "@noble/hashes/utils";
+import {utils} from "@noble/bls12-381";
 
 let privateKeyArray = Uint8Array.from(Array.from(fromB64(ADMIN_SECRET_KEY!)));
 
@@ -27,6 +29,7 @@ const houseSigner = new RawSigner(keypairAdmin, provider);
 console.log("Connecting to SUI network: ", SUI_NETWORK);
 console.log("GAME_ID: ", GAME_ID);
 console.log("HOUSE_DATA_ID: ", HOUSE_DATA_ID);
+console.log("Signer Address: ", keypairAdmin.getPublicKey().toSuiAddress());
 
 const doInitialDeal = async () => {
 
@@ -36,15 +39,19 @@ const doInitialDeal = async () => {
         id: GAME_ID,
         options: { showContent: true },
     }).then(async (res) => {
-        const suiObject = res?.data?.content as SuiMoveObject;
-        const counter = suiObject.fields.counter;
-        const randomness = suiObject.fields.user_randomness;
+        const gameObject = res?.data?.content as SuiMoveObject;
+        const gameIdHex = GAME_ID.replace("0x","");
+        const counterHex = bytesToHex(Uint8Array.from([gameObject.fields.counter]));
+        const randomnessHexString = bytesToHex(Uint8Array.from(gameObject.fields.user_randomness));
 
-        const houseHash = getHouseHash(GAME_ID, randomness, counter);
-        const houseHashHex = bytesToHex(houseHash);
-        console.log("houseHash = ", houseHashHex);
+        const messageToSign = gameIdHex.concat(randomnessHexString).concat(counterHex);
 
-        let signedHouseHash = await bls.sign(houseHashHex, deriveBLS_SK(ADMIN_SECRET_KEY!));
+        let signedHouseHash = await bls.sign(messageToSign, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
+
+        console.log("GAME_ID Bytes = ", utils.hexToBytes(GAME_ID.replace("0x","")));
+        console.log("randomness = ", gameObject.fields.user_randomness);
+        console.log("counter = ", counterHex);
+        console.log("Full MessageTo Sign Bytes = ", utils.hexToBytes(messageToSign));
 
         tx.setGasBudget(10000000000);
 
@@ -52,11 +59,10 @@ const doInitialDeal = async () => {
             target: `${PACKAGE_ADDRESS}::single_player_blackjack::deal`,
             arguments: [
                 tx.object(GAME_ID),
-                tx.pure(Array.from(signedHouseHash)),
+                tx.pure(Array.from(signedHouseHash), "vector<u8>"),
                 tx.object(HOUSE_DATA_ID)
             ],
         });
-
 
         await houseSigner
             .signAndExecuteTransactionBlock({
@@ -88,6 +94,7 @@ const doInitialDeal = async () => {
                 }
             }).catch(err => {
                 console.log("Error = ", err);
+                console.log(err.data);
                 process.exit(1);
             });
 
@@ -100,26 +107,8 @@ const doInitialDeal = async () => {
 
 doInitialDeal();
 
-import { blake2b  } from '@noble/hashes/blake2b';
-import {bytesToHex} from "@noble/hashes/utils";
+
+
 //---------------------------------------------------------
 /// Helper Functions
 //---------------------------------------------------------
-
-function getHouseHash(gameId: string, randomness: string, counter:string) {
-
-    const stringToHash = `${gameId}${randomness}${counter}`;
-
-    return blake2b(stringToHash);
-}
-
-function deriveBLS_SK(private_key: string): Uint8Array {
-    // initial key material
-    const ikm = private_key;
-    const length = 32;
-    const salt = "blackjack";
-    const info = "bls-signature";
-    const hash = 'SHA-256';
-    const derived_sk = hkdf(ikm, length, {salt, info, hash});
-    return Uint8Array.from(derived_sk);
-}

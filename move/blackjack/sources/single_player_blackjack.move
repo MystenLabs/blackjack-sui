@@ -150,7 +150,7 @@ module blackjack::single_player_blackjack {
     /// @param game: The Game object
     /// @param bls_sig: The bls signature of the game id and the player's randomn bytes and the counter appended together
     /// @param house_data: The HouseData object
-    public entry fun deal(game: &mut Game,
+    public fun deal(game: &mut Game,
                           bls_sig: vector<u8>,
                           house_data: &mut HouseData,
                           ctx: &mut TxContext) {
@@ -158,10 +158,10 @@ module blackjack::single_player_blackjack {
         let messageVector = *&object::id_bytes(game);
         vector::append(&mut messageVector, player_randomness(game));
         vector::append(&mut messageVector, game_counter(game));
-        let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
-        assert!(is_sig_valid, EInvalidBlsSig);
-
-        // Hash the beacon before taking the 1st byte.
+         let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
+         assert!(is_sig_valid, EInvalidBlsSig);
+        //
+        // // Hash the beacon before taking the 1st byte.
         let hashed_beacon = blake2b256(&bls_sig);
         let byte1 = vector::borrow(&hashed_beacon, 0);
         let byte2 = vector::borrow(&hashed_beacon, 1);
@@ -174,11 +174,14 @@ module blackjack::single_player_blackjack {
         transfer::share_object(Outcome {
             id: object::new(ctx),
             player_won: false,
-            message: hashed_beacon,
+            message: messageVector,
             card1,
             card2,
             card3,
         });
+
+        game.counter = game.counter + 1;
+
         //New Card should be displayed. We need to select a random card from the deck.
 
         // Step 2: Determine the user's current sum

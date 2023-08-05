@@ -8,7 +8,7 @@ import {
 import {
   PACKAGE_ADDRESS,
   HOUSE_ADMIN_CAP,
-  SUI_NETWORK, ADMIN_SECRET_KEY,
+  SUI_NETWORK, ADMIN_SECRET_KEY, deriveBLS_SecretKey,
 } from "./config";
 
 import * as bls from "@noble/bls12-381";
@@ -35,7 +35,7 @@ const initializeHouseData = async () => {
   const tx = new TransactionBlock();
 
   const houseCoin = tx.splitCoins(tx.gas, [tx.pure(initHouseBalance)]);
-  let blsKeyAsMoveParameter = getBLS_KeyAsMoveParameter();
+  let blsKeyAsMoveParameter = getBLS_PublicKeyAsMoveParameter();
 
   tx.moveCall({
     target: `${PACKAGE_ADDRESS}::single_player_blackjack::initialize_house_data`,
@@ -87,19 +87,8 @@ initializeHouseData();
 /// Helper Functions
 //---------------------------------------------------------
 
-function getBLS_KeyAsMoveParameter() {
-  const derived_bls_key = deriveBLS_SK(ADMIN_SECRET_KEY!);
+function getBLS_PublicKeyAsMoveParameter() {
+  const derived_bls_key = deriveBLS_SecretKey(ADMIN_SECRET_KEY!);
   return bls.getPublicKey(derived_bls_key);
 }
 
-
-function deriveBLS_SK(private_key : string) : Uint8Array {
-  // initial key material
-  const ikm = private_key;
-  const length = 32;
-  const salt = "satoshi";
-  const info = "bls-signature";
-  const hash = 'SHA-256';
-  const derived_sk = hkdf(ikm, length, {salt, info, hash});
-  return Uint8Array.from(derived_sk);
-}

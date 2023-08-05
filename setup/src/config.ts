@@ -1,4 +1,5 @@
 import { config } from "dotenv";
+import hkdf from "futoin-hkdf";
 
 config({});
 export const SUI_NETWORK = process.env.SUI_NETWORK!;
@@ -16,3 +17,15 @@ export const GAME_ID = process.env.GAME_ID!;
 const keys = Object.keys(process.env);
 console.log("env contains ADMIN_ADDRESS:", keys.includes("ADMIN_ADDRESS"));
 console.log("env contains ADMIN_SECRET_KEY:", keys.includes("ADMIN_SECRET_KEY"));
+
+
+export function deriveBLS_SecretKey(private_key: string): Uint8Array {
+    // initial key material
+    const ikm = private_key;
+    const length = 32;
+    const salt = "blackjack";
+    const info = "bls-signature";
+    const hash = 'SHA-256';
+    const derived_sk = hkdf(ikm, length, {salt, info, hash});
+    return Uint8Array.from(derived_sk);
+}
