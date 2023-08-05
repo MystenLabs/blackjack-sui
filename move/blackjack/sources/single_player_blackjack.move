@@ -2,6 +2,7 @@ module blackjack::single_player_blackjack {
 
     use std::vector;
 
+    use sui::object_table::{Self, ObjectTable};
     use sui::bls12381::bls12381_min_pk_verify;
     use sui::tx_context::{Self, TxContext};
     use sui::balance::{Self, Balance};
@@ -29,13 +30,18 @@ module blackjack::single_player_blackjack {
 
 
     // Structs
+
+    struct Card has key, store {
+        id:UID,
+        suit: vector<u8>,
+        name: vector<u8>,
+        value: u8
+    }
+
     struct Outcome has key {
         id: UID,
         player_won: bool,
         message: vector<u8>,
-        card1:u8,
-        card2:u8,
-        card3:u8,
     }
 
     struct HouseAdminCap has key {
@@ -50,7 +56,8 @@ module blackjack::single_player_blackjack {
         public_key: vector<u8>,
         max_stake: u64,
         min_stake: u64,
-        fees: Balance<SUI>
+        fees: Balance<SUI>,
+        card_deck: ObjectTable<u8,Card>
     }
 
     struct Game has key {
@@ -61,9 +68,9 @@ module blackjack::single_player_blackjack {
         total_stake: Balance<SUI>,
         player: address,
         player_cards: vector<u8>,
-        player_sum: u32,
+        player_sum: u8,
         dealer_cards: vector<u8>,
-        dealer_sum: u32,
+        dealer_sum: u8,
     }
 
 
@@ -95,6 +102,7 @@ module blackjack::single_player_blackjack {
             max_stake: 50_000_000_000, // 50 SUI, 1 SUI = 10^9.
             min_stake: 1_000_000_000, // 1 SUI.
             fees: balance::zero(),
+            card_deck: get_card_deck(ctx)
         };
 
         let HouseAdminCap { id } = house_cap;
@@ -152,8 +160,8 @@ module blackjack::single_player_blackjack {
     /// @param house_data: The HouseData object
     public fun deal(game: &mut Game,
                           bls_sig: vector<u8>,
-                          house_data: &mut HouseData,
-                          ctx: &mut TxContext) {
+                          house_data: &mut HouseData
+                          ) {
         // Step 1: Check the bls signature, if its invalid, house loses
         let messageVector = *&object::id_bytes(game);
         vector::append(&mut messageVector, player_randomness(game));
@@ -171,20 +179,15 @@ module blackjack::single_player_blackjack {
         let card2 = *byte2 % 52;
         let card3 = *byte3 % 52;
 
-        transfer::share_object(Outcome {
-            id: object::new(ctx),
-            player_won: false,
-            message: messageVector,
-            card1,
-            card2,
-            card3,
-        });
+        vector::push_back(&mut game.player_cards, card1);
+        vector::push_back(&mut game.player_cards, card2);
+        game.player_sum = get_card_sum(&game.player_cards, &house_data.card_deck);
+
+
+        vector::push_back(&mut game.dealer_cards, card3);
+        game.dealer_sum = get_card_sum(&game.dealer_cards, &house_data.card_deck);
 
         game.counter = game.counter + 1;
-
-        //New Card should be displayed. We need to select a random card from the deck.
-
-        // Step 2: Determine the user's current sum
     }
 
 
@@ -210,23 +213,85 @@ module blackjack::single_player_blackjack {
         // Step 2: Determine the user's current sum
     }
 
-    // Returns Value of the card
-    // 1 = 1 (or 10 but this will be handled by business logic)
-    // 2 = 2
-    // 3 = 3
-    // ...
-    // 10 = 10
-    // 11 = J = 10
-    // 12 = Q = 10
-    // 13 = K = 10
-    public fun card_to_value(card: u8): u8 {
-        if (card <= 10) {
-            card
-        }
-        else {
-            10
+
+    fun get_card_deck(ctx: &mut TxContext): ObjectTable<u8,Card>
+    {
+        let cards = object_table::new(ctx);
+
+        object_table::add(&mut cards, 1,  Card{id: object::new(ctx), suit:b"Clubs",name:b"A", value:1 });
+        object_table::add(&mut cards, 2,  Card{id: object::new(ctx), suit:b"Clubs",name:b"2", value:2 });
+        object_table::add(&mut cards, 3,  Card{id: object::new(ctx), suit:b"Clubs",name:b"3", value:3 });
+        object_table::add(&mut cards, 4,  Card{id: object::new(ctx), suit:b"Clubs",name:b"4", value:4 });
+        object_table::add(&mut cards, 5,  Card{id: object::new(ctx), suit:b"Clubs",name:b"5", value:5 });
+        object_table::add(&mut cards, 6,  Card{id: object::new(ctx), suit:b"Clubs",name:b"6", value:6 });
+        object_table::add(&mut cards, 7,  Card{id: object::new(ctx), suit:b"Clubs",name:b"7", value:7 });
+        object_table::add(&mut cards, 8,  Card{id: object::new(ctx), suit:b"Clubs",name:b"8", value:8 });
+        object_table::add(&mut cards, 9,  Card{id: object::new(ctx), suit:b"Clubs",name:b"9", value:9 });
+        object_table::add(&mut cards, 10, Card{id: object::new(ctx), suit:b"Clubs",name:b"10",value:10 });
+        object_table::add(&mut cards, 11, Card{id: object::new(ctx), suit:b"Clubs",name:b"J", value:10 });
+        object_table::add(&mut cards, 12, Card{id: object::new(ctx), suit:b"Clubs",name:b"Q", value:10 });
+        object_table::add(&mut cards, 13, Card{id: object::new(ctx), suit:b"Clubs",name:b"K", value:10 });
+
+        object_table::add(&mut cards, 14, Card{id: object::new(ctx), suit:b"Diamonds",name:b"A", value:1 });
+        object_table::add(&mut cards, 15, Card{id: object::new(ctx), suit:b"Diamonds",name:b"2", value:2 });
+        object_table::add(&mut cards, 16, Card{id: object::new(ctx), suit:b"Diamonds",name:b"3", value:3 });
+        object_table::add(&mut cards, 17, Card{id: object::new(ctx), suit:b"Diamonds",name:b"4", value:4 });
+        object_table::add(&mut cards, 18, Card{id: object::new(ctx), suit:b"Diamonds",name:b"5", value:5 });
+        object_table::add(&mut cards, 19, Card{id: object::new(ctx), suit:b"Diamonds",name:b"6", value:6 });
+        object_table::add(&mut cards, 20, Card{id: object::new(ctx), suit:b"Diamonds",name:b"7", value:7 });
+        object_table::add(&mut cards, 21, Card{id: object::new(ctx), suit:b"Diamonds",name:b"8", value:8 });
+        object_table::add(&mut cards, 22, Card{id: object::new(ctx), suit:b"Diamonds",name:b"9", value:9 });
+        object_table::add(&mut cards, 23, Card{id: object::new(ctx), suit:b"Diamonds",name:b"10",value:10 });
+        object_table::add(&mut cards, 24, Card{id: object::new(ctx), suit:b"Diamonds",name:b"J", value:10 });
+        object_table::add(&mut cards, 25, Card{id: object::new(ctx), suit:b"Diamonds",name:b"Q", value:10 });
+        object_table::add(&mut cards, 26, Card{id: object::new(ctx), suit:b"Diamonds",name:b"K", value:10 });
+
+        object_table::add(&mut cards, 27, Card{id: object::new(ctx), suit:b"Hearts",name:b"A", value:1 });
+        object_table::add(&mut cards, 28, Card{id: object::new(ctx), suit:b"Hearts",name:b"2", value:2 });
+        object_table::add(&mut cards, 29, Card{id: object::new(ctx), suit:b"Hearts",name:b"3", value:3 });
+        object_table::add(&mut cards, 30, Card{id: object::new(ctx), suit:b"Hearts",name:b"4", value:4 });
+        object_table::add(&mut cards, 31, Card{id: object::new(ctx), suit:b"Hearts",name:b"5", value:5 });
+        object_table::add(&mut cards, 32, Card{id: object::new(ctx), suit:b"Hearts",name:b"6", value:6 });
+        object_table::add(&mut cards, 33, Card{id: object::new(ctx), suit:b"Hearts",name:b"7", value:7 });
+        object_table::add(&mut cards, 34, Card{id: object::new(ctx), suit:b"Hearts",name:b"8", value:8 });
+        object_table::add(&mut cards, 35, Card{id: object::new(ctx), suit:b"Hearts",name:b"9", value:9 });
+        object_table::add(&mut cards, 36, Card{id: object::new(ctx), suit:b"Hearts",name:b"10",value:10 });
+        object_table::add(&mut cards, 37, Card{id: object::new(ctx), suit:b"Hearts",name:b"J", value:10 });
+        object_table::add(&mut cards, 38, Card{id: object::new(ctx), suit:b"Hearts",name:b"Q", value:10 });
+        object_table::add(&mut cards, 39, Card{id: object::new(ctx), suit:b"Hearts",name:b"K", value:10 });
+
+        object_table::add(&mut cards, 40, Card{id: object::new(ctx), suit:b"Spades",name:b"A", value:1 });
+        object_table::add(&mut cards, 41, Card{id: object::new(ctx), suit:b"Spades",name:b"2", value:2 });
+        object_table::add(&mut cards, 42, Card{id: object::new(ctx), suit:b"Spades",name:b"3", value:3 });
+        object_table::add(&mut cards, 43, Card{id: object::new(ctx), suit:b"Spades",name:b"4", value:4 });
+        object_table::add(&mut cards, 44, Card{id: object::new(ctx), suit:b"Spades",name:b"5", value:5 });
+        object_table::add(&mut cards, 45, Card{id: object::new(ctx), suit:b"Spades",name:b"6", value:6 });
+        object_table::add(&mut cards, 46, Card{id: object::new(ctx), suit:b"Spades",name:b"7", value:7 });
+        object_table::add(&mut cards, 47, Card{id: object::new(ctx), suit:b"Spades",name:b"8", value:8 });
+        object_table::add(&mut cards, 48, Card{id: object::new(ctx), suit:b"Spades",name:b"9", value:9 });
+        object_table::add(&mut cards, 49, Card{id: object::new(ctx), suit:b"Spades",name:b"10",value:10 });
+        object_table::add(&mut cards, 50, Card{id: object::new(ctx), suit:b"Spades",name:b"J", value:10 });
+        object_table::add(&mut cards, 51, Card{id: object::new(ctx), suit:b"Spades",name:b"Q", value:10 });
+        object_table::add(&mut cards, 52, Card{id: object::new(ctx), suit:b"Spades",name:b"K", value:10 });
+
+        cards
+    }
+
+    fun get_card_sum(cards: &vector<u8>, deck: &ObjectTable<u8,Card>): u8 {
+        let sum:u8 = 0;
+        let i : u8 = 0;
+        let n : u8 = (vector::length(cards) as u8);
+        while (i < n) {
+            let cardIndex = *vector::borrow(cards, (i as u64));
+            let card : &Card = object_table::borrow(deck, cardIndex);
+            let value = card.value;
+            sum = sum + value;
+            if(card.name == b"A" && sum <= 11) {
+                sum = sum + 10;
+            };
+            i = i +1;
         };
-        10
+        sum
     }
 
 
