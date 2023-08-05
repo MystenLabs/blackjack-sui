@@ -201,6 +201,7 @@ module blackjack::single_player_blackjack {
         // Step 1: Check the bls signature, if its invalid, house loses
         let messageVector = *&object::id_bytes(game);
         vector::append(&mut messageVector, user_randomness);
+        vector::append(&mut messageVector, game_counter(game));
         let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
         assert!(is_sig_valid, EInvalidBlsSig);
 
