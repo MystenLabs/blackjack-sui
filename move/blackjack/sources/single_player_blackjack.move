@@ -2,7 +2,6 @@ module blackjack::single_player_blackjack {
 
     use std::vector;
 
-    use sui::object_table::{Self, ObjectTable};
     use sui::bls12381::bls12381_min_pk_verify;
     use sui::tx_context::{Self, TxContext};
     use sui::balance::{Self, Balance};
@@ -65,8 +64,7 @@ module blackjack::single_player_blackjack {
         public_key: vector<u8>,
         max_stake: u64,
         min_stake: u64,
-        fees: Balance<SUI>,
-        card_deck: ObjectTable<u8, Card>
+        fees: Balance<SUI>
     }
 
     struct Game has key {
@@ -114,8 +112,7 @@ module blackjack::single_player_blackjack {
             public_key,
             max_stake: 50_000_000_000, // 50 SUI, 1 SUI = 10^9.
             min_stake: 1_000_000_000, // 1 SUI.
-            fees: balance::zero(),
-            card_deck: get_card_deck(ctx)
+            fees: balance::zero()
         };
 
         let HouseAdminCap { id } = house_cap;
@@ -408,75 +405,6 @@ module blackjack::single_player_blackjack {
         let randomCard = ((value % 52) as u8);
         randomCard
     }
-
-
-    /// Creation of Card Deck.
-    /// This is called only once when initializing house data.
-    /// We opted for object_table due to 0(1) lookup time
-    fun get_card_deck(ctx: &mut TxContext): ObjectTable<u8, Card>
-    {
-        let cards = object_table::new(ctx);
-
-        object_table::add(&mut cards, 0, Card  { id: object::new(ctx), suit: b"Clubs", name: b"A", value: 1 });
-        object_table::add(&mut cards, 1, Card  { id: object::new(ctx), suit: b"Clubs", name: b"2", value: 2 });
-        object_table::add(&mut cards, 2, Card  { id: object::new(ctx), suit: b"Clubs", name: b"3", value: 3 });
-        object_table::add(&mut cards, 3, Card  { id: object::new(ctx), suit: b"Clubs", name: b"4", value: 4 });
-        object_table::add(&mut cards, 4, Card  { id: object::new(ctx), suit: b"Clubs", name: b"5", value: 5 });
-        object_table::add(&mut cards, 5, Card  { id: object::new(ctx), suit: b"Clubs", name: b"6", value: 6 });
-        object_table::add(&mut cards, 6, Card  { id: object::new(ctx), suit: b"Clubs", name: b"7", value: 7 });
-        object_table::add(&mut cards, 7, Card  { id: object::new(ctx), suit: b"Clubs", name: b"8", value: 8 });
-        object_table::add(&mut cards, 8, Card  { id: object::new(ctx), suit: b"Clubs", name: b"9", value: 9 });
-        object_table::add(&mut cards, 9, Card  { id: object::new(ctx), suit: b"Clubs", name: b"10", value: 10 });
-        object_table::add(&mut cards, 10, Card { id: object::new(ctx), suit: b"Clubs", name: b"J", value: 10 });
-        object_table::add(&mut cards, 11, Card { id: object::new(ctx), suit: b"Clubs", name: b"Q", value: 10 });
-        object_table::add(&mut cards, 12, Card { id: object::new(ctx), suit: b"Clubs", name: b"K", value: 10 });
-
-        object_table::add(&mut cards, 13, Card { id: object::new(ctx), suit: b"Diamonds", name: b"A", value: 1 });
-        object_table::add(&mut cards, 14, Card { id: object::new(ctx), suit: b"Diamonds", name: b"2", value: 2 });
-        object_table::add(&mut cards, 15, Card { id: object::new(ctx), suit: b"Diamonds", name: b"3", value: 3 });
-        object_table::add(&mut cards, 16, Card { id: object::new(ctx), suit: b"Diamonds", name: b"4", value: 4 });
-        object_table::add(&mut cards, 17, Card { id: object::new(ctx), suit: b"Diamonds", name: b"5", value: 5 });
-        object_table::add(&mut cards, 18, Card { id: object::new(ctx), suit: b"Diamonds", name: b"6", value: 6 });
-        object_table::add(&mut cards, 19, Card { id: object::new(ctx), suit: b"Diamonds", name: b"7", value: 7 });
-        object_table::add(&mut cards, 20, Card { id: object::new(ctx), suit: b"Diamonds", name: b"8", value: 8 });
-        object_table::add(&mut cards, 21, Card { id: object::new(ctx), suit: b"Diamonds", name: b"9", value: 9 });
-        object_table::add(&mut cards, 22, Card { id: object::new(ctx), suit: b"Diamonds", name: b"10", value: 10 });
-        object_table::add(&mut cards, 23, Card { id: object::new(ctx), suit: b"Diamonds", name: b"J", value: 10 });
-        object_table::add(&mut cards, 24, Card { id: object::new(ctx), suit: b"Diamonds", name: b"Q", value: 10 });
-        object_table::add(&mut cards, 25, Card { id: object::new(ctx), suit: b"Diamonds", name: b"K", value: 10 });
-
-        object_table::add(&mut cards, 26, Card { id: object::new(ctx), suit: b"Hearts", name: b"A", value: 1 });
-        object_table::add(&mut cards, 27, Card { id: object::new(ctx), suit: b"Hearts", name: b"2", value: 2 });
-        object_table::add(&mut cards, 28, Card { id: object::new(ctx), suit: b"Hearts", name: b"3", value: 3 });
-        object_table::add(&mut cards, 29, Card { id: object::new(ctx), suit: b"Hearts", name: b"4", value: 4 });
-        object_table::add(&mut cards, 30, Card { id: object::new(ctx), suit: b"Hearts", name: b"5", value: 5 });
-        object_table::add(&mut cards, 31, Card { id: object::new(ctx), suit: b"Hearts", name: b"6", value: 6 });
-        object_table::add(&mut cards, 32, Card { id: object::new(ctx), suit: b"Hearts", name: b"7", value: 7 });
-        object_table::add(&mut cards, 33, Card { id: object::new(ctx), suit: b"Hearts", name: b"8", value: 8 });
-        object_table::add(&mut cards, 34, Card { id: object::new(ctx), suit: b"Hearts", name: b"9", value: 9 });
-        object_table::add(&mut cards, 35, Card { id: object::new(ctx), suit: b"Hearts", name: b"10", value: 10 });
-        object_table::add(&mut cards, 36, Card { id: object::new(ctx), suit: b"Hearts", name: b"J", value: 10 });
-        object_table::add(&mut cards, 37, Card { id: object::new(ctx), suit: b"Hearts", name: b"Q", value: 10 });
-        object_table::add(&mut cards, 38, Card { id: object::new(ctx), suit: b"Hearts", name: b"K", value: 10 });
-
-        object_table::add(&mut cards, 39, Card { id: object::new(ctx), suit: b"Spades", name: b"A", value: 1 });
-        object_table::add(&mut cards, 40, Card { id: object::new(ctx), suit: b"Spades", name: b"2", value: 2 });
-        object_table::add(&mut cards, 41, Card { id: object::new(ctx), suit: b"Spades", name: b"3", value: 3 });
-        object_table::add(&mut cards, 42, Card { id: object::new(ctx), suit: b"Spades", name: b"4", value: 4 });
-        object_table::add(&mut cards, 43, Card { id: object::new(ctx), suit: b"Spades", name: b"5", value: 5 });
-        object_table::add(&mut cards, 44, Card { id: object::new(ctx), suit: b"Spades", name: b"6", value: 6 });
-        object_table::add(&mut cards, 45, Card { id: object::new(ctx), suit: b"Spades", name: b"7", value: 7 });
-        object_table::add(&mut cards, 46, Card { id: object::new(ctx), suit: b"Spades", name: b"8", value: 8 });
-        object_table::add(&mut cards, 47, Card { id: object::new(ctx), suit: b"Spades", name: b"9", value: 9 });
-        object_table::add(&mut cards, 48, Card { id: object::new(ctx), suit: b"Spades", name: b"10", value: 10 });
-        object_table::add(&mut cards, 49, Card { id: object::new(ctx), suit: b"Spades", name: b"J", value: 10 });
-        object_table::add(&mut cards, 50, Card { id: object::new(ctx), suit: b"Spades", name: b"Q", value: 10 });
-        object_table::add(&mut cards, 51, Card { id: object::new(ctx), suit: b"Spades", name: b"K", value: 10 });
-
-        cards
-    }
-
-
 
     /// Function get_card_sum
     ///
