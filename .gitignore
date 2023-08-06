@@ -31,5 +31,6 @@ move/blackjack/build
 
 # env files under the setup directory
 setup/*.env
+app/*.env
 .publish.res.json
 .vercel
