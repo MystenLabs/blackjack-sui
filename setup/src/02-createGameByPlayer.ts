@@ -20,7 +20,6 @@ console.log("Player Address =  ", playerKeypair.getPublicKey().toSuiAddress());
 const betAmount = 100000000;
 
 
-
 const createGameByPlayer = async () => {
 
     const tx = new TransactionBlock();

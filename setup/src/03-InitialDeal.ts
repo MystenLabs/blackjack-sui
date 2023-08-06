@@ -56,7 +56,7 @@ const doInitialDeal = async () => {
         tx.setGasBudget(10000000000);
 
         tx.moveCall({
-            target: `${PACKAGE_ADDRESS}::single_player_blackjack::deal`,
+            target: `${PACKAGE_ADDRESS}::single_player_blackjack::first_deal`,
             arguments: [
                 tx.object(GAME_ID),
                 tx.pure(Array.from(signedHouseHash), "vector<u8>"),

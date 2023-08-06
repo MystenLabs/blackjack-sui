@@ -79,7 +79,6 @@ const initializeHouseData = async () => {
 };
 
 
-
 initializeHouseData();
 
 
