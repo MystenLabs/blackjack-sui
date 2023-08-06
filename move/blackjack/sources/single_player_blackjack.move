@@ -55,12 +55,14 @@ module blackjack::single_player_blackjack {
 
     struct HitRequested has copy, drop {
         game_id: ID,
-        current_player_hand_sum: u8
+        current_player_hand_sum: u8,
+        game_counter: u8
     }
 
     struct StandRequested has copy, drop {
         game_id: ID,
-        final_player_hand_sum: u8
+        final_player_hand_sum: u8,
+        game_counter: u8
     }
 
     struct HouseAdminCap has key {
@@ -91,8 +93,7 @@ module blackjack::single_player_blackjack {
         player_sum: u8,
         dealer_cards: vector<u8>,
         dealer_sum: u8,
-        status: u8,
-        winner: address
+        status: u8
     }
 
 
@@ -165,8 +166,7 @@ module blackjack::single_player_blackjack {
             player_sum: 0,
             dealer_cards: vector[],
             dealer_sum: 0,
-            status: IN_PROGRESS,
-            winner: @0x0,
+            status: IN_PROGRESS
         };
 
         transfer::share_object(new_game);
@@ -214,7 +214,8 @@ module blackjack::single_player_blackjack {
 
         event::emit(HitRequested {
             game_id: object::uid_to_inner(&game.id),
-            current_player_hand_sum: current_hand_sum
+            current_player_hand_sum: current_hand_sum,
+            game_counter: game.counter
         });
     }
 
@@ -226,7 +227,8 @@ module blackjack::single_player_blackjack {
 
         event::emit(StandRequested {
             game_id: object::uid_to_inner(&game.id),
-            final_player_hand_sum: player_hand_sum
+            final_player_hand_sum: player_hand_sum,
+            game_counter: game.counter
         });
     }
 
@@ -320,12 +322,11 @@ module blackjack::single_player_blackjack {
     /// Internal function that is used to do actions after the house has won.
     fun house_won_post_handling(game: &mut Game, house_data: &mut HouseData, ctx: &mut TxContext) {
         game.status = HOUSE_WON_STATUS;
-        game.winner = house_data.house;
 
         let outcome = GameOutcomeEvent {
             game_id: object::uid_to_inner(&game.id),
             game_status: game.status,
-            winner_address: game.winner,
+            winner_address: house_data.house,
             message: b"Player busted",
         };
         event::emit(outcome);
@@ -339,12 +340,11 @@ module blackjack::single_player_blackjack {
     /// Internal function that is used to do actions after the player has won.
     fun player_won_post_handling(game: &mut Game, ctx: &mut TxContext) {
         game.status = PLAYER_WON_STATUS;
-        game.winner = game.player;
 
         let outcome = GameOutcomeEvent {
             game_id: object::uid_to_inner(&game.id),
             game_status: game.status,
-            winner_address: game.winner,
+            winner_address: game.player,
             message: b"Player won!",
         };
         event::emit(outcome);
@@ -358,7 +358,6 @@ module blackjack::single_player_blackjack {
     /// Internal function that is used to do actions after a tie.
     fun tie_post_handling(game: &mut Game, house_data: &mut HouseData, ctx: &mut TxContext) {
         game.status = TIE_STATUS;
-        game.winner = @0x0;
 
         let outcome = GameOutcomeEvent {
             game_id: object::uid_to_inner(&game.id),
