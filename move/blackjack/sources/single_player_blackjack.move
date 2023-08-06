@@ -5,7 +5,7 @@ module blackjack::single_player_blackjack {
     use sui::bls12381::bls12381_min_pk_verify;
     use sui::tx_context::{Self, TxContext};
     use sui::balance::{Self, Balance};
-    use sui::object::{Self,ID, UID};
+    use sui::object::{Self, ID, UID};
     use sui::coin::{Self, Coin};
     use sui::hash::{blake2b256};
     use sui::event::{Self};
@@ -34,6 +34,7 @@ module blackjack::single_player_blackjack {
     const EInsufficientHouseBalance: u64 = 17;
     const ECoinBalanceNotEnough: u64 = 18;
     const EGameHasFinished: u64 = 19;
+    const EUnauthorizedPlayer: u64 = 20;
 
 
     // Structs
@@ -50,6 +51,16 @@ module blackjack::single_player_blackjack {
         game_status: u8,
         winner_address: address,
         message: vector<u8>,
+    }
+
+    struct HitRequested has copy, drop {
+        game_id: ID,
+        current_player_hand_sum: u8
+    }
+
+    struct StandRequested has copy, drop {
+        game_id: ID,
+        final_player_hand_sum: u8
     }
 
     struct HouseAdminCap has key {
@@ -195,6 +206,31 @@ module blackjack::single_player_blackjack {
     }
 
 
+    /// Function to be called by user who wants to ask for a hit.
+    /// @param game: The Game object
+    public fun do_hit(game: &mut Game, current_hand_sum: u8, ctx: &mut TxContext) {
+        assert!(game.status == IN_PROGRESS, EGameHasFinished);
+        assert!(tx_context::sender(ctx) == game.player, EUnauthorizedPlayer);
+
+        event::emit(HitRequested {
+            game_id: object::uid_to_inner(&game.id),
+            current_player_hand_sum: current_hand_sum
+        });
+    }
+
+    /// Function to be called by user who wants to stand.
+    /// @param game: The Game object
+    public fun do_stand(game: &mut Game, player_hand_sum: u8, ctx: &mut TxContext) {
+        assert!(game.status == IN_PROGRESS, EGameHasFinished);
+        assert!(tx_context::sender(ctx) == game.player, EUnauthorizedPlayer);
+
+        event::emit(StandRequested {
+            game_id: object::uid_to_inner(&game.id),
+            final_player_hand_sum: player_hand_sum
+        });
+    }
+
+
     /// Function that is invoked when the player selects hit, so the dealer deals another card.
     /// We use the player's randomness to generate the next card.
     /// Dealer (house) signs the game id, the randomness and the game counter appended together.
@@ -202,14 +238,13 @@ module blackjack::single_player_blackjack {
     ///
     /// Function checks if the latest draw has caused the player to bust and deals with proper handling after that.
     ///
-    public entry fun hit(user_randomness: vector<u8>,
-                         game: &mut Game,
-                         bls_sig: vector<u8>,
-                         house_data: &mut HouseData,
-                         ctx: &mut TxContext) {
+    public fun hit(game: &mut Game,
+                   bls_sig: vector<u8>,
+                   house_data: &mut HouseData,
+                   ctx: &mut TxContext) {
         // Step 1: Check the bls signature, if its invalid, house loses
         let messageVector = *&object::id_bytes(game);
-        vector::append(&mut messageVector, user_randomness);
+        vector::append(&mut messageVector, game.user_randomness);
         vector::append(&mut messageVector, game_counter(game));
         let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
         assert!(is_sig_valid, EInvalidBlsSig);
@@ -239,15 +274,13 @@ module blackjack::single_player_blackjack {
     ///
     /// Dealer should keep drawing cards until the sum of the cards is greater than 17.
     ///
-    public entry fun stand(user_randomness: vector<u8>,
-                           game: &mut Game,
-                           bls_sig: vector<u8>,
-                           house_data: &mut HouseData,
-                           ctx: &mut TxContext) {
-
+    public fun stand(game: &mut Game,
+                     bls_sig: vector<u8>,
+                     house_data: &mut HouseData,
+                     ctx: &mut TxContext) {
         // Step 1: Check the bls signature, if its invalid, house loses
         let messageVector = *&object::id_bytes(game);
-        vector::append(&mut messageVector, user_randomness);
+        vector::append(&mut messageVector, game.user_randomness);
         vector::append(&mut messageVector, game_counter(game));
         let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
         assert!(is_sig_valid, EInvalidBlsSig);
@@ -356,7 +389,6 @@ module blackjack::single_player_blackjack {
     /// @return: A tuple of two u8 values representing the two cards
     /// ----------------------------------------
     public fun get_two_random_cards_from_32_array(hashed_byte_array: vector<u8>): (u8, u8) {
-
         //we convert the first 16 bytes of the hashed byte array to a u128 integer
         let (value1, value2, i) = (0u128, 0u128, 0u8);
         while (i < 16) {
