@@ -46,6 +46,10 @@ module blackjack::single_player_blackjack {
         value: u8
     }
 
+    struct GameCreatedEvent has copy, drop {
+        game_id: ID,
+    }
+
     struct GameOutcomeEvent has copy, drop {
         game_id: ID,
         game_status: u8,
@@ -168,6 +172,10 @@ module blackjack::single_player_blackjack {
             dealer_sum: 0,
             status: IN_PROGRESS
         };
+
+        event::emit(GameCreatedEvent{
+            game_id: object::id(&new_game)
+        });
 
         transfer::share_object(new_game);
     }

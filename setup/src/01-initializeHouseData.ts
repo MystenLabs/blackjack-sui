@@ -63,9 +63,11 @@ const initializeHouseData = async () => {
           res?.objectChanges?.find((obj) => {
             if(obj.type === "created" && obj.objectType.endsWith("single_player_blackjack::HouseData")){
               const houseDataString = `HOUSE_DATA_ID=${obj.objectId}\n`;
+              const appHouseDataString = `NEXT_PUBLIC_HOUSE_DATA_ID=${obj.objectId}\n`;
               console.log(houseDataString);
               fs.writeFileSync("./tx_res.json", JSON.stringify(res));
               fs.appendFileSync("./.env", houseDataString);
+              fs.appendFileSync("../app/.env", appHouseDataString);
             }
           });
           process.exit(0);
