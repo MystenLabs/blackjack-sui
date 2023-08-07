@@ -22,12 +22,16 @@ export class Game {
 
 export class GameMessage {
     gameId: string;
-    packageId: string;
-    type:string;
+    packageId?: string;
+    type?: string;
+    playerCards: number[];
+    playerScore: number;
 
     constructor() {
         this.type = "";
         this.gameId = "";
         this.packageId = "";
+        this.playerScore = 0;
+        this.playerCards = [];
     }
 }

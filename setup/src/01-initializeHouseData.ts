@@ -12,7 +12,6 @@ import {
 } from "./config";
 
 import * as bls from "@noble/bls12-381";
-import hkdf from "futoin-hkdf";
 import fs from "fs";
 
 let privateKeyArray = Uint8Array.from(Array.from(fromB64(ADMIN_SECRET_KEY!)));
@@ -81,19 +80,7 @@ const initializeHouseData = async () => {
 };
 
 
-//initializeHouseData();
-
-
-function getMoneyFromFaucet() {
-  provider.requestSuiFromFaucet(
-     "0x58ddf2f2571fa23bed9999df94e2310cd891d0051f18d18719d50e2b7e59a352",
-  ).then((res) => {
-    console.log(res);
-  });
-}
-
-getMoneyFromFaucet();
-
+initializeHouseData();
 
 
 //---------------------------------------------------------

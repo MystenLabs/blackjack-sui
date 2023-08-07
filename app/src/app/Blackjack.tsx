@@ -1,19 +1,75 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useGame} from "@/app/hooks/useGame";
 
 import {socket} from "@/app/socket";
 import {GameMessage} from "@/app/types/Game";
+import {isStandardWalletAdapterCompatibleWallet} from "@mysten/wallet-standard";
+import {toast} from "react-hot-toast";
 
 const BlackjackBoard = () => {
     const [playerHand, setPlayerHand] = useState<Card[]>([]);
+    const [playerTotal, setPlayerTotal] = useState<number>(0);
     const [dealerHand, setDealerHand] = useState<Card[]>([]);
+    const [dealerTotal, setDealerTotal] = useState<number>(0);
+
     const [deck, setDeck] = useState<Card[]>([]);
-    const {handlePlayGame, isGameCreated, handleDeal, currentGame} = useGame();
+    const {currentGameId, handlePlayGame, isGameCreated, handleDeal, handleHit, handleStand, currentGame, handleGameFinale} = useGame();
 
     const suits = ["Clubs", "Diamonds", "Hearts", "Spades"];
     const values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
 
     const cards: Map<number, Card> = new Map();
+
+
+    useEffect(() => {
+        socket.on("hitExecuted", (...args) => {
+            const gameMessage: GameMessage = args[0];
+
+            if (currentGameId && gameMessage.gameId == currentGameId) {
+                console.log("hitExecuted");
+                console.log("Current game id: ", currentGameId);
+                let playerCards = gameMessage.playerCards;
+                console.log("playerCards ", playerCards);
+
+                const playerHand: Card[] = [];
+                playerCards?.forEach((cardIndex) => {
+                    playerHand.push(cards.get(cardIndex)!);
+                });
+                console.log("New player hand:", playerHand);
+                setPlayerHand(playerHand);
+                setPlayerTotal(gameMessage.playerScore);
+            }
+
+        });
+
+    }, [socket, currentGameId, setPlayerHand]);
+
+    useEffect(() => {
+        socket.on("StandExecuted", (...args) => {
+            const gameMessage: GameMessage = args[0];
+            if (currentGameId && gameMessage.gameId == currentGameId) {
+                console.log("StandExecuted");
+                console.log("Current game id: ", currentGameId);
+
+                 handleGameFinale(currentGameId!).then((finalGame) => {
+                     setPlayerTotal(finalGame?.playerSum!);
+                     setDealerTotal(finalGame?.dealerSum!);
+
+                     const dealerHand: Card[] = [];
+
+                     finalGame?.dealerCards.forEach((cardIndex) => {
+                         dealerHand.push(cards.get(cardIndex)!);
+                     });
+
+                     setDealerHand(dealerHand);
+
+                     toast.custom("Game ended" );
+
+                 });
+            }
+        });
+
+    }, [socket, currentGameId]);
 
 
     const generateDeck = () => {
@@ -54,17 +110,12 @@ const BlackjackBoard = () => {
         });
 
         setDealerHand(dealerInitialHand);
+
+        setPlayerTotal(currentGame?.playerSum!); // calculateHandValue(playerHand);
+        setDealerTotal(currentGame?.dealerSum!); // calculateHandValue(dealerHand);
+
     };
 
-
-    function hit(hand: Card[], setHand: (hand: Card[]) => void) {
-
-
-        const newHand:Card[] = [];
-
-        setDeck([...deck]);
-        setHand(newHand);
-    }
 
     type Card = {
         index: number;
@@ -115,8 +166,16 @@ const BlackjackBoard = () => {
         }
     };
 
-    const playerTotal = currentGame?.playerSum; // calculateHandValue(playerHand);
-    const dealerTotal = currentGame?.dealerSum; // calculateHandValue(dealerHand);
+    const getSuitColor = (suit: string) => {
+        switch (suit) {
+            case "Hearts":
+                return "text-red-600";
+            case "Diamonds":
+                return "text-red-600";
+            default:
+                return "";
+        }
+    };
 
     return (
         <div className="flex flex-col items-center mt-10">
@@ -139,8 +198,8 @@ const BlackjackBoard = () => {
                 <div className="flex space-x-2">
                     {dealerHand.map((card: Card, index: number) => (
                         <div key={index} className="bg-white p-4 rounded-md border flex items-center">
-                            <p className="text-xl">{card.value}</p>
-                            <p className="text-2xl ml-1">{getSuitSymbol(card.suit)}</p>
+                            <p className={`text-xl ${getSuitColor(card.suit)}`}>{card.value}</p>
+                            <p className={`text-2xl ml-1 ${getSuitColor(card.suit)}`}>{getSuitSymbol(card.suit)}</p>
                         </div>
                     ))}
                 </div>
@@ -154,8 +213,8 @@ const BlackjackBoard = () => {
                 <div className="flex space-x-2">
                     {playerHand.map((card: Card, index: number) => (
                         <div key={index} className="bg-white p-4 rounded-md border flex items-center">
-                            <p className="text-xl">{card.value}</p>
-                            <p className="text-2xl ml-1">{getSuitSymbol(card.suit)}</p>
+                            <p className={`text-xl ${getSuitColor(card.suit)}`}>{card.value}</p>
+                            <p className={`text-2xl ml-1 ${getSuitColor(card.suit)}`}>{getSuitSymbol(card.suit)}</p>
                         </div>
                     ))}
                 </div>
@@ -168,7 +227,7 @@ const BlackjackBoard = () => {
                 <div className="flex mt-10 space-x-4">
                     <button
                         className="bg-blue-500 text-white px-4 py-2 rounded-md"
-                        onClick={() => hit(playerHand, setPlayerHand)}
+                        onClick={() => handleHit()}
                     >
                         Hit
                     </button>
@@ -176,6 +235,7 @@ const BlackjackBoard = () => {
                     <button
                         className="bg-green-500 text-white px-4 py-2 rounded-md"
                         disabled={!isGameCreated}
+                        onClick={() => handleStand()}
                     >
                         Stand
                     </button>

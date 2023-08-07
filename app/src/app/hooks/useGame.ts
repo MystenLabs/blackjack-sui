@@ -17,7 +17,6 @@ export const useGame = () => {
     });
     const provider = new JsonRpcProvider(connection);
 
-
     const {executeSignedTransactionBlock} = useSui();
     const {signTransactionBlock} = useWalletKit();
     const [isLoading, setIsLoading] = useState(false);
@@ -27,8 +26,29 @@ export const useGame = () => {
     const [betAmount, setBetAmount] = useState<string | null>();
     const [currentGame, setCurrentGame] = useState<Game | null>();
 
-    const BET_AMOUNT = "1000000000";
+    const BET_AMOUNT = "200000000";
 
+
+    const handleGameFinale = async (gameId: string): Promise<Game> => {
+        console.log("Handle game finale, for game ", gameId);
+        const finalGame =  await checkForUpdatedGame(provider, gameId);
+        debugger;
+        let winner = "";
+        if(finalGame.status == 1){
+            winner = "Player";
+            toast.error('Congrats! You won!');
+        }else if(finalGame.status == 2){
+            winner = "Dealer";
+            toast.error('House wins!');
+        }
+        else if(finalGame.status == 3){
+            winner = "Tie";
+            toast.error('Tie!');
+        }
+        setCurrentGame(finalGame);
+        setIsGameCreated(false);
+        return finalGame;
+    };
 
     const handleDeal = async () : Promise<Game> => {
         const game = await checkForUpdatedGame(provider, currentGameId!);
@@ -38,6 +58,100 @@ export const useGame = () => {
         console.log("dealer cards: ", dealerCards);
         setCurrentGame(game);
         return game;
+    };
+
+    const handleHit = async () : Promise<void> => {
+        const tx = new TransactionBlock();
+        tx.moveCall({
+            target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::do_hit`,
+            arguments: [
+                tx.object(currentGameId!),
+                tx.pure(currentGame?.playerSum)
+            ],
+        });
+        const signedTx = await signTransactionBlock({
+            transactionBlock: tx,
+        });
+
+        console.log('submitting hit request transaction...');
+        return executeSignedTransactionBlock({
+            signedTx,
+            requestType: 'WaitForLocalExecution',
+            options: {
+                showEffects: true,
+                showEvents: true,
+            },
+        })
+            .then((resp) => {
+                console.log(resp);
+                if (resp.effects?.status.status === 'success') {
+                    let gameMessage = new GameMessage();
+                    gameMessage.packageId = process.env.NEXT_PUBLIC_PACKAGE_ADDRESS!;
+                    gameMessage.gameId = currentGameId!;
+
+
+                    console.log('hit request transaction successful!');
+                    socket.emit('hitRequested', gameMessage);
+
+                } else {
+                    setCurrentGameId(null);
+                    console.log('hit request transaction failed');
+                    toast.error('hit request transaction failed.');
+                }
+            })
+            .catch((err) => {
+                setCurrentGameId(null);
+                console.log('hit request transaction failed');
+                console.log(err);
+                toast.error('hit request transaction failed');
+            });
+    };
+
+    const handleStand = async () : Promise<void> => {
+        const tx = new TransactionBlock();
+        tx.moveCall({
+            target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::do_stand`,
+            arguments: [
+                tx.object(currentGameId!),
+                tx.pure(currentGame?.playerSum)
+            ],
+        });
+        const signedTx = await signTransactionBlock({
+            transactionBlock: tx,
+        });
+
+        console.log('submitting Stand request transaction...');
+        return executeSignedTransactionBlock({
+            signedTx,
+            requestType: 'WaitForLocalExecution',
+            options: {
+                showEffects: true,
+                showEvents: true,
+            },
+        })
+            .then((resp) => {
+                console.log(resp);
+                if (resp.effects?.status.status === 'success') {
+                    let gameMessage = new GameMessage();
+                    gameMessage.packageId = process.env.NEXT_PUBLIC_PACKAGE_ADDRESS!;
+                    gameMessage.gameId = currentGameId!;
+
+
+                    console.log('Stand request transaction successful!');
+                    socket.emit('StandRequested', gameMessage);
+
+                } else {
+                    setCurrentGameId(null);
+                    console.log('Stand request transaction failed');
+                    toast.error('Stand request transaction failed.');
+                }
+            })
+            .catch((err) => {
+                setCurrentGameId(null);
+                console.log('Stand request transaction failed');
+                console.log(err);
+                toast.error('Stand request transaction failed');
+            });
     };
 
 
@@ -169,10 +283,12 @@ export const useGame = () => {
         handlePlayGame,
         handleEndGame,
         handleDeal,
+        handleHit,
+        handleStand,
         isGameCreated,
         betAmount,
         currentGame,
-
+        handleGameFinale
     };
 };
 

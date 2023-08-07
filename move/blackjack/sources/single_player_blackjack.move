@@ -64,6 +64,13 @@ module blackjack::single_player_blackjack {
         game_counter: u8
     }
 
+    struct HitDone has copy, drop {
+        game_id: ID,
+        current_player_hand_sum: u8,
+        game_counter: u8,
+        player_cards: vector<u8>
+    }
+
     struct StandRequested has copy, drop {
         game_id: ID,
         final_player_hand_sum: u8,
@@ -276,7 +283,14 @@ module blackjack::single_player_blackjack {
             house_won_post_handling(game, house_data, ctx);
         }else {
             game.counter = game.counter + 1;
-        }
+        };
+
+        event::emit(HitDone{
+            game_id: object::uid_to_inner(&game.id),
+            current_player_hand_sum: game.player_sum,
+            game_counter: game.counter,
+            player_cards: game.player_cards
+        });
     }
 
 

@@ -2,7 +2,7 @@ import {
     Connection,
     Ed25519Keypair, fromB64,
     JsonRpcProvider,
-    RawSigner, SuiMoveObject,
+    RawSigner, SuiEvent, SuiMoveObject,
     TransactionBlock,
 } from "@mysten/sui.js";
 import {
@@ -11,11 +11,9 @@ import {
 } from "./config";
 
 import * as bls from "@noble/bls12-381";
-import hkdf from "futoin-hkdf";
+
 import {bytesToHex} from "@noble/hashes/utils";
 import {utils} from "@noble/bls12-381";
-import {SuiEvent} from "@mysten/sui.js/src";
-
 
 import { Server } from "socket.io";
 
@@ -117,30 +115,154 @@ const doInitialDeal = async (gameId:string) => {
 };
 
 
-const listenForGameCreatedRequests = async () => {
 
-    provider.subscribeEvent({
-        filter: {
-            Package: `${PACKAGE_ADDRESS}`
-        },
-        onMessage(event: SuiEvent) {
-            const eventType = event.type;
+async function doHit(gameId: string) {
 
-            if(eventType.endsWith("GameCreatedEvent")) {
-                const eventGameId = event.parsedJson?.game_id;
-                console.log("GameCreatedEvent Event Received! GameId = ", eventGameId);
-                doInitialDeal(eventGameId);
-            }
+    console.log("do hit for game id: ", gameId);
 
-        }
-    }).then((subscriptionId) => {
-        console.log("GameCreatedEvent Subscriber subscribed. SubId = ", subscriptionId);
+    provider.getObject({
+        id: gameId,
+        options: {showContent: true},
+    }).then(async (res) => {
+
+        const tx = new TransactionBlock();
+        const gameObject = res?.data?.content as SuiMoveObject;
+        const gameIdHex = gameId.replace("0x", "");
+        const counterHex = bytesToHex(Uint8Array.from([gameObject.fields.counter]));
+        const randomnessHexString = bytesToHex(Uint8Array.from(gameObject.fields.user_randomness));
+
+        const messageToSign = gameIdHex.concat(randomnessHexString).concat(counterHex);
+
+        let signedHouseHash = await bls.sign(messageToSign, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
+
+        console.log("GAME_ID Bytes = ", utils.hexToBytes(gameId.replace("0x", "")));
+        console.log("randomness = ", gameObject.fields.user_randomness);
+        console.log("counter = ", counterHex);
+        console.log("Full MessageTo Sign Bytes = ", utils.hexToBytes(messageToSign));
+
+        tx.setGasBudget(10000000000);
+
+        tx.moveCall({
+            target: `${PACKAGE_ADDRESS}::single_player_blackjack::hit`,
+            arguments: [
+                tx.object(gameId),
+                tx.pure(Array.from(signedHouseHash), "vector<u8>"),
+                tx.object(HOUSE_DATA_ID)
+            ],
+        });
+
+        await houseSigner
+            .signAndExecuteTransactionBlock({
+                transactionBlock: tx,
+                requestType: "WaitForLocalExecution",
+                options: {
+                    showObjectChanges: true,
+                    showEffects: true,
+                    showEvents:true
+                },
+            })
+            .then(function (res) {
+                const status = res?.effects?.status.status;
+                if (status === "success") {
+                    console.log("Hit executed! status = ", status);
+
+                    const events = res.events;
+
+                    const hitDoneEvent=
+                        events?.filter((event =>event.type.endsWith("HitDone")))[0];
+
+                    const gameMessage : GameMessage =  {
+                        gameId: hitDoneEvent?.parsedJson?.game_id,
+                        playerCards: hitDoneEvent?.parsedJson?.player_cards,
+                        playerScore: hitDoneEvent?.parsedJson?.current_player_hand_sum,
+                    };
+                    io.emit("hitExecuted", gameMessage);
+
+                }
+                if (status == "failure") {
+                    console.log("Error during Hit = ", res?.effects);
+                }
+            }).catch(err => {
+                console.log("Error = ", err);
+                console.log(err.data);
+            });
+
     });
 
 }
 
-// listenForGameCreatedRequests();
 
+async function doStand(gameId: string) {
+
+    console.log("GAME_ID: ", gameId);
+
+    provider.getObject({
+        id: gameId,
+        options: {showContent: true},
+    }).then(async (res) => {
+
+        const tx = new TransactionBlock();
+        const gameObject = res?.data?.content as SuiMoveObject;
+        const gameIdHex = gameId.replace("0x", "");
+        const counterHex = bytesToHex(Uint8Array.from([gameObject.fields.counter]));
+        const randomnessHexString = bytesToHex(Uint8Array.from(gameObject.fields.user_randomness));
+
+        const messageToSign = gameIdHex.concat(randomnessHexString).concat(counterHex);
+
+        let signedHouseHash = await bls.sign(messageToSign, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
+
+        console.log("GAME_ID Bytes = ", utils.hexToBytes(gameId.replace("0x", "")));
+        console.log("randomness = ", gameObject.fields.user_randomness);
+        console.log("counter = ", counterHex);
+        console.log("Full MessageTo Sign Bytes = ", utils.hexToBytes(messageToSign));
+
+        tx.setGasBudget(10000000000);
+
+        tx.moveCall({
+            target: `${PACKAGE_ADDRESS}::single_player_blackjack::stand`,
+            arguments: [
+                tx.object(gameId),
+                tx.pure(Array.from(signedHouseHash), "vector<u8>"),
+                tx.object(HOUSE_DATA_ID)
+            ],
+        });
+
+        await houseSigner
+            .signAndExecuteTransactionBlock({
+                transactionBlock: tx,
+                requestType: "WaitForLocalExecution",
+                options: {
+                    showObjectChanges: true,
+                    showEffects: true,
+                },
+            })
+            .then(function (res) {
+                const status = res?.effects?.status.status;
+
+                console.log("Stand executed! status = ", status);
+                if (status === "success") {
+                    console.log("Stand Executed for game ", gameId);
+
+                    const gameMessage : GameMessage =  {
+                        gameId: gameId,
+                        playerCards: [],
+                        playerScore: "",
+                    };
+
+                    io.emit("StandExecuted", gameMessage);
+
+                }
+                if (status == "failure") {
+                    console.log("Error = ", res?.effects);
+                }
+            }).catch(err => {
+                console.log("Error = ", err);
+                console.log(err.data);
+            });
+
+    });
+
+}
 
 
 
@@ -164,8 +286,16 @@ io.on("connection", (socket) => {
         doInitialDeal(game.gameId);
     });
 
-    socket.on("connection", (socket) =>{
-        console.log("Client connected!");
+    socket.on("hitRequested", (...args) => {
+        const game : GameMessage = args[0];
+        console.log("Client requested hit for game = ", game.gameId);
+        doHit(game.gameId);
+    });
+
+    socket.on("StandRequested", (...args) => {
+        const game : GameMessage = args[0];
+        console.log("Stand requested for game = ", game.gameId);
+        doStand(game.gameId);
     });
 
 });
@@ -174,6 +304,8 @@ io.on("connection", (socket) => {
 
 type GameMessage = {
     gameId: string;
-    packageId: string;
-    type:string;
+    packageId?: string;
+    type?: string;
+    playerCards: string[];
+    playerScore: string;
 }

@@ -11,7 +11,7 @@ import {
 } from "./config";
 
 import * as bls from "@noble/bls12-381";
-import hkdf from "futoin-hkdf";
+
 import {bytesToHex} from "@noble/hashes/utils";
 import {utils} from "@noble/bls12-381";
 
