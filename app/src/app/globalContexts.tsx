@@ -2,6 +2,7 @@
 
 import { WalletKitProvider } from "@mysten/wallet-kit";
 import { Navbar } from "./components/navbar/Navbar";
+import BlackjackGame from "./Blackjack";
 
 export default function GlobalContexts({
   children,
