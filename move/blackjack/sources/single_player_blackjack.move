@@ -513,6 +513,8 @@ module blackjack::single_player_blackjack {
         let sum: u8 = 0;
         let i: u8 = 0;
         let n: u8 = (vector::length(cards) as u8);
+        let has_ace = false;
+
         while (i < n) {
             let cardIndex = *vector::borrow(cards, (i as u64));
 
@@ -526,19 +528,24 @@ module blackjack::single_player_blackjack {
             // 12 = Q (value 10)
             // 13 = K (value 10)
 
+            if(value == 1) {
+                has_ace = true;
+            };
+
             if (value > 10) {
                 value = 10;
             };
 
             sum = sum + value;
 
-            //We need to take care of the Aces case where value = 1 or 11 depending on the sum
-            if (value == 1 && sum <= 11) {
-                sum = sum + 10;
-            };
-
             i = i + 1;
         };
+
+        //We need to take care of the Aces case where value = 1 or 11 depending on the sum
+        if (has_ace && sum + 10 <= 21) {
+            sum = sum + 10;
+        };
+
         sum
     }
 
