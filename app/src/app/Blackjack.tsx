@@ -1,49 +1,78 @@
 import React, {useState} from 'react';
 import {useGame} from "@/app/hooks/useGame";
 
-
+import {socket} from "@/app/socket";
+import {GameMessage} from "@/app/types/Game";
 
 const BlackjackBoard = () => {
-    const [playerHand, setPlayerHand] = useState([]);
-    const [dealerHand, setDealerHand] = useState([]);
-    const [deck, setDeck] = useState([]);
-    const {handlePlayGame, isGameCreated} = useGame();
+    const [playerHand, setPlayerHand] = useState<Card[]>([]);
+    const [dealerHand, setDealerHand] = useState<Card[]>([]);
+    const [deck, setDeck] = useState<Card[]>([]);
+    const {handlePlayGame, isGameCreated, handleDeal, currentGame} = useGame();
 
-    const suits = ["Hearts", "Diamonds", "Clubs", "Spades"];
-    const values = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
+    const suits = ["Clubs", "Diamonds", "Hearts", "Spades"];
+    const values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+
+    const cards: Map<number, Card> = new Map();
+
 
     const generateDeck = () => {
-        const newDeck = [];
+        const newDeck: Card[] = [];
+        let i: number = 0;
         for (const suit of suits) {
             for (const value of values) {
-                newDeck.push({suit, value});
+                const card = {
+                    index: i,
+                    suit: suit,
+                    value: value,
+                };
+                newDeck.push(card);
+                cards.set(i, card);
+                i++;
             }
         }
         return newDeck;
     };
 
-    const dealInitialHands = () => {
+    const dealInitialHands = async () => {
         const newDeck = generateDeck();
-        const shuffledDeck = newDeck.sort(() => Math.random() - 0.5);
-        const playerInitialHand = [shuffledDeck.pop(), shuffledDeck.pop()];
-        const dealerInitialHand = [shuffledDeck.pop(), shuffledDeck.pop()];
+        setDeck(newDeck);
 
-        // setDeck(shuffledDeck);
-        // setPlayerHand(playerInitialHand);
-        // setDealerHand(dealerInitialHand);
+        const updatedGame = await handleDeal();
+
+        const playerInitialHand: Card[] = [];
+        updatedGame?.playerCards.forEach((cardIndex) => {
+            playerInitialHand.push(cards.get(cardIndex)!);
+        });
+
+        setPlayerHand(playerInitialHand);
+
+        const dealerInitialHand: Card[] = [];
+
+        updatedGame?.dealerCards.forEach((cardIndex) => {
+            dealerInitialHand.push(cards.get(cardIndex)!);
+        });
+
+        setDealerHand(dealerInitialHand);
     };
 
 
-    function hit() {
-        //void
+    function hit(hand: Card[], setHand: (hand: Card[]) => void) {
+
+
+        const newHand:Card[] = [];
+
+        setDeck([...deck]);
+        setHand(newHand);
     }
 
     type Card = {
+        index: number;
         suit: string;
         value: string;
     }
 
-    const calculateHandValue = (hand : Array<Card>) => {
+    const calculateHandValue = (hand: Array<Card>) => {
         let totalValue = 0;
         let hasAce = false;
 
@@ -61,7 +90,7 @@ const BlackjackBoard = () => {
         return totalValue;
     };
 
-    const getValue = (value : string) => {
+    const getValue = (value: string) => {
         if (["K", "Q", "J"].includes(value)) {
             return 10;
         } else if (value === "A") {
@@ -71,7 +100,7 @@ const BlackjackBoard = () => {
         }
     };
 
-    const getSuitSymbol = (suit : string) => {
+    const getSuitSymbol = (suit: string) => {
         switch (suit) {
             case "Hearts":
                 return "♥";
@@ -86,8 +115,8 @@ const BlackjackBoard = () => {
         }
     };
 
-    const playerTotal = calculateHandValue(playerHand);
-    const dealerTotal = calculateHandValue(dealerHand);
+    const playerTotal = currentGame?.playerSum; // calculateHandValue(playerHand);
+    const dealerTotal = currentGame?.dealerSum; // calculateHandValue(dealerHand);
 
     return (
         <div className="flex flex-col items-center mt-10">
@@ -108,14 +137,14 @@ const BlackjackBoard = () => {
                     <h2 className="font-semibold">Dealer</h2>
                 </div>
                 <div className="flex space-x-2">
-                    {dealerHand.map((card : Card, index: number) => (
-                        <div key={index} className="bg-white p-3 rounded-md border flex items-center">
+                    {dealerHand.map((card: Card, index: number) => (
+                        <div key={index} className="bg-white p-4 rounded-md border flex items-center">
                             <p className="text-xl">{card.value}</p>
                             <p className="text-2xl ml-1">{getSuitSymbol(card.suit)}</p>
                         </div>
                     ))}
                 </div>
-                <p>{dealerTotal}</p>
+                <p>Sum: {dealerTotal}</p>
             </div>
 
             <div className="flex flex-col space-y-4 mt-10"> {/* Use flex-col and space-y-4 to stack the columns */}
@@ -123,16 +152,14 @@ const BlackjackBoard = () => {
                     <h2 className="font-semibold">Player</h2>
                 </div>
                 <div className="flex space-x-2">
-
-                    {playerHand.map((card : Card, index : number) => (
-                        <div key={index} className="bg-white p-3 rounded-md border flex items-center">
+                    {playerHand.map((card: Card, index: number) => (
+                        <div key={index} className="bg-white p-4 rounded-md border flex items-center">
                             <p className="text-xl">{card.value}</p>
                             <p className="text-2xl ml-1">{getSuitSymbol(card.suit)}</p>
                         </div>
                     ))}
-
                 </div>
-                <p>{playerTotal}</p>
+                <p>Sum: {playerTotal}</p>
             </div>
 
 
@@ -141,7 +168,7 @@ const BlackjackBoard = () => {
                 <div className="flex mt-10 space-x-4">
                     <button
                         className="bg-blue-500 text-white px-4 py-2 rounded-md"
-                        onClick={() => hit()}
+                        onClick={() => hit(playerHand, setPlayerHand)}
                     >
                         Hit
                     </button>
@@ -155,7 +182,7 @@ const BlackjackBoard = () => {
 
                     <button
                         className="bg-gray-500 text-white px-4 py-2 rounded-md"
-                        onClick={dealInitialHands}
+                        onClick={() => dealInitialHands()}
                         disabled={!isGameCreated}
                     >
                         Deal

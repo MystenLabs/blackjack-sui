@@ -7,9 +7,8 @@ import { useGetNavigations } from "@/app/hooks/useGetNavigations";
 import React from "react";
 
 export const Navbar = () => {
-  const pathname = usePathname();
-  const { navigations } = useGetNavigations();
-  console.log(pathname);
+  // const pathname = usePathname();
+  // const { navigations } = useGetNavigations();
 
   return (
     <div className="flex justify-between items-center p-[8px] h-[60px] border-b-gray-400 border-b-[1px] sticky top-0">

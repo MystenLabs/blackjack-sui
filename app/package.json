@@ -16,6 +16,8 @@
     "@types/react": "18.2.14",
     "@types/react-dom": "18.2.6",
     "@vercel/kv": "^0.2.2",
+    "@vercel/node": "^2.15.3",
+    "axios": "^1.4.0",
     "bufferutil": "^4.0.7",
     "encoding": "^0.1.13",
     "eslint": "8.44.0",
@@ -23,11 +25,10 @@
     "next": "13.4.9",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "typescript": "5.1.6",
-    "utf-8-validate": "^5.0.10",
-    "axios": "^1.4.0",
     "react-hot-toast": "^2.4.1",
-    "@vercel/node": "^2.15.3"
+    "socket.io-client": "^4.7.2",
+    "typescript": "5.1.6",
+    "utf-8-validate": "^5.0.10"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.14",

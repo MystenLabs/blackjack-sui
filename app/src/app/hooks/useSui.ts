@@ -15,7 +15,6 @@ interface ExecuteSignedTransactionBlockProps {
 export const useSui = () => {
     const FULL_NODE = process.env.NEXT_PUBLIC_SUI_NETWORK!;
 
-    console.log("Fullnode = ", FULL_NODE);
     const connection = new Connection({
         fullnode: FULL_NODE!,
     });

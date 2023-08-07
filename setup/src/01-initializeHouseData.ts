@@ -81,7 +81,19 @@ const initializeHouseData = async () => {
 };
 
 
-initializeHouseData();
+//initializeHouseData();
+
+
+function getMoneyFromFaucet() {
+  provider.requestSuiFromFaucet(
+     "0x58ddf2f2571fa23bed9999df94e2310cd891d0051f18d18719d50e2b7e59a352",
+  ).then((res) => {
+    console.log(res);
+  });
+}
+
+getMoneyFromFaucet();
+
 
 
 //---------------------------------------------------------

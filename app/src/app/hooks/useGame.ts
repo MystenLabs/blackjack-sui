@@ -1,21 +1,46 @@
+import {useState} from 'react';
+import {useSui} from './useSui';
+import {useWalletKit} from '@mysten/wallet-kit';
+import {toast} from 'react-hot-toast';
+import {bytesToHex, randomBytes} from '@noble/hashes/utils';
+import {Connection, JsonRpcProvider, SuiMoveObject, SuiObjectResponse, TransactionBlock} from '@mysten/sui.js';
+import {Simulate} from "react-dom/test-utils";
+import play = Simulate.play;
+import {Game, GameMessage} from "@/app/types/Game";
 
-import { useState } from 'react';
-import { useSui } from './useSui';
-import { useWalletKit } from '@mysten/wallet-kit';
-import { toast } from 'react-hot-toast';
-import { bytesToHex, randomBytes } from '@noble/hashes/utils';
-import { TransactionBlock } from '@mysten/sui.js';
+import {socket} from "@/app/socket";
 
 export const useGame = () => {
-    const { executeSignedTransactionBlock } = useSui();
-    const { signTransactionBlock } = useWalletKit();
+
+    const connection = new Connection({
+        fullnode: process.env.NEXT_PUBLIC_SUI_NETWORK!
+    });
+    const provider = new JsonRpcProvider(connection);
+
+
+    const {executeSignedTransactionBlock} = useSui();
+    const {signTransactionBlock} = useWalletKit();
     const [isLoading, setIsLoading] = useState(false);
     // const [gameResult, setGameResult] = useState<GameResult | null>(null);
     const [isGameCreated, setIsGameCreated] = useState(false);
     const [currentGameId, setCurrentGameId] = useState<string | null>(null);
     const [betAmount, setBetAmount] = useState<string | null>();
+    const [currentGame, setCurrentGame] = useState<Game | null>();
 
     const BET_AMOUNT = "1000000000";
+
+
+    const handleDeal = async () : Promise<Game> => {
+        const game = await checkForUpdatedGame(provider, currentGameId!);
+        const playerCards = game.playerCards;
+        const dealerCards = game.dealerCards;
+        console.log("player cards: ", playerCards);
+        console.log("dealer cards: ", dealerCards);
+        setCurrentGame(game);
+        return game;
+    };
+
+
     const handlePlayGame = async () => {
         setBetAmount(BET_AMOUNT);
         setIsLoading(true);
@@ -67,7 +92,12 @@ export const useGame = () => {
                     if (!!gameObjectId) {
                         setCurrentGameId(gameObjectId);
                         setIsGameCreated(true);
-                        console.log("Game created");
+                        console.log('game created, waiting for deal...');
+                        let gameMessage = new GameMessage();
+                        gameMessage.packageId = process.env.NEXT_PUBLIC_PACKAGE_ADDRESS!;
+                        gameMessage.gameId = gameObjectId;
+
+                        socket.emit('gameCreated', gameMessage);
                     }
 
                 } else {
@@ -84,6 +114,51 @@ export const useGame = () => {
             });
     };
 
+    const handleCreatedGameAndDoDeal = async (gameObjectId: string) => {
+
+        let playerSum = 0;
+        const maxChecks = 10;
+        let checks = 0;
+        while (playerSum == 0) {
+            let game = await checkForUpdatedGame(provider, gameObjectId);
+            playerSum = game.playerSum;
+            if (playerSum > 0) {
+                console.log("Deal Done! Updating UI.... ");
+                setCurrentGame(game);
+            }
+            checks++;
+            if (checks > maxChecks) {
+                console.log("Max checked for updated game reached. Exiting loop.");
+                break;
+            }
+        }
+    };
+
+    const checkForUpdatedGame = async (provider: JsonRpcProvider, gameObjectId: string): Promise<Game> => {
+        console.log("Checking for updated game...");
+        return provider.getObject({
+            id: gameObjectId,
+            options:{
+                showContent: true,
+            }
+        }).then((objRes: SuiObjectResponse) => {
+            console.log("Res from getObject: " + objRes?.data);
+            const gameObject = objRes?.data?.content as SuiMoveObject;
+            const playerSum = gameObject.fields.player_sum;
+            const game: Game = {
+                id: gameObjectId,
+                player: gameObject.fields.player,
+                status: gameObject.fields.status,
+                playerSum: playerSum,
+                dealerSum: gameObject.fields.dealer_sum,
+                playerCards: gameObject.fields.player_cards,
+                dealerCards: gameObject.fields.dealer_cards,
+            };
+            return game;
+        });
+    }
+
+
     const handleEndGame = () => {
         setIsLoading(false);
     };
@@ -93,7 +168,11 @@ export const useGame = () => {
         isLoading,
         handlePlayGame,
         handleEndGame,
+        handleDeal,
         isGameCreated,
-        betAmount
+        betAmount,
+        currentGame,
+
     };
 };
+
