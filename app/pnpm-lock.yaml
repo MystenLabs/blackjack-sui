@@ -11,6 +11,9 @@ dependencies:
   '@mysten/wallet-kit':
     specifier: ^0.4.12
     version: 0.4.12(bufferutil@4.0.7)(encoding@0.1.13)(react-dom@18.2.0)(react@18.2.0)(utf-8-validate@5.0.10)
+  '@noble/hashes':
+    specifier: ^1.3.0
+    version: 1.3.1
   '@types/node':
     specifier: 20.4.1
     version: 20.4.1
