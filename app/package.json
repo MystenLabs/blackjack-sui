@@ -26,7 +26,8 @@
     "typescript": "5.1.6",
     "utf-8-validate": "^5.0.10",
     "axios": "^1.4.0",
-    "react-hot-toast": "^2.4.1"
+    "react-hot-toast": "^2.4.1",
+    "@vercel/node": "^2.15.3"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.14",
