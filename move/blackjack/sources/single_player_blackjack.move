@@ -35,6 +35,7 @@ module blackjack::single_player_blackjack {
     const ECoinBalanceNotEnough: u64 = 18;
     const EGameHasFinished: u64 = 19;
     const EUnauthorizedPlayer: u64 = 20;
+    const EDealAlreadyHappened: u64 = 21;
 
 
     // Structs
@@ -196,6 +197,9 @@ module blackjack::single_player_blackjack {
         vector::append(&mut messageVector, game_counter(game));
         let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
         assert!(is_sig_valid, EInvalidBlsSig);
+
+        //Check that deal hasn't already happened.
+        assert!(game.player_sum == 0, EDealAlreadyHappened);
 
         //Hash the signature before using it
         let hashed_byte_array = blake2b256(&bls_sig);
