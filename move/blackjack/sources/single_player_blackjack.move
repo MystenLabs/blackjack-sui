@@ -328,18 +328,25 @@ module blackjack::single_player_blackjack {
             game.dealer_sum = get_card_sum(&game.dealer_cards);
         };
 
-        if (game.dealer_sum > game.player_sum) {
-            // House won
-            house_won_post_handling(game, house_data, ctx);
-        }
-        else if (game.player_sum > game.dealer_sum) {
-            // Player won
+        if (game.dealer_sum > 21 ){
             player_won_post_handling(game, ctx);
         }
         else {
-            // Tie
-            tie_post_handling(game, house_data, ctx);
+            if (game.dealer_sum > game.player_sum) {
+                // House won
+                house_won_post_handling(game, house_data, ctx);
+            }
+            else if (game.player_sum > game.dealer_sum) {
+                // Player won
+                player_won_post_handling(game, ctx);
+            }
+            else {
+                // Tie
+                tie_post_handling(game, house_data, ctx);
+            }
         }
+
+
     }
 
 
