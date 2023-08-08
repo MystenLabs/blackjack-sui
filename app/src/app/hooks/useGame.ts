@@ -32,18 +32,18 @@ export const useGame = () => {
     const handleGameFinale = async (gameId: string): Promise<Game> => {
         console.log("Handle game finale, for game ", gameId);
         const finalGame =  await checkForUpdatedGame(provider, gameId);
-        debugger;
-        let winner = "";
+
         if(finalGame.status == 1){
-            winner = "Player";
-            toast.error('Congrats! You won!');
+            if(finalGame.playerSum == 21 && finalGame.playerCards.length == 2){
+                toast.success('Congrats! You won with Blackjack!', {duration: 5000, icon: '👍' });
+            }else {
+                toast.success('Congrats! You won!', {duration: 5000, icon: '👍'});
+            }
         }else if(finalGame.status == 2){
-            winner = "Dealer";
-            toast.error('House wins!');
+            toast.error('House wins, sorry ', {duration: 5000 , icon: '👎'});
         }
         else if(finalGame.status == 3){
-            winner = "Tie";
-            toast.error('Tie!');
+            toast.custom('Tie!', {duration: 5000 , icon: '🤝'});
         }
         setCurrentGame(finalGame);
         setIsGameCreated(false);
@@ -156,6 +156,10 @@ export const useGame = () => {
 
 
     const handlePlayGame = async () => {
+        setCurrentGame(null);
+        setCurrentGameId(null);
+        setIsGameCreated(false);
+
         setBetAmount(BET_AMOUNT);
         setIsLoading(true);
         await handleNewGame()
@@ -228,26 +232,6 @@ export const useGame = () => {
             });
     };
 
-    const handleCreatedGameAndDoDeal = async (gameObjectId: string) => {
-
-        let playerSum = 0;
-        const maxChecks = 10;
-        let checks = 0;
-        while (playerSum == 0) {
-            let game = await checkForUpdatedGame(provider, gameObjectId);
-            playerSum = game.playerSum;
-            if (playerSum > 0) {
-                console.log("Deal Done! Updating UI.... ");
-                setCurrentGame(game);
-            }
-            checks++;
-            if (checks > maxChecks) {
-                console.log("Max checked for updated game reached. Exiting loop.");
-                break;
-            }
-        }
-    };
-
     const checkForUpdatedGame = async (provider: JsonRpcProvider, gameObjectId: string): Promise<Game> => {
         console.log("Checking for updated game...");
         return provider.getObject({
@@ -286,6 +270,7 @@ export const useGame = () => {
         handleHit,
         handleStand,
         isGameCreated,
+        setIsGameCreated,
         betAmount,
         currentGame,
         handleGameFinale

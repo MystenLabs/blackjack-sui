@@ -196,7 +196,8 @@ module blackjack::single_player_blackjack {
     /// @param house_data: The HouseData object
     public fun first_deal(game: &mut Game,
                           bls_sig: vector<u8>,
-                          house_data: &mut HouseData
+                          house_data: &mut HouseData,
+                          ctx: &mut TxContext
     ) {
         // Step 1: Check the bls signature, if its invalid, house loses
         let messageVector = *&object::id_bytes(game);
@@ -222,6 +223,10 @@ module blackjack::single_player_blackjack {
         game.dealer_sum = get_card_sum(&game.dealer_cards);
 
         game.counter = game.counter + 1;
+
+        if (game.player_sum == 21 ){
+            player_won_post_handling(game, b"BlackJack!!!", ctx);
+        };
     }
 
 
@@ -329,7 +334,7 @@ module blackjack::single_player_blackjack {
         };
 
         if (game.dealer_sum > 21 ){
-            player_won_post_handling(game, ctx);
+            player_won_post_handling(game, b"Dealer Busted!", ctx);
         }
         else {
             if (game.dealer_sum > game.player_sum) {
@@ -338,7 +343,7 @@ module blackjack::single_player_blackjack {
             }
             else if (game.player_sum > game.dealer_sum) {
                 // Player won
-                player_won_post_handling(game, ctx);
+                player_won_post_handling(game, b"Player won!", ctx);
             }
             else {
                 // Tie
@@ -371,14 +376,14 @@ module blackjack::single_player_blackjack {
     }
 
     /// Internal function that is used to do actions after the player has won.
-    fun player_won_post_handling(game: &mut Game, ctx: &mut TxContext) {
+    fun player_won_post_handling(game: &mut Game, aMessage: vector<u8>, ctx: &mut TxContext) {
         game.status = PLAYER_WON_STATUS;
 
         let outcome = GameOutcomeEvent {
             game_id: object::uid_to_inner(&game.id),
             game_status: game.status,
             winner_address: game.player,
-            message: b"Player won!",
+            message: aMessage,
         };
         event::emit(outcome);
 

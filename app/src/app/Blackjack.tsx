@@ -3,7 +3,6 @@ import {useGame} from "@/app/hooks/useGame";
 
 import {socket} from "@/app/socket";
 import {GameMessage} from "@/app/types/Game";
-import {isStandardWalletAdapterCompatibleWallet} from "@mysten/wallet-standard";
 import {toast} from "react-hot-toast";
 
 const BlackjackBoard = () => {
@@ -13,12 +12,31 @@ const BlackjackBoard = () => {
     const [dealerTotal, setDealerTotal] = useState<number>(0);
 
     const [deck, setDeck] = useState<Card[]>([]);
-    const {currentGameId, handlePlayGame, isGameCreated, handleDeal, handleHit, handleStand, currentGame, handleGameFinale} = useGame();
+    const {
+        currentGameId,
+        handlePlayGame,
+        isGameCreated,
+        setIsGameCreated,
+        handleDeal,
+        handleHit,
+        handleStand,
+        currentGame,
+        handleGameFinale
+    } = useGame();
 
     const suits = ["Clubs", "Diamonds", "Hearts", "Spades"];
     const values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
 
     const cards: Map<number, Card> = new Map();
+
+
+    function createNewGame() {
+        setPlayerHand([]);
+        setDealerHand([]);
+        setPlayerTotal(0);
+        setDealerTotal(0);
+        handlePlayGame();
+    }
 
 
     useEffect(() => {
@@ -38,8 +56,11 @@ const BlackjackBoard = () => {
                 console.log("New player hand:", playerHand);
                 setPlayerHand(playerHand);
                 setPlayerTotal(gameMessage.playerScore);
+                if (gameMessage.playerScore > 21) {
+                    toast.error('Busted! ', {duration: 5000, icon: '👎'});
+                    setIsGameCreated(false);
+                }
             }
-
         });
 
     }, [socket, currentGameId, setPlayerHand]);
@@ -51,21 +72,21 @@ const BlackjackBoard = () => {
                 console.log("StandExecuted");
                 console.log("Current game id: ", currentGameId);
 
-                 handleGameFinale(currentGameId!).then((finalGame) => {
-                     setPlayerTotal(finalGame?.playerSum!);
-                     setDealerTotal(finalGame?.dealerSum!);
+                handleGameFinale(currentGameId!).then((finalGame) => {
+                    setPlayerTotal(finalGame?.playerSum!);
+                    setDealerTotal(finalGame?.dealerSum!);
 
-                     const dealerHand: Card[] = [];
+                    const dealerHand: Card[] = [];
 
-                     finalGame?.dealerCards.forEach((cardIndex) => {
-                         dealerHand.push(cards.get(cardIndex)!);
-                     });
+                    finalGame?.dealerCards.forEach((cardIndex) => {
+                        dealerHand.push(cards.get(cardIndex)!);
+                    });
 
-                     setDealerHand(dealerHand);
+                    setDealerHand(dealerHand);
 
-                     toast.custom("Game ended" );
+                    toast.custom("Game ended");
 
-                 });
+                });
             }
         });
 
@@ -111,8 +132,12 @@ const BlackjackBoard = () => {
 
         setDealerHand(dealerInitialHand);
 
-        setPlayerTotal(currentGame?.playerSum!); // calculateHandValue(playerHand);
-        setDealerTotal(currentGame?.dealerSum!); // calculateHandValue(dealerHand);
+        setPlayerTotal(updatedGame.playerSum!); // calculateHandValue(playerHand);
+        setDealerTotal(updatedGame.dealerSum!); // calculateHandValue(dealerHand);
+
+        if (updatedGame.playerSum! == 21) {
+            await handleGameFinale(updatedGame.id);
+        }
 
     };
 
@@ -180,12 +205,12 @@ const BlackjackBoard = () => {
     return (
         <div className="flex flex-col items-center mt-10">
 
-            <h2 className="text-1xl font-bold mb-1">Play now, bet is 1 Sui</h2>
+            <h2 className="text-1xl font-bold mb-1">Play now</h2>
 
             <div className="flex mt-4 mb-10 space-x-4">
                 <button
                     className="bg-red-400 text-white px-4 py-2 rounded-md"
-                    onClick={() => handlePlayGame()}
+                    onClick={() => createNewGame()}
                 >
                     New Game
                 </button>
@@ -197,24 +222,63 @@ const BlackjackBoard = () => {
                 </div>
                 <div className="flex space-x-2">
                     {dealerHand.map((card: Card, index: number) => (
-                        <div key={index} className="bg-white p-4 rounded-md border flex items-center">
-                            <p className={`text-xl ${getSuitColor(card.suit)}`}>{card.value}</p>
-                            <p className={`text-2xl ml-1 ${getSuitColor(card.suit)}`}>{getSuitSymbol(card.suit)}</p>
+                        <div
+                            key={index}
+                            className="bg-white p-4 rounded-md border flex flex-col items-start h-40 w-32"
+                        >
+                            <p
+                                className={`text-2xl leading-3 ${getSuitColor(card.suit)}`} // Apply color based on the suit
+                            >
+                                {card.value}
+                            </p>
+                            <p
+                                className={`text-2xl ${getSuitColor(card.suit)}`} // Apply the same color to suit symbol
+                            >
+                                {getSuitSymbol(card.suit)}
+                            </p>
+                            <div className="flex pl-7">
+                                <p
+                                    className={`text-6xl ${getSuitColor(card.suit)} `}
+                                >
+                                    {getSuitSymbol(card.suit)}
+                                </p>
+                            </div>
+
                         </div>
                     ))}
                 </div>
                 <p>Sum: {dealerTotal}</p>
             </div>
+            <hr className="w-80 border-t-2 border-gray-300 my-4" />
 
             <div className="flex flex-col space-y-4 mt-10"> {/* Use flex-col and space-y-4 to stack the columns */}
                 <div className="flex items-center">
                     <h2 className="font-semibold">Player</h2>
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex space-x-10">
                     {playerHand.map((card: Card, index: number) => (
-                        <div key={index} className="bg-white p-4 rounded-md border flex items-center">
-                            <p className={`text-xl ${getSuitColor(card.suit)}`}>{card.value}</p>
-                            <p className={`text-2xl ml-1 ${getSuitColor(card.suit)}`}>{getSuitSymbol(card.suit)}</p>
+                        <div
+                            key={index}
+                            className="bg-white p-4 rounded-md border flex flex-col items-start h-40 w-32"
+                        >
+                            <p
+                                className={`text-2xl leading-3 ${getSuitColor(card.suit)}`} // Apply color based on the suit
+                            >
+                                {card.value}
+                            </p>
+                            <p
+                                className={`text-2xl ${getSuitColor(card.suit)}`} // Apply the same color to suit symbol
+                            >
+                                {getSuitSymbol(card.suit)}
+                            </p>
+                            <div className="flex pl-7">
+                                <p
+                                    className={`text-6xl ${getSuitColor(card.suit)} `}
+                                >
+                                    {getSuitSymbol(card.suit)}
+                                </p>
+                            </div>
+
                         </div>
                     ))}
                 </div>
@@ -224,29 +288,41 @@ const BlackjackBoard = () => {
 
             {/*Game buttons should appear only when the game is created*/}
             {isGameCreated ? (
-                <div className="flex mt-10 space-x-4">
-                    <button
-                        className="bg-blue-500 text-white px-4 py-2 rounded-md"
-                        onClick={() => handleHit()}
-                    >
-                        Hit
-                    </button>
+                <div>
+                    <div className="flex mt-10 space-x-4">
+                        <button
+                            className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                            onClick={() => handleHit()}
+                        >
+                            Hit
+                        </button>
 
-                    <button
-                        className="bg-green-500 text-white px-4 py-2 rounded-md"
-                        disabled={!isGameCreated}
-                        onClick={() => handleStand()}
-                    >
-                        Stand
-                    </button>
+                        <button
+                            className="bg-green-500 text-white px-4 py-2 rounded-md"
+                            disabled={!isGameCreated}
+                            onClick={() => handleStand()}
+                        >
+                            Stand
+                        </button>
 
-                    <button
-                        className="bg-gray-500 text-white px-4 py-2 rounded-md"
-                        onClick={() => dealInitialHands()}
-                        disabled={!isGameCreated}
-                    >
-                        Deal
-                    </button>
+                        <button
+                            className="bg-gray-500 text-white px-4 py-2 rounded-md"
+                            onClick={() => dealInitialHands()}
+                            disabled={!isGameCreated}
+                        >
+                            Deal
+                        </button>
+
+                    </div>
+                    {currentGame?.id ? (
+                    <div className="flex mt-4 mb-10 space-x-4 justify-center">
+                        <a href={`https://suiexplorer.com/object/${currentGame?.id}?network=https%3A%2F%2Ffullnode.devnet.sui.io%3A443`}
+                           className="hover:text-blue-600"
+                        target="_blank">
+                            Game on Explorer
+                        </a>
+                    </div>
+                        ) : null}
                 </div>
 
             ) : null}
