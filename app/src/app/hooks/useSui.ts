@@ -16,7 +16,7 @@ export const useSui = () => {
     const FULL_NODE = process.env.NEXT_PUBLIC_SUI_NETWORK!;
 
     const connection = new Connection({
-        fullnode: FULL_NODE,
+        fullnode: FULL_NODE!,
     });
     const provider = new JsonRpcProvider(connection);
 

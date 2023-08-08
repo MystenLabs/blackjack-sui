@@ -11,7 +11,6 @@ import {
 } from "./config";
 
 import * as bls from "@noble/bls12-381";
-import hkdf from "futoin-hkdf";
 import {bytesToHex} from "@noble/hashes/utils";
 import {utils} from "@noble/bls12-381";
 
@@ -78,19 +77,15 @@ async function doHit(event: SuiEvent) {
             })
             .then(function (res) {
                 const status = res?.effects?.status.status;
-
-                console.log("Hit executed! status = ", status);
                 if (status === "success") {
-                    process.exit(0);
+                    console.log("Hit executed! status = ", status);
                 }
                 if (status == "failure") {
-                    console.log("Error = ", res?.effects);
-                    process.exit(1);
+                    console.log("Error during Hit = ", res?.effects);
                 }
             }).catch(err => {
                 console.log("Error = ", err);
                 console.log(err.data);
-                process.exit(1);
             });
 
     });
@@ -107,7 +102,7 @@ const listenForHitRequests = async () => {
             doHit(event);
         }
     }).then((subscriptionId) => {
-        console.log("Subscriber subscribed. SubId = ", subscriptionId);
+        console.log("HitRequested Subscriber subscribed. SubId = ", subscriptionId);
     });
 
 }

@@ -10,11 +10,8 @@ import {
     SUI_NETWORK, ADMIN_SECRET_KEY, GAME_ID, HOUSE_DATA_ID, deriveBLS_SecretKey, BJ_PLAYER_SECRET_KEY,
 } from "./config";
 
-import * as bls from "@noble/bls12-381";
-import hkdf from "futoin-hkdf";
 import {bytesToHex, randomBytes} from "@noble/hashes/utils";
-import {utils} from "@noble/bls12-381";
-import fs from "fs";
+
 
 
 let privateKeyArray = Uint8Array.from(Array.from(fromB64(BJ_PLAYER_SECRET_KEY!)));

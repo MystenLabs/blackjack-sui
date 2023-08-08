@@ -11,7 +11,7 @@ import {
 } from "./config";
 
 import * as bls from "@noble/bls12-381";
-import hkdf from "futoin-hkdf";
+
 import {bytesToHex} from "@noble/hashes/utils";
 import {utils} from "@noble/bls12-381";
 
@@ -30,6 +30,7 @@ console.log("Connecting to SUI network: ", SUI_NETWORK);
 
 console.log("HOUSE_DATA_ID: ", HOUSE_DATA_ID);
 console.log("Signer Address: ", keypairAdmin.getPublicKey().toSuiAddress());
+console.log("PACKAGE_ADDRESS: ", PACKAGE_ADDRESS);
 
 async function doStand(event: SuiEvent) {
 
@@ -81,16 +82,14 @@ async function doStand(event: SuiEvent) {
 
                 console.log("Stand executed! status = ", status);
                 if (status === "success") {
-                    process.exit(0);
+                    console.log("Stand Executed for game ", eventGameId);
                 }
                 if (status == "failure") {
                     console.log("Error = ", res?.effects);
-                    process.exit(1);
                 }
             }).catch(err => {
                 console.log("Error = ", err);
                 console.log(err.data);
-                process.exit(1);
             });
 
     });
@@ -107,12 +106,10 @@ const listenForStandRequests = async () => {
             doStand(event);
         }
     }).then((subscriptionId) => {
-        console.log("Subscriber subscribed. SubId = ", subscriptionId);
+        console.log("StandRequested  Subscriber subscribed. SubId = ", subscriptionId);
     });
 
 }
-
-
 
 listenForStandRequests();
 

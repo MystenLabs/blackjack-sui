@@ -35,6 +35,7 @@ module blackjack::single_player_blackjack {
     const ECoinBalanceNotEnough: u64 = 18;
     const EGameHasFinished: u64 = 19;
     const EUnauthorizedPlayer: u64 = 20;
+    const EDealAlreadyHappened: u64 = 21;
 
 
     // Structs
@@ -44,6 +45,10 @@ module blackjack::single_player_blackjack {
         suit: vector<u8>,
         name: vector<u8>,
         value: u8
+    }
+
+    struct GameCreatedEvent has copy, drop {
+        game_id: ID,
     }
 
     struct GameOutcomeEvent has copy, drop {
@@ -57,6 +62,13 @@ module blackjack::single_player_blackjack {
         game_id: ID,
         current_player_hand_sum: u8,
         game_counter: u8
+    }
+
+    struct HitDone has copy, drop {
+        game_id: ID,
+        current_player_hand_sum: u8,
+        game_counter: u8,
+        player_cards: vector<u8>
     }
 
     struct StandRequested has copy, drop {
@@ -169,6 +181,10 @@ module blackjack::single_player_blackjack {
             status: IN_PROGRESS
         };
 
+        event::emit(GameCreatedEvent{
+            game_id: object::id(&new_game)
+        });
+
         transfer::share_object(new_game);
     }
 
@@ -180,7 +196,8 @@ module blackjack::single_player_blackjack {
     /// @param house_data: The HouseData object
     public fun first_deal(game: &mut Game,
                           bls_sig: vector<u8>,
-                          house_data: &mut HouseData
+                          house_data: &mut HouseData,
+                          ctx: &mut TxContext
     ) {
         // Step 1: Check the bls signature, if its invalid, house loses
         let messageVector = *&object::id_bytes(game);
@@ -188,6 +205,9 @@ module blackjack::single_player_blackjack {
         vector::append(&mut messageVector, game_counter(game));
         let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
         assert!(is_sig_valid, EInvalidBlsSig);
+
+        //Check that deal hasn't already happened.
+        assert!(game.player_sum == 0, EDealAlreadyHappened);
 
         //Hash the signature before using it
         let hashed_byte_array = blake2b256(&bls_sig);
@@ -203,6 +223,10 @@ module blackjack::single_player_blackjack {
         game.dealer_sum = get_card_sum(&game.dealer_cards);
 
         game.counter = game.counter + 1;
+
+        if (game.player_sum == 21 ){
+            player_won_post_handling(game, b"BlackJack!!!", ctx);
+        };
     }
 
 
@@ -264,7 +288,14 @@ module blackjack::single_player_blackjack {
             house_won_post_handling(game, house_data, ctx);
         }else {
             game.counter = game.counter + 1;
-        }
+        };
+
+        event::emit(HitDone{
+            game_id: object::uid_to_inner(&game.id),
+            current_player_hand_sum: game.player_sum,
+            game_counter: game.counter,
+            player_cards: game.player_cards
+        });
     }
 
 
@@ -302,18 +333,25 @@ module blackjack::single_player_blackjack {
             game.dealer_sum = get_card_sum(&game.dealer_cards);
         };
 
-        if (game.dealer_sum > game.player_sum) {
-            // House won
-            house_won_post_handling(game, house_data, ctx);
-        }
-        else if (game.player_sum > game.dealer_sum) {
-            // Player won
-            player_won_post_handling(game, ctx);
+        if (game.dealer_sum > 21 ){
+            player_won_post_handling(game, b"Dealer Busted!", ctx);
         }
         else {
-            // Tie
-            tie_post_handling(game, house_data, ctx);
+            if (game.dealer_sum > game.player_sum) {
+                // House won
+                house_won_post_handling(game, house_data, ctx);
+            }
+            else if (game.player_sum > game.dealer_sum) {
+                // Player won
+                player_won_post_handling(game, b"Player won!", ctx);
+            }
+            else {
+                // Tie
+                tie_post_handling(game, house_data, ctx);
+            }
         }
+
+
     }
 
 
@@ -338,14 +376,14 @@ module blackjack::single_player_blackjack {
     }
 
     /// Internal function that is used to do actions after the player has won.
-    fun player_won_post_handling(game: &mut Game, ctx: &mut TxContext) {
+    fun player_won_post_handling(game: &mut Game, aMessage: vector<u8>, ctx: &mut TxContext) {
         game.status = PLAYER_WON_STATUS;
 
         let outcome = GameOutcomeEvent {
             game_id: object::uid_to_inner(&game.id),
             game_status: game.status,
             winner_address: game.player,
-            message: b"Player won!",
+            message: aMessage,
         };
         event::emit(outcome);
 
@@ -505,6 +543,8 @@ module blackjack::single_player_blackjack {
         let sum: u8 = 0;
         let i: u8 = 0;
         let n: u8 = (vector::length(cards) as u8);
+        let has_ace = false;
+
         while (i < n) {
             let cardIndex = *vector::borrow(cards, (i as u64));
 
@@ -518,19 +558,24 @@ module blackjack::single_player_blackjack {
             // 12 = Q (value 10)
             // 13 = K (value 10)
 
+            if(value == 1) {
+                has_ace = true;
+            };
+
             if (value > 10) {
                 value = 10;
             };
 
             sum = sum + value;
 
-            //We need to take care of the Aces case where value = 1 or 11 depending on the sum
-            if (value == 1 && sum <= 11) {
-                sum = sum + 10;
-            };
-
             i = i + 1;
         };
+
+        //We need to take care of the Aces case where value = 1 or 11 depending on the sum
+        if (has_ace && sum + 10 <= 21) {
+            sum = sum + 10;
+        };
+
         sum
     }
 

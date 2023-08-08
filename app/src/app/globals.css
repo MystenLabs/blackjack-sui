@@ -17,3 +17,45 @@ body {
     color-scheme: dark;
   }
 }
+
+.card {
+  background: white;
+  border: none;
+  width: 70px;
+  height: 100px;
+  margin: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  border-radius: 5px;
+  transition: transform 0.3s ease;
+}
+
+.card::before,
+.card::after {
+  position: absolute;
+  font-size: 20px;
+}
+
+.card::before {
+  content: attr(data-value);
+  left: 5px;
+  top: 5px;
+}
+
+.card::after {
+  content: attr(data-suit);
+  right: 5px;
+  bottom: 5px;
+}
+
+.card[data-suit="♥️"],
+.card[data-suit="♦️"] {
+  color: red;
+}
+
+.card[data-suit="♠️"],
+.card[data-suit="♣️"] {
+  color: black;
+}
