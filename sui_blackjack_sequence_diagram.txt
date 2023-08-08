@@ -1,0 +1,54 @@
+title Sui Blackjack
+
+
+materialdesignicons F1B1B UI #5cb85c
+
+materialdesignicons F058C Sui #55A5FB
+
+materialdesignicons F048B Backend #5bc0de
+
+
+UI->Sui: New Game
+
+UI<--Sui: Game
+
+UI->Backend: Game Created
+
+Backend->Sui: Do Initial Deal
+
+Sui-->Backend: Initial Deck
+
+Backend-->UI: Deck Created
+
+UI->UI:Deal 
+
+loop
+
+UI->Sui:Hit Request
+
+UI<--Sui: Hit Request Done
+
+UI->Backend: Hit Requested
+
+Backend->Sui: Hit
+
+Sui-->Backend: Updated Game
+
+Backend-->UI: Game Updated
+
+UI->UI:Update Player Hand 
+
+end
+
+
+UI->Sui:Stand Request
+
+UI<--Sui: Stand Request Done
+
+UI->Backend: Stand Requested
+
+Backend->Sui: Stand
+
+Sui-->Backend: Updated Game
+
+Backend-->UI: Game Updated
