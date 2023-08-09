@@ -16,6 +16,8 @@ This repo contains code for the BlackJack on Sui Blockchain game, built with Mov
   - If Hit, User sends a new Tx with new randomness. Then Dealer draws a card for the player
 
 
+Stake = 0.2 SUI
+
 
 
 ### Directories structure

@@ -15,7 +15,7 @@ module blackjack::single_player_blackjack {
 
     // Consts
     const EPOCHS_CANCEL_AFTER: u64 = 7;
-    const STAKE: u64 = 5000;
+    const STAKE: u64 = 200000000;
 
     // Game statuses
     const IN_PROGRESS: u8 = 0;

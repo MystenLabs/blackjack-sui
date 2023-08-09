@@ -29,7 +29,6 @@ const BlackjackBoard = () => {
 
     const cards: Map<number, Card> = new Map();
 
-
     function createNewGame() {
         setPlayerHand([]);
         setDealerHand([]);
@@ -37,7 +36,6 @@ const BlackjackBoard = () => {
         setDealerTotal(0);
         handlePlayGame();
     }
-
 
     useEffect(() => {
         socket.on("hitExecuted", (...args) => {
