@@ -40,13 +40,6 @@ module blackjack::single_player_blackjack {
 
     // Structs
 
-    struct Card has key, store {
-        id: UID,
-        suit: vector<u8>,
-        name: vector<u8>,
-        value: u8
-    }
-
     struct GameCreatedEvent has copy, drop {
         game_id: ID,
     }
@@ -181,7 +174,7 @@ module blackjack::single_player_blackjack {
             status: IN_PROGRESS
         };
 
-        event::emit(GameCreatedEvent{
+        event::emit(GameCreatedEvent {
             game_id: object::id(&new_game)
         });
 
@@ -224,7 +217,7 @@ module blackjack::single_player_blackjack {
 
         game.counter = game.counter + 1;
 
-        if (game.player_sum == 21 ){
+        if (game.player_sum == 21) {
             player_won_post_handling(game, b"BlackJack!!!", ctx);
         };
     }
@@ -290,7 +283,7 @@ module blackjack::single_player_blackjack {
             game.counter = game.counter + 1;
         };
 
-        event::emit(HitDone{
+        event::emit(HitDone {
             game_id: object::uid_to_inner(&game.id),
             current_player_hand_sum: game.player_sum,
             game_counter: game.counter,
@@ -333,7 +326,7 @@ module blackjack::single_player_blackjack {
             game.dealer_sum = get_card_sum(&game.dealer_cards);
         };
 
-        if (game.dealer_sum > 21 ){
+        if (game.dealer_sum > 21) {
             player_won_post_handling(game, b"Dealer Busted!", ctx);
         }
         else {
@@ -350,8 +343,6 @@ module blackjack::single_player_blackjack {
                 tie_post_handling(game, house_data, ctx);
             }
         }
-
-
     }
 
 
@@ -558,7 +549,7 @@ module blackjack::single_player_blackjack {
             // 12 = Q (value 10)
             // 13 = K (value 10)
 
-            if(value == 1) {
+            if (value == 1) {
                 has_ace = true;
             };
 
@@ -613,5 +604,57 @@ module blackjack::single_player_blackjack {
     /// @param house_data: The HouseData object
     public fun public_key(house_data: &HouseData): vector<u8> {
         house_data.public_key
+    }
+
+
+    //For Testing
+
+    #[test_only]
+    public fun get_house_admin_cap_for_testing(ctx: &mut TxContext): HouseAdminCap {
+        let house_cap = HouseAdminCap {
+            id: object::new(ctx)
+        };
+
+        house_cap
+    }
+
+    #[test_only]
+    public fun get_house_data_for_testing(ctx: &mut TxContext, initBal: Balance<SUI>): HouseData {
+        let demoKey = vector[];
+        vector::push_back(&mut demoKey, 10);
+        vector::push_back(&mut demoKey, 11);
+        vector::push_back(&mut demoKey, 12);
+        vector::push_back(&mut demoKey, 13);
+        vector::push_back(&mut demoKey, 14);
+        vector::push_back(&mut demoKey, 15);
+
+        let house_data = HouseData {
+            id: object::new(ctx),
+            balance: initBal,
+            house: tx_context::sender(ctx),
+            public_key: demoKey,
+            max_stake: 50_000_000_000, // 50 SUI, 1 SUI = 10^9.
+            min_stake: 1_000_000_000, // 1 SUI.
+            fees: balance::zero()
+        };
+        house_data
+    }
+
+    #[test_only]
+    public fun destroy_for_testing(houseData: HouseData) {
+        let HouseData
+        {
+            id,
+            balance : b,
+            house : _,
+            public_key : _,
+            max_stake : _,
+            min_stake : _,
+            fees : f
+        } = houseData;
+
+        object::delete(id);
+        balance::destroy_for_testing(b);
+        balance::destroy_for_testing(f);
     }
 }
