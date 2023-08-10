@@ -6,6 +6,7 @@ module blackjack::single_player_blackjack_tests {
     use blackjack::single_player_blackjack::{balance, Game};
 
     use std::vector;
+    use std::debug::print as print;
     use sui::coin;
 
     // use std::string::utf8;
@@ -49,7 +50,27 @@ module blackjack::single_player_blackjack_tests {
 
             let play_randomness: vector<u8> = bj::player_randomness(&game);
 
-            assert (vector::length(&play_randomness) > 0, 55);
+            assert! (vector::length(&play_randomness) > 0, 666);
+
+            print(&play_randomness);
+            let cards = vector[];
+
+            let card1 = bj::get_next_random_card(&mut game);
+            vector::push_back(&mut cards, card1);
+
+            print(&bj::get_latest_hash(&game));
+            print(&card1);
+            print(&1111111);
+
+            let card2 = bj::get_next_random_card(&mut game);
+            vector::push_back(&mut cards, card2);
+
+            print(&bj::get_latest_hash(&game));
+            print(&card2);
+            print(&2222222);
+
+            printString(cards);
+            print(&cards);
 
             ts::return_shared(game);
         };
@@ -58,30 +79,18 @@ module blackjack::single_player_blackjack_tests {
         ts::end(test);
     }
 
-    #[test]
-    fun test_accessory_price() {
-        let user = @0x1;
-        let test = ts::begin(user);
-        ts::next_tx(&mut test, user);
-
-
-        ts::end(test);
+    public fun printString(str: vector<u8>) {
+        std::debug::print(&std::ascii::string(str))
     }
 
-    public fun get_randomness_for_test() : vector<u8>{
+    fun get_randomness_for_test() : vector<u8>{
         let rvec = vector[];
-        vector::push_back(&mut rvec, 125);
-        vector::push_back(&mut rvec, 126);
-        vector::push_back(&mut rvec, 201);
-        vector::push_back(&mut rvec, 202);
-        vector::push_back(&mut rvec, 203);
-        vector::push_back(&mut rvec, 204);
-        vector::push_back(&mut rvec, 205);
-        vector::push_back(&mut rvec, 206);
+        vector::push_back(&mut rvec, 50);
+        vector::push_back(&mut rvec, 29);
+        vector::push_back(&mut rvec, 30);
+        vector::push_back(&mut rvec, 4);
 
-        let rehashed_byte_array = blake2b256(&rvec);
-
-        rehashed_byte_array
+        rvec
     }
 
 

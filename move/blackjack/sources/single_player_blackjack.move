@@ -7,7 +7,7 @@ module blackjack::single_player_blackjack {
     use sui::balance::{Self, Balance};
     use sui::object::{Self, ID, UID};
     use sui::coin::{Self, Coin};
-    use sui::bcs::{Self, BCS};
+    use sui::bcs::{Self};
     use sui::hash::{blake2b256};
     use sui::event::{Self};
     use sui::sui::SUI;
@@ -83,6 +83,7 @@ module blackjack::single_player_blackjack {
     struct Game has key {
         id: UID,
         user_randomness: vector<u8>,
+        latest_hash: vector<u8>,
         total_stake: Balance<SUI>,
         player: address,
         player_cards: vector<u8>,
@@ -150,6 +151,7 @@ module blackjack::single_player_blackjack {
         let new_game = Game {
             id: object::new(ctx),
             user_randomness,
+            latest_hash: vector[],
             total_stake: stake,
             player: tx_context::sender(ctx),
             player_cards: vector[],
@@ -185,19 +187,19 @@ module blackjack::single_player_blackjack {
         assert!(game.player_sum == 0, EDealAlreadyHappened);
 
         //Hash the signature before using it
-        let hashed_byte_array = blake2b256(&bls_sig);
+        game.latest_hash = blake2b256(&bls_sig);
 
         //Deal cards to player
-        let card1 = get_next_random_card(&hashed_byte_array);
+        let card1 = get_next_random_card( game);
         vector::push_back(&mut game.player_cards, card1);
 
-        let card2 = get_next_random_card(&hashed_byte_array);
+        let card2 = get_next_random_card( game);
         vector::push_back(&mut game.player_cards, card2);
 
         game.player_sum = get_card_sum(&game.player_cards);
 
         //Deal cards to dealer
-        let card3 = get_next_random_card(&hashed_byte_array);
+        let card3 = get_next_random_card( game);
         vector::push_back(&mut game.dealer_cards, card3);
         game.dealer_sum = get_card_sum(&game.dealer_cards);
 
@@ -250,9 +252,9 @@ module blackjack::single_player_blackjack {
         assert!(game.status == IN_PROGRESS, EGameHasFinished);
 
         //Hash the signature before using it
-        let hashed_byte_array = blake2b256(&bls_sig);
+        game.latest_hash = blake2b256(&bls_sig);
 
-        let card = get_next_random_card(&mut hashed_byte_array);
+        let card = get_next_random_card(game);
         vector::push_back(&mut game.player_cards, card);
         game.player_sum = get_card_sum(&game.player_cards);
 
@@ -287,14 +289,14 @@ module blackjack::single_player_blackjack {
         assert!(game.status == IN_PROGRESS, EGameHasFinished);
 
         //Hash the signature before using it
-        let hashed_byte_array = blake2b256(&bls_sig);
+        game.latest_hash = blake2b256(&bls_sig);
 
-        let card = get_next_random_card(&mut hashed_byte_array);
+        let card = get_next_random_card( game);
         vector::push_back(&mut game.dealer_cards, card);
         game.dealer_sum = get_card_sum(&game.dealer_cards);
 
         while (game.dealer_sum < 17) {
-            let card = get_next_random_card(&mut hashed_byte_array);
+            let card = get_next_random_card( game);
             vector::push_back(&mut game.dealer_cards, card);
             game.dealer_sum = get_card_sum(&game.dealer_cards);
         };
@@ -388,12 +390,12 @@ module blackjack::single_player_blackjack {
     /// @param hashed_byte_array: The hashed byte array
     /// @return: The next random card
     /// --------------------------------
-    public fun get_next_random_card(hashed_byte_array: &vector<u8>): u8 {
+    public fun get_next_random_card(game: &mut Game): u8 {
 
         // re-hash for taking next random number
-        let rehashed_byte_array = blake2b256(hashed_byte_array);
+        game.latest_hash = blake2b256(&game.latest_hash);
 
-        let bcs = bcs::new(rehashed_byte_array);
+        let bcs = bcs::new(game.latest_hash);
         let value = bcs::peel_u128(&mut bcs);
 
         let randomCard = ((value % 52) as u8);
@@ -511,6 +513,12 @@ module blackjack::single_player_blackjack {
     /// @param game: A Game object
     public fun player_randomness(game: &Game): vector<u8> {
         game.user_randomness
+    }
+
+    /// Returns the latest stored hash
+    /// @param game: A Game object
+    public fun get_latest_hash(game: &Game): vector<u8> {
+        game.latest_hash
     }
 
 

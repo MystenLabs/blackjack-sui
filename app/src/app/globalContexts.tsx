@@ -18,7 +18,7 @@ export default function GlobalContexts({
             },
         }} />
       <Navbar />
-      <main className="flex flex-col justify-between items-center p-24 min-h-screen">{children}</main>
+      <main className="flex flex-col justify-between items-center p-2 min-h-screen">{children}</main>
     </WalletKitProvider>
   );
 }

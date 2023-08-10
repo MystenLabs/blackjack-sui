@@ -61,18 +61,16 @@ const doInitialDeal = async (gameId:string) => {
             return;
         }
 
-        const gameIdHex = gameId.replace("0x","");
-        const counterHex = bytesToHex(Uint8Array.from([gameObject.fields.counter]));
+        // const gameIdHex = gameId.replace("0x","");
+        // const counterHex = bytesToHex(Uint8Array.from([gameObject.fields.counter]));
+        // const messageToSign = gameIdHex.concat(randomnessHexString).concat(counterHex);
+
         const randomnessHexString = bytesToHex(Uint8Array.from(gameObject.fields.user_randomness));
 
-        const messageToSign = gameIdHex.concat(randomnessHexString).concat(counterHex);
-
-        let signedHouseHash = await bls.sign(messageToSign, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
+        let signedHouseHash = await bls.sign(randomnessHexString, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
 
         console.log("GAME_ID Bytes = ", utils.hexToBytes(gameId.replace("0x","")));
         console.log("randomness = ", gameObject.fields.user_randomness);
-        console.log("counter = ", counterHex);
-        console.log("Full MessageTo Sign Bytes = ", utils.hexToBytes(messageToSign));
 
         tx.setGasBudget(10000000000);
 
@@ -99,6 +97,11 @@ const doInitialDeal = async (gameId:string) => {
 
                 if (status === "success") {
                     console.log("Initial Deal executed! status = ", status);
+
+                    const gameMessage : GameMessage =  {
+                        gameId: gameId,
+                    };
+                    io.emit("dealExecuted", gameMessage);
                 }
                 if (status == "failure") {
                     console.log("Error = ", res?.effects);
@@ -131,14 +134,13 @@ async function doHit(gameId: string) {
         const counterHex = bytesToHex(Uint8Array.from([gameObject.fields.counter]));
         const randomnessHexString = bytesToHex(Uint8Array.from(gameObject.fields.user_randomness));
 
-        const messageToSign = gameIdHex.concat(randomnessHexString).concat(counterHex);
+        //const messageToSign = gameIdHex.concat(randomnessHexString).concat(counterHex);
 
-        let signedHouseHash = await bls.sign(messageToSign, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
+        let signedHouseHash = await bls.sign(randomnessHexString, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
 
         console.log("GAME_ID Bytes = ", utils.hexToBytes(gameId.replace("0x", "")));
         console.log("randomness = ", gameObject.fields.user_randomness);
         console.log("counter = ", counterHex);
-        console.log("Full MessageTo Sign Bytes = ", utils.hexToBytes(messageToSign));
 
         tx.setGasBudget(10000000000);
 
@@ -203,18 +205,16 @@ async function doStand(gameId: string) {
 
         const tx = new TransactionBlock();
         const gameObject = res?.data?.content as SuiMoveObject;
-        const gameIdHex = gameId.replace("0x", "");
         const counterHex = bytesToHex(Uint8Array.from([gameObject.fields.counter]));
         const randomnessHexString = bytesToHex(Uint8Array.from(gameObject.fields.user_randomness));
 
-        const messageToSign = gameIdHex.concat(randomnessHexString).concat(counterHex);
+        // const messageToSign = gameIdHex.concat(randomnessHexString).concat(counterHex);
+        //const gameIdHex = gameId.replace("0x", "");
 
-        let signedHouseHash = await bls.sign(messageToSign, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
+        let signedHouseHash = await bls.sign(randomnessHexString, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
 
         console.log("GAME_ID Bytes = ", utils.hexToBytes(gameId.replace("0x", "")));
         console.log("randomness = ", gameObject.fields.user_randomness);
-        console.log("counter = ", counterHex);
-        console.log("Full MessageTo Sign Bytes = ", utils.hexToBytes(messageToSign));
 
         tx.setGasBudget(10000000000);
 
@@ -306,6 +306,6 @@ type GameMessage = {
     gameId: string;
     packageId?: string;
     type?: string;
-    playerCards: string[];
-    playerScore: string;
+    playerCards?: string[];
+    playerScore?: string;
 }

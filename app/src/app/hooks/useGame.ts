@@ -155,14 +155,14 @@ export const useGame = () => {
     };
 
 
-    const handlePlayGame = async () => {
+    const handlePlayGame = async (userRandomness:string) => {
         setCurrentGame(null);
         setCurrentGameId(null);
         setIsGameCreated(false);
 
         setBetAmount(BET_AMOUNT);
         setIsLoading(true);
-        await handleNewGame()
+        await handleNewGame(userRandomness)
             .then(() => {
                 setIsLoading(false);
             })
@@ -173,9 +173,7 @@ export const useGame = () => {
             });
     };
 
-    const handleNewGame = async () => {
-        const userRandomness = randomBytes(16);
-        const userRandomnessHexString = bytesToHex(userRandomness);
+    const handleNewGame = async (userRandomnessHexString:string) => {
 
         const tx = new TransactionBlock();
         let coin = tx.splitCoins(tx.gas, [tx.pure(Number(BET_AMOUNT))]);
