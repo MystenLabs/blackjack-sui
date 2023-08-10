@@ -7,6 +7,7 @@ module blackjack::single_player_blackjack {
     use sui::balance::{Self, Balance};
     use sui::object::{Self, ID, UID};
     use sui::coin::{Self, Coin};
+    use sui::bcs::{Self, BCS};
     use sui::hash::{blake2b256};
     use sui::event::{Self};
     use sui::sui::SUI;
@@ -53,21 +54,18 @@ module blackjack::single_player_blackjack {
 
     struct HitRequested has copy, drop {
         game_id: ID,
-        current_player_hand_sum: u8,
-        game_counter: u8
+        current_player_hand_sum: u8
     }
 
     struct HitDone has copy, drop {
         game_id: ID,
         current_player_hand_sum: u8,
-        game_counter: u8,
         player_cards: vector<u8>
     }
 
     struct StandRequested has copy, drop {
         game_id: ID,
-        final_player_hand_sum: u8,
-        game_counter: u8
+        final_player_hand_sum: u8
     }
 
     struct HouseAdminCap has key {
@@ -79,19 +77,12 @@ module blackjack::single_player_blackjack {
         id: UID,
         balance: Balance<SUI>,
         house: address,
-        public_key: vector<u8>,
-        max_stake: u64,
-        min_stake: u64,
-        fees: Balance<SUI>
+        public_key: vector<u8>
     }
 
     struct Game has key {
         id: UID,
         user_randomness: vector<u8>,
-        counter: u8,
-        hashingCounter: u8,
-        //counts how many extra times the bls sig has been hashed
-        guess_placed_epoch: u64,
         total_stake: Balance<SUI>,
         player: address,
         player_cards: vector<u8>,
@@ -126,10 +117,7 @@ module blackjack::single_player_blackjack {
             id: object::new(ctx),
             balance: coin::into_balance(coin),
             house: tx_context::sender(ctx),
-            public_key,
-            max_stake: 50_000_000_000, // 50 SUI, 1 SUI = 10^9.
-            min_stake: 1_000_000_000, // 1 SUI.
-            fees: balance::zero()
+            public_key
         };
 
         let HouseAdminCap { id } = house_cap;
@@ -162,9 +150,6 @@ module blackjack::single_player_blackjack {
         let new_game = Game {
             id: object::new(ctx),
             user_randomness,
-            counter: 0,
-            hashingCounter: 0,
-            guess_placed_epoch: tx_context::epoch(ctx),
             total_stake: stake,
             player: tx_context::sender(ctx),
             player_cards: vector[],
@@ -193,10 +178,7 @@ module blackjack::single_player_blackjack {
                           ctx: &mut TxContext
     ) {
         // Step 1: Check the bls signature, if its invalid, house loses
-        let messageVector = *&object::id_bytes(game);
-        vector::append(&mut messageVector, player_randomness(game));
-        vector::append(&mut messageVector, game_counter(game));
-        let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
+        let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &player_randomness(game));
         assert!(is_sig_valid, EInvalidBlsSig);
 
         //Check that deal hasn't already happened.
@@ -205,23 +187,25 @@ module blackjack::single_player_blackjack {
         //Hash the signature before using it
         let hashed_byte_array = blake2b256(&bls_sig);
 
-        let (card1, card2) = get_two_random_cards_from_32_array(hashed_byte_array);
-
+        //Deal cards to player
+        let card1 = get_next_random_card(&hashed_byte_array);
         vector::push_back(&mut game.player_cards, card1);
+
+        let card2 = get_next_random_card(&hashed_byte_array);
         vector::push_back(&mut game.player_cards, card2);
+
         game.player_sum = get_card_sum(&game.player_cards);
 
-        let card3 = get_next_random_card(&mut hashed_byte_array, game);
+        //Deal cards to dealer
+        let card3 = get_next_random_card(&hashed_byte_array);
         vector::push_back(&mut game.dealer_cards, card3);
         game.dealer_sum = get_card_sum(&game.dealer_cards);
 
-        game.counter = game.counter + 1;
 
         if (game.player_sum == 21) {
             player_won_post_handling(game, b"BlackJack!!!", ctx);
         };
     }
-
 
     /// Function to be called by user who wants to ask for a hit.
     /// @param game: The Game object
@@ -231,8 +215,7 @@ module blackjack::single_player_blackjack {
 
         event::emit(HitRequested {
             game_id: object::uid_to_inner(&game.id),
-            current_player_hand_sum: current_hand_sum,
-            game_counter: game.counter
+            current_player_hand_sum: current_hand_sum
         });
     }
 
@@ -244,8 +227,7 @@ module blackjack::single_player_blackjack {
 
         event::emit(StandRequested {
             game_id: object::uid_to_inner(&game.id),
-            final_player_hand_sum: player_hand_sum,
-            game_counter: game.counter
+            final_player_hand_sum: player_hand_sum
         });
     }
 
@@ -262,10 +244,7 @@ module blackjack::single_player_blackjack {
                    house_data: &mut HouseData,
                    ctx: &mut TxContext) {
         // Step 1: Check the bls signature, if its invalid, house loses
-        let messageVector = *&object::id_bytes(game);
-        vector::append(&mut messageVector, game.user_randomness);
-        vector::append(&mut messageVector, game_counter(game));
-        let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
+        let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &game.user_randomness);
         assert!(is_sig_valid, EInvalidBlsSig);
 
         assert!(game.status == IN_PROGRESS, EGameHasFinished);
@@ -273,20 +252,17 @@ module blackjack::single_player_blackjack {
         //Hash the signature before using it
         let hashed_byte_array = blake2b256(&bls_sig);
 
-        let card = get_next_random_card(&mut hashed_byte_array, game);
+        let card = get_next_random_card(&mut hashed_byte_array);
         vector::push_back(&mut game.player_cards, card);
         game.player_sum = get_card_sum(&game.player_cards);
 
         if (game.player_sum > 21) {
             house_won_post_handling(game, house_data, ctx);
-        }else {
-            game.counter = game.counter + 1;
         };
 
         event::emit(HitDone {
             game_id: object::uid_to_inner(&game.id),
             current_player_hand_sum: game.player_sum,
-            game_counter: game.counter,
             player_cards: game.player_cards
         });
     }
@@ -305,10 +281,7 @@ module blackjack::single_player_blackjack {
                      house_data: &mut HouseData,
                      ctx: &mut TxContext) {
         // Step 1: Check the bls signature, if its invalid, house loses
-        let messageVector = *&object::id_bytes(game);
-        vector::append(&mut messageVector, game.user_randomness);
-        vector::append(&mut messageVector, game_counter(game));
-        let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
+        let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &game.user_randomness);
         assert!(is_sig_valid, EInvalidBlsSig);
 
         assert!(game.status == IN_PROGRESS, EGameHasFinished);
@@ -316,12 +289,12 @@ module blackjack::single_player_blackjack {
         //Hash the signature before using it
         let hashed_byte_array = blake2b256(&bls_sig);
 
-        let card = get_next_random_card(&mut hashed_byte_array, game);
+        let card = get_next_random_card(&mut hashed_byte_array);
         vector::push_back(&mut game.dealer_cards, card);
         game.dealer_sum = get_card_sum(&game.dealer_cards);
 
         while (game.dealer_sum < 17) {
-            let card = get_next_random_card(&mut hashed_byte_array, game);
+            let card = get_next_random_card(&mut hashed_byte_array);
             vector::push_back(&mut game.dealer_cards, card);
             game.dealer_sum = get_card_sum(&game.dealer_cards);
         };
@@ -409,58 +382,19 @@ module blackjack::single_player_blackjack {
         balance::join(&mut house_data.balance, coin::into_balance(house_coin));
     }
 
-    /// Function that is invoked to retrieve two random cards for the initial deal
-    /// We take the first 16 bytes of the hashed byte array and convert it to a u128
-    /// Next we take the next 16 bytes of the hashed byte array and convert it to a second u128
-    /// In this way we maximize utilization of the 32-length hashed byte array and avoid rehashing
-    /// @param hashed_byte_array: The hashed byte array
-    /// @return: A tuple of two u8 values representing the two cards
-    /// ----------------------------------------
-    public fun get_two_random_cards_from_32_array(hashed_byte_array: vector<u8>): (u8, u8) {
-        //we convert the first 16 bytes of the hashed byte array to a u128 integer
-        let (value1, value2, i) = (0u128, 0u128, 0u8);
-        while (i < 16) {
-            let byte = (*vector::borrow(&mut hashed_byte_array, (i as u64)) as u128);
-            value1 = value1 + (byte << 8 * i);
-            i = i + 1;
-        };
 
-        //...and the last 16 bytes of the hashed byte array to another u128 integer
-        // This way we take advantage of all 32 bytes of the array and avoid rehashing
-        while (i < 32) {
-            let byte = (*vector::borrow(&mut hashed_byte_array, (i as u64)) as u128);
-            value2 = value2 + (byte << 8 * (i - 16)); //this needs to be shifted by 8 * [0,1,2...], so we want i to start from 0
-            i = i + 1;
-        };
-        let card1 = ((value1 % 52) as u8);
-        let card2 = ((value2 % 52) as u8);
-        (card1, card2)
-    }
-
-    /// To increase randomness, we append hashing counter at the end of previous
-    /// hash and re-hash for taking next random number
+    /// Returns next Card from the hashed byte array after re-hashing it
+    ///
     /// @param hashed_byte_array: The hashed byte array
-    /// @param game: The Game object to retrieve the hashing counter
     /// @return: The next random card
     /// --------------------------------
-    public fun get_next_random_card(hashed_byte_array: &mut vector<u8>, game: &mut Game): u8 {
-        let counterVec = vector[];
-        vector::push_back(&mut counterVec, game.hashingCounter);
-        game.hashingCounter = game.hashingCounter + 1;
+    public fun get_next_random_card(hashed_byte_array: &vector<u8>): u8 {
 
-        //we append hashing counter at the end of previous hash
-        vector::append(hashed_byte_array, counterVec);
-
-        //...and re-hash for taking next random number
+        // re-hash for taking next random number
         let rehashed_byte_array = blake2b256(hashed_byte_array);
 
-        //we convert the first 16 bytes of the hashed byte array to a u128 integer
-        let (value, i) = (0u128, 0u8);
-        while (i < 16) {
-            let byte = (*vector::borrow(&mut rehashed_byte_array, (i as u64)) as u128);
-            value = value + (byte << 8 * i);
-            i = i + 1;
-        };
+        let bcs = bcs::new(rehashed_byte_array);
+        let value = bcs::peel_u128(&mut bcs);
 
         let randomCard = ((value % 52) as u8);
         randomCard
@@ -579,14 +513,6 @@ module blackjack::single_player_blackjack {
         game.user_randomness
     }
 
-    /// Returns the game counter
-    /// @param game: A Game object
-    public fun game_counter(game: &Game): vector<u8> {
-        let simple_vec = vector[];
-        vector::push_back(&mut simple_vec, game.counter);
-        simple_vec
-    }
-
 
     /// Returns the balance of the house
     /// @param house_data: The HouseData object
@@ -632,10 +558,7 @@ module blackjack::single_player_blackjack {
             id: object::new(ctx),
             balance: initBal,
             house: tx_context::sender(ctx),
-            public_key: demoKey,
-            max_stake: 50_000_000_000, // 50 SUI, 1 SUI = 10^9.
-            min_stake: 1_000_000_000, // 1 SUI.
-            fees: balance::zero()
+            public_key: demoKey
         };
         house_data
     }
@@ -648,13 +571,9 @@ module blackjack::single_player_blackjack {
             balance : b,
             house : _,
             public_key : _,
-            max_stake : _,
-            min_stake : _,
-            fees : f
         } = houseData;
 
         object::delete(id);
         balance::destroy_for_testing(b);
-        balance::destroy_for_testing(f);
     }
 }
