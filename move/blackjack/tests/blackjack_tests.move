@@ -3,7 +3,7 @@
 
 #[test_only]
 module blackjack::single_player_blackjack_tests {
-    use blackjack::single_player_blackjack::{balance, Game};
+    use blackjack::single_player_blackjack::{balance, Game, set_init_hash_for_testing};
 
     use std::vector;
     use std::debug::print as print;
@@ -16,7 +16,6 @@ module blackjack::single_player_blackjack_tests {
     use sui::sui::SUI;
     use sui::balance;
     use sui::test_scenario as ts;
-    use sui::hash::{blake2b256};
 
     use blackjack::single_player_blackjack as bj;
 
@@ -49,10 +48,12 @@ module blackjack::single_player_blackjack_tests {
             let game = ts::take_shared<Game>(scenario);
 
             let play_randomness: vector<u8> = bj::player_randomness(&game);
-
+            bj::set_init_hash_for_testing(&mut game, play_randomness);
             assert! (vector::length(&play_randomness) > 0, 666);
 
+            print(&111);
             print(&play_randomness);
+
             let cards = vector[];
 
             let card1 = bj::get_next_random_card(&mut game);
@@ -68,10 +69,6 @@ module blackjack::single_player_blackjack_tests {
             print(&bj::get_latest_hash(&game));
             print(&card2);
             print(&2222222);
-
-            printString(cards);
-            print(&cards);
-
             ts::return_shared(game);
         };
 
@@ -79,16 +76,15 @@ module blackjack::single_player_blackjack_tests {
         ts::end(test);
     }
 
-    public fun printString(str: vector<u8>) {
-        std::debug::print(&std::ascii::string(str))
-    }
 
     fun get_randomness_for_test() : vector<u8>{
         let rvec = vector[];
         vector::push_back(&mut rvec, 50);
-        vector::push_back(&mut rvec, 29);
+        vector::push_back(&mut rvec, 60);
+        vector::push_back(&mut rvec, 40);
         vector::push_back(&mut rvec, 30);
-        vector::push_back(&mut rvec, 4);
+        vector::push_back(&mut rvec, 30);
+        vector::push_back(&mut rvec, 30);
 
         rvec
     }

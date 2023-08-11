@@ -384,7 +384,7 @@ module blackjack::single_player_blackjack {
         balance::join(&mut house_data.balance, coin::into_balance(house_coin));
     }
 
-
+    use sui::address;
     /// Returns next Card from the hashed byte array after re-hashing it
     ///
     /// @param hashed_byte_array: The hashed byte array
@@ -395,8 +395,14 @@ module blackjack::single_player_blackjack {
         // re-hash for taking next random number
         game.latest_hash = blake2b256(&game.latest_hash);
 
-        let bcs = bcs::new(game.latest_hash);
-        let value = bcs::peel_u128(&mut bcs);
+        let temp_address = address::from_bytes(game.latest_hash);
+        std::debug::print(&66666666666);
+        std::debug::print(&game.user_randomness);
+        std::debug::print(&temp_address);
+        std::debug::print(&game.latest_hash);
+        let value = address::to_u256(temp_address);
+        // let bcs = bcs::new(game.latest_hash);
+        // let value = bcs::peel_u128(&mut bcs);
 
         let randomCard = ((value % 52) as u8);
         randomCard
@@ -542,6 +548,13 @@ module blackjack::single_player_blackjack {
 
 
     //For Testing
+
+    #[test_only]
+    public fun set_init_hash_for_testing(game: &mut Game, initHash: vector<u8>) {
+        //Hash the signature before using it
+        game.latest_hash = blake2b256(&initHash);
+
+    }
 
     #[test_only]
     public fun get_house_admin_cap_for_testing(ctx: &mut TxContext): HouseAdminCap {
