@@ -4,7 +4,7 @@ import {useGame} from "@/app/hooks/useGame";
 import {socket} from "@/app/socket";
 import {GameMessage} from "@/app/types/Game";
 import {toast} from "react-hot-toast";
-import Modal from 'react-modal';
+import Modal from "react-modal";
 import {bytesToHex} from "@noble/hashes/utils";
 
 
