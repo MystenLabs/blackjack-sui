@@ -61,15 +61,13 @@ const doInitialDeal = async (gameId:string) => {
             return;
         }
 
-        // const gameIdHex = gameId.replace("0x","");
-        // const counterHex = bytesToHex(Uint8Array.from([gameObject.fields.counter]));
-        // const messageToSign = gameIdHex.concat(randomnessHexString).concat(counterHex);
-
+        const counterHex = bytesToHex(Uint8Array.from([gameObject.fields.counter]));
         const randomnessHexString = bytesToHex(Uint8Array.from(gameObject.fields.user_randomness));
 
-        let signedHouseHash = await bls.sign(randomnessHexString, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
+        const messageToSign = randomnessHexString.concat(counterHex);
 
-        console.log("GAME_ID Bytes = ", utils.hexToBytes(gameId.replace("0x","")));
+        let signedHouseHash = await bls.sign(messageToSign, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
+
         console.log("randomness = ", gameObject.fields.user_randomness);
 
         tx.setGasBudget(10000000000);
@@ -90,6 +88,7 @@ const doInitialDeal = async (gameId:string) => {
                 options: {
                     showObjectChanges: true,
                     showEffects: true,
+
                 },
             })
             .then(function (res) {
@@ -111,10 +110,7 @@ const doInitialDeal = async (gameId:string) => {
                 console.log(err.data);
             });
 
-
     });
-
-
 };
 
 
@@ -130,15 +126,13 @@ async function doHit(gameId: string) {
 
         const tx = new TransactionBlock();
         const gameObject = res?.data?.content as SuiMoveObject;
-        const gameIdHex = gameId.replace("0x", "");
         const counterHex = bytesToHex(Uint8Array.from([gameObject.fields.counter]));
         const randomnessHexString = bytesToHex(Uint8Array.from(gameObject.fields.user_randomness));
 
-        //const messageToSign = gameIdHex.concat(randomnessHexString).concat(counterHex);
+        const messageToSign = randomnessHexString.concat(counterHex);
 
-        let signedHouseHash = await bls.sign(randomnessHexString, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
+        let signedHouseHash = await bls.sign(messageToSign, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
 
-        console.log("GAME_ID Bytes = ", utils.hexToBytes(gameId.replace("0x", "")));
         console.log("randomness = ", gameObject.fields.user_randomness);
         console.log("counter = ", counterHex);
 
@@ -208,10 +202,9 @@ async function doStand(gameId: string) {
         const counterHex = bytesToHex(Uint8Array.from([gameObject.fields.counter]));
         const randomnessHexString = bytesToHex(Uint8Array.from(gameObject.fields.user_randomness));
 
-        // const messageToSign = gameIdHex.concat(randomnessHexString).concat(counterHex);
-        //const gameIdHex = gameId.replace("0x", "");
+        const messageToSign = randomnessHexString.concat(counterHex);
 
-        let signedHouseHash = await bls.sign(randomnessHexString, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
+        let signedHouseHash = await bls.sign(messageToSign, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
 
         console.log("GAME_ID Bytes = ", utils.hexToBytes(gameId.replace("0x", "")));
         console.log("randomness = ", gameObject.fields.user_randomness);

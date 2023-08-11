@@ -42,13 +42,12 @@ async function doHit(event: SuiEvent) {
 
         const tx = new TransactionBlock();
         const gameObject = res?.data?.content as SuiMoveObject;
-        const gameIdHex = eventGameId.replace("0x", "");
         const counterHex = bytesToHex(Uint8Array.from([gameObject.fields.counter]));
         const randomnessHexString = bytesToHex(Uint8Array.from(gameObject.fields.user_randomness));
 
-        const messageToSign = gameIdHex.concat(randomnessHexString).concat(counterHex);
+        const messageToSign = randomnessHexString.concat(counterHex);
 
-        let signedHouseHash = await bls.sign(randomnessHexString, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
+        let signedHouseHash = await bls.sign(messageToSign, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
 
         console.log("GAME_ID Bytes = ", utils.hexToBytes(eventGameId.replace("0x", "")));
         console.log("randomness = ", gameObject.fields.user_randomness);
