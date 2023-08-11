@@ -17,7 +17,7 @@ const playerSigner = new RawSigner(playerKeypair, provider);
 console.log("Connecting to SUI network: ", SUI_NETWORK);
 console.log("Player Address =  ", playerKeypair.getPublicKey().toSuiAddress());
 
-const betAmount = 100000000;
+const betAmount = 200000000;
 
 
 const createGameByPlayer = async () => {
@@ -26,16 +26,18 @@ const createGameByPlayer = async () => {
 
     const betAmountCoin = tx.splitCoins(tx.gas, [tx.pure(betAmount)]);
 
-    const randomBytesAsHexString = getUserRandomBytesAsHexString();
+    const randomBytesAsHexString = getFixedUserBytesAsHexString();
 
     tx.moveCall({
         target: `${PACKAGE_ADDRESS}::single_player_blackjack::place_bet_and_create_game`,
         arguments: [
-            tx.pure(randomBytesAsHexString),
+            tx.pure(getFixedUserBytesAsHexString()),
             betAmountCoin,
             tx.object(HOUSE_DATA_ID)
         ],
     });
+
+    tx.setGasBudget(1000000000);
 
     playerSigner
         .signAndExecuteTransactionBlock({
@@ -79,5 +81,10 @@ createGameByPlayer();
 
 function getUserRandomBytesAsHexString() {
     const userRandomness = randomBytes(16);
+    return bytesToHex(userRandomness);
+}
+
+function getFixedUserBytesAsHexString() {
+    const userRandomness = Uint8Array.from([1, 2, 3, 4, 5, 6, 7, 8]);
     return bytesToHex(userRandomness);
 }

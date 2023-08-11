@@ -24,7 +24,7 @@ const connection = new Connection({
 const provider = new JsonRpcProvider(connection);
 const signer = new RawSigner(keypairAdmin, provider);
 
-const initHouseBalance = 1000000000;
+const initHouseBalance = 10000000000;
 
 
 console.log("Connecting to SUI network: ", SUI_NETWORK);

@@ -31,27 +31,79 @@ console.log("GAME_ID: ", GAME_ID);
 console.log("HOUSE_DATA_ID: ", HOUSE_DATA_ID);
 console.log("Signer Address: ", keypairAdmin.getPublicKey().toSuiAddress());
 
+const suits = ["Clubs", "Diamonds", "Hearts", "Spades"];
+const values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+
+const cards: Map<number, Card> = new Map();
+
+
+const generateDeck = () => {
+    const newDeck: Card[] = [];
+    let i: number = 0;
+    for (const suit of suits) {
+        for (const value of values) {
+            const card = {
+                index: i,
+                suit: suit,
+                value: value,
+            };
+            newDeck.push(card);
+            cards.set(i, card);
+            i++;
+        }
+    }
+    return newDeck;
+};
+
+
+type Card = {
+    index: number;
+    suit: string;
+    value: string;
+}
+
+
+const getPlayerHand = (playerCards: number[]) => {
+
+    const playerInitialHand: Card[] = [];
+    playerCards.forEach((cardIndex) => {
+        playerInitialHand.push(cards.get(cardIndex)!);
+    });
+    return playerInitialHand;
+
+}
+
+const getGameObject = async (gameId: string) => {
+    const res = await provider.getObject({
+        id: gameId,
+        options: {showContent: true},
+    });
+
+    const gameObject = res?.data?.content as SuiMoveObject;
+    return gameObject;
+}
+
 const doInitialDeal = async () => {
 
     const tx = new TransactionBlock();
 
     await provider.getObject({
         id: GAME_ID,
-        options: { showContent: true },
+        options: {showContent: true},
     }).then(async (res) => {
         const gameObject = res?.data?.content as SuiMoveObject;
-        const gameIdHex = GAME_ID.replace("0x","");
+        const gameIdHex = GAME_ID.replace("0x", "");
         const counterHex = bytesToHex(Uint8Array.from([gameObject.fields.counter]));
         const randomnessHexString = bytesToHex(Uint8Array.from(gameObject.fields.user_randomness));
 
-        const messageToSign = gameIdHex.concat(randomnessHexString).concat(counterHex);
+        //const messageToSign = gameIdHex.concat(randomnessHexString).concat(counterHex);
 
-        let signedHouseHash = await bls.sign(messageToSign, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
+        let signedHouseHash = await bls.sign(randomnessHexString, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
 
-        console.log("GAME_ID Bytes = ", utils.hexToBytes(GAME_ID.replace("0x","")));
+        console.log("GAME_ID Bytes = ", utils.hexToBytes(GAME_ID.replace("0x", "")));
         console.log("randomness = ", gameObject.fields.user_randomness);
         console.log("counter = ", counterHex);
-        console.log("Full MessageTo Sign Bytes = ", utils.hexToBytes(messageToSign));
+        console.log("Full MessageTo Sign Bytes = ", utils.hexToBytes(randomnessHexString));
 
         tx.setGasBudget(10000000000);
 
@@ -73,11 +125,19 @@ const doInitialDeal = async () => {
                     showEffects: true,
                 },
             })
-            .then(function (res) {
+            .then(async function (res) {
                 const status = res?.effects?.status.status;
 
                 console.log("executed! status = ", status);
                 if (status === "success") {
+
+                    const updatedGameObject = await getGameObject(GAME_ID);
+                    const playerCards = updatedGameObject?.fields.player_cards;
+
+                    console.log(playerCards);
+                    const playerHand = getPlayerHand(playerCards);
+                    console.log("Player Hand = ", playerHand);
+
                     process.exit(0);
                 }
                 if (status == "failure") {
@@ -97,10 +157,12 @@ const doInitialDeal = async () => {
 };
 
 
-doInitialDeal();
+const deck: Card[] = generateDeck();
 
+doInitialDeal();
 
 
 //---------------------------------------------------------
 /// Helper Functions
 //---------------------------------------------------------
+

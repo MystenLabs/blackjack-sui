@@ -48,7 +48,7 @@ async function doHit(event: SuiEvent) {
 
         const messageToSign = gameIdHex.concat(randomnessHexString).concat(counterHex);
 
-        let signedHouseHash = await bls.sign(messageToSign, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
+        let signedHouseHash = await bls.sign(randomnessHexString, deriveBLS_SecretKey(ADMIN_SECRET_KEY!));
 
         console.log("GAME_ID Bytes = ", utils.hexToBytes(eventGameId.replace("0x", "")));
         console.log("randomness = ", gameObject.fields.user_randomness);
