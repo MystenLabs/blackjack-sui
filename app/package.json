@@ -26,6 +26,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hot-toast": "^2.4.1",
+    "react-loader-spinner": "^5.3.4",
     "react-modal": "^3.16.1",
     "socket.io-client": "^4.7.2",
     "typescript": "5.1.6",

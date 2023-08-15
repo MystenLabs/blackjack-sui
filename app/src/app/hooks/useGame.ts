@@ -160,14 +160,13 @@ export const useGame = () => {
         setIsGameCreated(false);
 
         setBetAmount(BET_AMOUNT);
-        setIsLoading(true);
+
         await handleNewGame(userRandomness)
             .then(() => {
-                setIsLoading(false);
+
             })
             .catch((err) => {
                 console.log(err);
-                setIsLoading(false);
                 toast.error('Something went wrong.');
             });
     };
@@ -177,7 +176,9 @@ export const useGame = () => {
         if (currentAccount?.address) {
 
             const userCounterNFT = await getUserCounterNFT(provider, currentAccount?.address) || process.env.NEXT_PUBLIC_COUNTER_NFT_ID!;
-
+            if(!userCounterNFT) {
+                console.error("User does not have a counter NFT");
+            }
             const tx = new TransactionBlock();
             let coin = tx.splitCoins(tx.gas, [tx.pure(Number(BET_AMOUNT))]);
             tx.moveCall({
@@ -204,6 +205,7 @@ export const useGame = () => {
             })
                 .then((resp) => {
                     console.log(resp);
+                    setIsLoading(true);
                     if (resp.effects?.status.status === 'success') {
                         const createdObjects = resp.effects?.created;
                         const createdGame = createdObjects?.[0];
@@ -281,6 +283,7 @@ export const useGame = () => {
     return {
         currentGameId,
         isLoading,
+        setIsLoading,
         handlePlayGame,
         handleEndGame,
         handleDeal,
@@ -290,7 +293,7 @@ export const useGame = () => {
         setIsGameCreated,
         betAmount,
         currentGame,
-        handleGameFinale
+        handleGameFinale,
     };
 };
 

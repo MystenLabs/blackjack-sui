@@ -6,6 +6,7 @@ import {GameMessage} from "@/app/types/Game";
 import {toast} from "react-hot-toast";
 import Modal from "react-modal";
 import {bytesToHex} from "@noble/hashes/utils";
+import {Hearts} from "react-loader-spinner";
 
 
 const BlackjackBoard = () => {
@@ -20,6 +21,8 @@ const BlackjackBoard = () => {
     const [adequateRandomnessGathered, setAdequateRandomnessGathered] = useState<boolean>(false);
 
     const {
+        isLoading,
+        setIsLoading,
         currentGameId,
         handlePlayGame,
         isGameCreated,
@@ -35,6 +38,7 @@ const BlackjackBoard = () => {
     const values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
 
     const cards: Map<number, Card> = new Map();
+
 
     function openNewGameModal() {
         setIsOpen(true);
@@ -157,7 +161,7 @@ const BlackjackBoard = () => {
         if (updatedGame.playerSum! == 21) {
             await handleGameFinale(updatedGame.id);
         }
-
+        setIsLoading(false);
     };
 
     useEffect(() => {
@@ -165,6 +169,7 @@ const BlackjackBoard = () => {
             const gameMessage: GameMessage = args[0];
             if (currentGameId && gameMessage.gameId == currentGameId) {
                 console.log("dealExecuted");
+
                 dealInitialHands();
             }
         });
@@ -204,7 +209,7 @@ const BlackjackBoard = () => {
         }
     };
 
-    const handleMouseMove = (event) => {
+    const handleMouseMove = (event: any) => {
         // 👇 Get mouse position relative to element
         const localX = event.clientX - event.target.offsetLeft;
         const localY = event.clientY - event.target.offsetTop;
@@ -263,13 +268,8 @@ const BlackjackBoard = () => {
 
             </div>
 
-            {randomnessHex.length > 0 ? (
-                <div className="flex mt-4 mb-5 space-x-4">
-
-                </div>
-            ) : null}
-            <div className="flex flex-col space-y-4"> {/* Use flex-col and space-y-4 to stack the columns */}
-                <div className="flex items-center">
+            <div className="flex flex-col space-y-4 "> {/* Use flex-col and space-y-4 to stack the columns */}
+                <div className="flex items-center justify-center">
                     <h2 className="font-semibold">Dealer</h2>
                 </div>
                 <div className="flex space-x-2">
@@ -299,12 +299,14 @@ const BlackjackBoard = () => {
                         </div>
                     ))}
                 </div>
-                <p>Sum: {dealerTotal}</p>
+                <div className="flex items-center justify-center">
+                    <p>Sum: {dealerTotal}</p>
+                </div>
             </div>
             <hr className="w-80 border-t-2 border-gray-300 my-4"/>
 
             <div className="flex flex-col space-y-4 mt-10"> {/* Use flex-col and space-y-4 to stack the columns */}
-                <div className="flex items-center">
+                <div className="flex items-center justify-center">
                     <h2 className="font-semibold">Player</h2>
                 </div>
                 <div className="flex space-x-10">
@@ -334,8 +336,22 @@ const BlackjackBoard = () => {
                         </div>
                     ))}
                 </div>
-                <p>Sum: {playerTotal}</p>
+                <div className="flex items-center justify-center">
+                    <p>Sum: {playerTotal}</p>
+                </div>
             </div>
+
+            {playerHand.length == 0 && isLoading ? (
+                <Hearts
+                    height="150"
+                    width="150"
+                    color="#D70000"
+                    ariaLabel="hearts-loading"
+                    wrapperStyle={{}}
+                    wrapperClass=""
+                    visible={true}
+                />
+            ): null}
 
 
             {/*Game buttons should appear only when the game is created*/}
@@ -361,24 +377,20 @@ const BlackjackBoard = () => {
 
                     {currentGame?.id ? (
                         <div>
-                        <div className="flex mt-4 mb-10 space-x-4 justify-center">
-                            <a href={`https://suiexplorer.com/object/${currentGame?.id}?network=https%3A%2F%2Ffullnode.devnet.sui.io%3A443`}
-                               className="hover:text-blue-600"
-                               target="_blank">
-                                Game on Explorer
-                            </a>
-
-                        </div>
                             <div className="flex mt-4 mb-10 space-x-4 justify-center">
-                                <p className="text-cyan-600 font-normal mb-5 justify-center">
-                                    User Randomness: {getRandomnessArray()}
-                                </p>
+                                <a href={`https://suiexplorer.com/object/${currentGame?.id}?network=https%3A%2F%2Ffullnode.devnet.sui.io%3A443`}
+                                   className="hover:text-blue-600"
+                                   target="_blank">
+                                    Game on Explorer
+                                </a>
+
                             </div>
                         </div>
                     ) : null}
                 </div>
 
             ) : null}
+
 
         </div>
     );

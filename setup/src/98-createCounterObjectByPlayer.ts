@@ -4,7 +4,7 @@ import {BJ_PLAYER_2_SECRET_KEY, BJ_PLAYER_SECRET_KEY, HOUSE_DATA_ID, PACKAGE_ADD
 import {bytesToHex, randomBytes} from '@noble/hashes/utils';
 import fs from "fs";
 
-let privateKeyArray = Uint8Array.from(Array.from(fromB64("AIjJt5Igr1udN4zCqGQdnc83X0KkpKNCcTiRoPxaBZw3"!)));
+let privateKeyArray = Uint8Array.from(Array.from(fromB64("AGyzzLoyHxKMEz0KJqFj5784VdmCdFSlMcJTMM0EvrfF"!)));
 
 const playerKeypair = Ed25519Keypair.fromSecretKey(privateKeyArray.slice(1));
 
