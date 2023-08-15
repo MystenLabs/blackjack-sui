@@ -69,6 +69,7 @@ const BlackjackBoard = () => {
             if (currentGameId && gameMessage.gameId == currentGameId) {
                 console.log("hitExecuted");
                 console.log("Current game id: ", currentGameId);
+                setIsLoading(false);
                 let playerCards = gameMessage.playerCards;
                 console.log("playerCards ", playerCards);
 
@@ -98,7 +99,7 @@ const BlackjackBoard = () => {
                 handleGameFinale(currentGameId!).then((finalGame) => {
                     setPlayerTotal(finalGame?.playerSum!);
                     setDealerTotal(finalGame?.dealerSum!);
-
+                    setIsLoading(false);
                     const dealerHand: Card[] = [];
 
                     finalGame?.dealerCards.forEach((cardIndex) => {
@@ -161,7 +162,7 @@ const BlackjackBoard = () => {
         if (updatedGame.playerSum! == 21) {
             await handleGameFinale(updatedGame.id);
         }
-        setIsLoading(false);
+
     };
 
     useEffect(() => {
@@ -169,7 +170,7 @@ const BlackjackBoard = () => {
             const gameMessage: GameMessage = args[0];
             if (currentGameId && gameMessage.gameId == currentGameId) {
                 console.log("dealExecuted");
-
+                setIsLoading(false);
                 dealInitialHands();
             }
         });
@@ -256,9 +257,7 @@ const BlackjackBoard = () => {
                 </form>
             </Modal>
 
-            <h2 className="text-1xl font-bold mb-1">Play now</h2>
-
-            <div className="flex mt-4 mb-5 space-x-4">
+            <div className="flex mt-1 mb-10 space-x-4">
                 <button
                     className="bg-red-400 text-white px-4 py-2 rounded-md"
                     onClick={() => openNewGameModal()}
@@ -341,19 +340,6 @@ const BlackjackBoard = () => {
                 </div>
             </div>
 
-            {playerHand.length == 0 && isLoading ? (
-                <Hearts
-                    height="150"
-                    width="150"
-                    color="#D70000"
-                    ariaLabel="hearts-loading"
-                    wrapperStyle={{}}
-                    wrapperClass=""
-                    visible={true}
-                />
-            ): null}
-
-
             {/*Game buttons should appear only when the game is created*/}
             {playerHand.length > 0 ? (
                 <div>
@@ -391,6 +377,20 @@ const BlackjackBoard = () => {
 
             ) : null}
 
+            {isLoading ? (
+                <div className="flex space-x-4 justify-center">
+                    <Hearts
+                        height="100"
+                        width="100"
+                        color="#D70000"
+                        ariaLabel="hearts-loading"
+                        wrapperStyle={{}}
+                        wrapperClass=""
+                        visible={true}
+                    />
+                </div>
+
+            ): null}
 
         </div>
     );

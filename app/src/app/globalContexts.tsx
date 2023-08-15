@@ -13,7 +13,7 @@ export default function GlobalContexts({
         <Toaster position="bottom-center" toastOptions={{
             style: {
                 border: '1px solid #713200',
-                marginBottom: '40%',
+                marginBottom: '20%',
                 color: '#713200',
             },
         }} />

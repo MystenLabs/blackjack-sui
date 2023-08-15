@@ -83,6 +83,7 @@ export const useGame = () => {
         })
             .then((resp) => {
                 console.log(resp);
+                setIsLoading(true);
                 if (resp.effects?.status.status === 'success') {
                     let gameMessage = new GameMessage();
                     gameMessage.packageId = process.env.NEXT_PUBLIC_PACKAGE_ADDRESS!;
@@ -130,6 +131,7 @@ export const useGame = () => {
         })
             .then((resp) => {
                 console.log(resp);
+                setIsLoading(true);
                 if (resp.effects?.status.status === 'success') {
                     let gameMessage = new GameMessage();
                     gameMessage.packageId = process.env.NEXT_PUBLIC_PACKAGE_ADDRESS!;
