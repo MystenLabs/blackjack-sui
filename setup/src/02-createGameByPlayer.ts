@@ -1,8 +1,9 @@
 import {Connection, Ed25519Keypair, fromB64, JsonRpcProvider, RawSigner, TransactionBlock,} from "@mysten/sui.js";
-import { BJ_PLAYER_SECRET_KEY, HOUSE_DATA_ID, PACKAGE_ADDRESS, SUI_NETWORK,} from "./config";
+import {BJ_PLAYER_SECRET_KEY, HOUSE_DATA_ID, PACKAGE_ADDRESS, SUI_NETWORK,} from "./config";
 
 import {bytesToHex, randomBytes} from '@noble/hashes/utils';
 import fs from "fs";
+import {createCounterObjectByPlayer} from "./98-createCounterObjectByPlayer";
 
 let privateKeyArray = Uint8Array.from(Array.from(fromB64(BJ_PLAYER_SECRET_KEY!)));
 
@@ -20,18 +21,44 @@ console.log("Player Address =  ", playerKeypair.getPublicKey().toSuiAddress());
 const betAmount = 200000000;
 
 
+const getNftObjectIfExists = (userId: string) : Promise<string|void> => {
+    return provider.getOwnedObjects({
+        owner: userId,
+        filter: {
+            StructType: `${PACKAGE_ADDRESS}::counter_nft::Counter`,
+        }
+    }).then(async (res) => {
+        const objects = res?.data;
+        if(objects.length > 0){
+            return objects[0]?.data?.objectId;
+        }
+    });
+}
+
+
 const createGameByPlayer = async () => {
 
     const tx = new TransactionBlock();
 
     const betAmountCoin = tx.splitCoins(tx.gas, [tx.pure(betAmount)]);
 
-    const randomBytesAsHexString = getFixedUserBytesAsHexString();
+    const randomBytesAsHexString = getUserRandomBytesAsHexString();
+
+    let counterNftId = await getNftObjectIfExists(playerKeypair.getPublicKey().toSuiAddress());
+
+    if(!counterNftId){
+        counterNftId = await createCounterObjectByPlayer();
+    }
+
+    if(!counterNftId){
+        counterNftId = process.env.COUNTER_NFT_ID;
+    }
 
     tx.moveCall({
         target: `${PACKAGE_ADDRESS}::single_player_blackjack::place_bet_and_create_game`,
         arguments: [
-            tx.pure(getFixedUserBytesAsHexString()),
+            tx.pure(randomBytesAsHexString),
+            tx.object(counterNftId!),
             betAmountCoin,
             tx.object(HOUSE_DATA_ID)
         ],
@@ -73,6 +100,7 @@ const createGameByPlayer = async () => {
 
 
 createGameByPlayer();
+
 
 
 //---------------------------------------------------------
