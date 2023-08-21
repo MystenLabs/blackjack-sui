@@ -2,9 +2,8 @@ import {Connection, Ed25519Keypair, fromB64, JsonRpcProvider, RawSigner, Transac
 import {BJ_PLAYER_2_SECRET_KEY, BJ_PLAYER_SECRET_KEY, HOUSE_DATA_ID, PACKAGE_ADDRESS, SUI_NETWORK,} from "./config";
 
 import {bytesToHex, randomBytes} from '@noble/hashes/utils';
-import fs from "fs";
 
-let privateKeyArray = Uint8Array.from(Array.from(fromB64("AGyzzLoyHxKMEz0KJqFj5784VdmCdFSlMcJTMM0EvrfF"!)));
+let privateKeyArray = Uint8Array.from(Array.from(fromB64(BJ_PLAYER_SECRET_KEY!)));
 
 const playerKeypair = Ed25519Keypair.fromSecretKey(privateKeyArray.slice(1));
 
@@ -46,10 +45,7 @@ export const createCounterObjectByPlayer = async (): Promise<string|void> => {
                 res?.objectChanges?.find((obj) => {
                     if (obj.type === "created" && obj.objectType.endsWith("counter_nft::Counter")) {
                         const counterNftId = `COUNTER_NFT_ID=${obj.objectId}\n`;
-                        const counterNftIdForApp = `NEXT_PUBLIC_COUNTER_NFT_ID=${obj.objectId}\n`;
                         console.log(counterNftId);
-                        //fs.appendFileSync("./.env", counterNftId);
-                        //fs.appendFileSync("../app/.env", counterNftIdForApp);
                         return counterNftId
                     }
                 });
@@ -63,18 +59,3 @@ export const createCounterObjectByPlayer = async (): Promise<string|void> => {
 
 
 createCounterObjectByPlayer();
-
-
-//---------------------------------------------------------
-/// Helper Functions
-//---------------------------------------------------------
-
-function getUserRandomBytesAsHexString() {
-    const userRandomness = randomBytes(16);
-    return bytesToHex(userRandomness);
-}
-
-function getFixedUserBytesAsHexString() {
-    const userRandomness = Uint8Array.from([1, 2, 3, 4, 5, 6, 7, 8]);
-    return bytesToHex(userRandomness);
-}
