@@ -44,16 +44,6 @@ Stake = 0.2 SUI
     - Sui SDK integration
     - publish shell script
 
-### Local development with Vercel KV
+## Presentation
 
-- To be able to connect with the vercel KV storage in the local development environment, please follow the steps:
-  - install vercel cli
-  - run `vercel link` in the root directory of the project
-  - select `Mysten Labs`
-  - link to existing project
-  - run `vercel env pull app/.env.development.local`
-    - the created `app/.env.development.local` file should have the same format with the `app/.env.development.local.example` directory
-  - start the dev server with:
-    - `pnpm run dev` inside the app directory
-    - or `vercel dev` in the project's root directory
-  - visit the url: `http://localhost:3000/api/visits` in your browser, and observe the `pageVisits` counter being incremented with each visit
+More info about the project can be found [in this presentation](https://docs.google.com/presentation/d/13Id6cmSLls8ByVlXXUr4gVO0oAYMZfb-IwroxF1h7zw/edit?usp=sharing)
