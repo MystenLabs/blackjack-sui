@@ -3,6 +3,7 @@
 This repo contains code for the BlackJack on Sui Blockchain game, built with Move.
 
 
+
 ## Gameplay
 
 - This is a 1-1 game, where the player plays against the dealer.
@@ -17,6 +18,14 @@ This repo contains code for the BlackJack on Sui Blockchain game, built with Mov
 
 
 Stake = 0.2 SUI
+
+
+
+## Presentation
+
+More info about the project can be found [in this presentation](https://docs.google.com/presentation/d/13Id6cmSLls8ByVlXXUr4gVO0oAYMZfb-IwroxF1h7zw/edit?usp=sharing)
+
+
 
 
 
@@ -43,7 +52,3 @@ Stake = 0.2 SUI
     - environment variable (.env) file reading
     - Sui SDK integration
     - publish shell script
-
-## Presentation
-
-More info about the project can be found [in this presentation](https://docs.google.com/presentation/d/13Id6cmSLls8ByVlXXUr4gVO0oAYMZfb-IwroxF1h7zw/edit?usp=sharing)
