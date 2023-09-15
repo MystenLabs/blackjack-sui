@@ -3,7 +3,7 @@ import {BJ_PLAYER_SECRET_KEY, HOUSE_DATA_ID, PACKAGE_ADDRESS, SUI_NETWORK,} from
 
 import {bytesToHex, randomBytes} from '@noble/hashes/utils';
 import fs from "fs";
-import {createCounterObjectByPlayer} from "./98-createCounterObjectByPlayer";
+import {createCounterObjectByPlayer} from "./01-createCounterObjectByPlayer";
 
 let privateKeyArray = Uint8Array.from(Array.from(fromB64(BJ_PLAYER_SECRET_KEY!)));
 
@@ -21,7 +21,7 @@ console.log("Player Address =  ", playerKeypair.getPublicKey().toSuiAddress());
 const betAmount = 200000000;
 
 
-const getNftObjectIfExists = (userId: string) : Promise<string|void> => {
+const getCounterNftObjectIfExists = (userId: string) : Promise<string|void> => {
     return provider.getOwnedObjects({
         owner: userId,
         filter: {
@@ -44,12 +44,15 @@ const createGameByPlayer = async () => {
 
     const randomBytesAsHexString = getUserRandomBytesAsHexString();
 
-    let counterNftId = await getNftObjectIfExists(playerKeypair.getPublicKey().toSuiAddress());
+    //Trying to find the counterNftId for this user
+    let counterNftId = await getCounterNftObjectIfExists(playerKeypair.getPublicKey().toSuiAddress());
 
+    //If not found, create a new one
     if(!counterNftId){
         counterNftId = await createCounterObjectByPlayer();
     }
 
+    //If Creation didn't work, use the default counterNftId for the default user.
     if(!counterNftId){
         counterNftId = process.env.COUNTER_NFT_ID;
     }
@@ -109,10 +112,5 @@ createGameByPlayer();
 
 function getUserRandomBytesAsHexString() {
     const userRandomness = randomBytes(16);
-    return bytesToHex(userRandomness);
-}
-
-function getFixedUserBytesAsHexString() {
-    const userRandomness = Uint8Array.from([1, 2, 3, 4, 5, 6, 7, 8]);
     return bytesToHex(userRandomness);
 }
