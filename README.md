@@ -6,7 +6,13 @@ This repo contains code for the BlackJack on Sui Blockchain game, built with Mov
 ## Sui Blackjack Modules
 
 ### `single_player_blackjack.move`
-Defines the game object and provides methods to create and play a game.
+Defines the game object and provides methods to create and play a game. The overall flow of invocation is:
+ - **Player** invokes the `place_bet_and_create_game` Move function that initializes the game randomness, receives the bet and creates a new game. 
+ - **Dealer** invokes the `first_deal` Move function that performs the initial deal of the game.
+ - **Player** invokes the `do_hit` Move function that records the player's intent to hit.
+ - **Dealer** invokes the `hit` Move function that performs the hit action.
+ - **Player** invokes the `do_stand` Move function that records the player's intent to stand.
+ - **Dealer** invokes the `stand` Move function that performs the stand action.
 
 ### `counter_nft.move`
 This module defines the Counter NFT object and provides methods to create and increment it.<br/>
