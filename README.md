@@ -61,4 +61,4 @@ The overall game flow is presented in the following sequence diagram:
   - A Typescript project, with a ready-to-use:
     - environment variable (.env) file reading
     - Sui SDK integration
-    - publish shell script
+    - [publish shell script](./setup/publish.sh)
