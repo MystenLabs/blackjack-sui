@@ -1,7 +1,5 @@
 import {Connection, Ed25519Keypair, fromB64, JsonRpcProvider, RawSigner, TransactionBlock,} from "@mysten/sui.js";
-import {BJ_PLAYER_2_SECRET_KEY, BJ_PLAYER_SECRET_KEY, HOUSE_DATA_ID, PACKAGE_ADDRESS, SUI_NETWORK,} from "./config";
-
-import {bytesToHex, randomBytes} from '@noble/hashes/utils';
+import {BJ_PLAYER_SECRET_KEY, PACKAGE_ADDRESS, SUI_NETWORK,} from "./config";
 
 let privateKeyArray = Uint8Array.from(Array.from(fromB64(BJ_PLAYER_SECRET_KEY!)));
 

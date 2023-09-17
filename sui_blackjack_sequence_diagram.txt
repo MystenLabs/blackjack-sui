@@ -49,6 +49,6 @@ UI->Backend: Stand Requested
 
 Backend->Sui: Stand
 
-Sui-->Backend: Updated Game
+Sui-->Backend: Update Game
 
 Backend-->UI: Game Updated
