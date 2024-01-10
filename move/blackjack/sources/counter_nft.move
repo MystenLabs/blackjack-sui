@@ -17,7 +17,7 @@ module blackjack::counter_nft {
     }
 
     /// Creates a new counter object & transfers it to the sender.
-    public entry fun mint(ctx: &mut TxContext) {
+    public entry fun mint_and_transfer(ctx: &mut TxContext) {
         let counter = Counter {
             id: object::new(ctx),
             count: 0

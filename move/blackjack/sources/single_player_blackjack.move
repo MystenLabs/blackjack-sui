@@ -563,19 +563,18 @@ module blackjack::single_player_blackjack {
 
     //For Testing
 
-    #[test_only]
-    public fun set_init_hash_for_testing(game: &mut Game, initHash: vector<u8>) {
-        //Hash the signature before using it
-        game.latest_hash = blake2b256(&initHash);
-    }
+    // #[test_only]
+    // public fun set_init_hash_for_testing(game: &mut Game, initHash: vector<u8>) {
+    //     //Hash the signature before using it
+    //     game.latest_hash = blake2b256(&initHash);
+    // }
 
     #[test_only]
-    public fun get_house_admin_cap_for_testing(ctx: &mut TxContext): HouseAdminCap {
+    public fun get_and_transfer_house_admin_cap_for_testing(ctx: &mut TxContext) {
         let house_cap = HouseAdminCap {
             id: object::new(ctx)
         };
-
-        house_cap
+        transfer::transfer(house_cap, tx_context::sender(ctx));
     }
 
     #[test_only]

@@ -19,7 +19,7 @@ export const createCounterObjectByPlayer = async (): Promise<string|void> => {
     const tx = new TransactionBlock();
 
     tx.moveCall({
-        target: `${PACKAGE_ADDRESS}::counter_nft::mint`,
+        target: `${PACKAGE_ADDRESS}::counter_nft::mint_and_transfer`,
         arguments: [],
     });
 
