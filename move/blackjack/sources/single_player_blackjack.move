@@ -18,7 +18,7 @@ module blackjack::single_player_blackjack {
 
 
     // Consts
-    const EPOCHS_CANCEL_AFTER: u64 = 7;
+    // const EPOCHS_CANCEL_AFTER: u64 = 7;
     const STAKE: u64 = 200000000;
 
     // Game statuses
@@ -30,13 +30,13 @@ module blackjack::single_player_blackjack {
 
     // Errors
     const EInvalidBlsSig: u64 = 10;
-    const ECallerNotHouse: u64 = 12;
-    const ECanNotCancel: u64 = 13;
-    const EInvalidGuess: u64 = 14;
+    // const ECallerNotHouse: u64 = 12;
+    // const ECanNotCancel: u64 = 13;
+    // const EInvalidGuess: u64 = 14;
     const EInsufficientBalance: u64 = 15;
-    const EGameHasAlreadyBeenCanceled: u64 = 16;
+    // const EGameHasAlreadyBeenCanceled: u64 = 16;
     const EInsufficientHouseBalance: u64 = 17;
-    const ECoinBalanceNotEnough: u64 = 18;
+    // const ECoinBalanceNotEnough: u64 = 18;
     const EGameHasFinished: u64 = 19;
     const EUnauthorizedPlayer: u64 = 20;
     const EDealAlreadyHappened: u64 = 21;
