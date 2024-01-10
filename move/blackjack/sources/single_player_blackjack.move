@@ -560,6 +560,33 @@ module blackjack::single_player_blackjack {
         house_data.public_key
     }
 
+    public fun player(game: &Game): address {
+        game.player
+    }
+
+    public fun player_cards(game: &Game): vector<u8> {
+        game.player_cards
+    }
+
+    public fun player_sum(game: &Game): u8 {
+        game.player_sum
+    }
+
+    public fun dealer_cards(game: &Game): vector<u8> {
+        game.dealer_cards
+    }
+
+    public fun dealer_sum(game: &Game): u8 {
+        game.dealer_sum
+    }
+
+    public fun status(game: &Game): u8 {
+        game.status
+    }
+
+    public fun total_stake(game: &Game): u64 {
+        balance::value(&game.total_stake)
+    }
 
     //For Testing
 
