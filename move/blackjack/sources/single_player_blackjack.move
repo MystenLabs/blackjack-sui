@@ -186,7 +186,7 @@ module blackjack::single_player_blackjack {
         ctx: &mut TxContext
     ) {
         let messageVector = game.user_randomness;
-        vector::append(&mut messageVector, game_counter(game));
+        vector::append(&mut messageVector, game_counter_vector(game));
 
         // Step 1: Check the bls signature, if its invalid, house loses
         let _is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
@@ -236,7 +236,7 @@ module blackjack::single_player_blackjack {
     ) {
 
         let messageVector = game.user_randomness;
-        vector::append(&mut messageVector, game_counter(game));
+        vector::append(&mut messageVector, game_counter_vector(game));
 
         // Step 1: Check the bls signature, if its invalid, house loses
         let _is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
@@ -280,7 +280,7 @@ module blackjack::single_player_blackjack {
         ctx: &mut TxContext
     ) {
         let messageVector = game.user_randomness;
-        vector::append(&mut messageVector, game_counter(game));
+        vector::append(&mut messageVector, game_counter_vector(game));
 
         // Step 1: Check the bls signature, if its invalid, house loses
         let _is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
@@ -531,16 +531,15 @@ module blackjack::single_player_blackjack {
         sum
     }
 
+    // --------------- Accessors ---------------
 
-    /// Returns the game counter
+    /// Returns a vector containing the game counter
     /// @param game: A Game object
-    public fun game_counter(game: &Game): vector<u8> {
+    public fun game_counter_vector(game: &Game): vector<u8> {
         let simple_vec = vector[];
         vector::push_back(&mut simple_vec, game.counter);
         simple_vec
     }
-
-    // --------------- Accessors ---------------
 
     /// Returns the player's randomn bytes input
     /// @param game: A Game object
