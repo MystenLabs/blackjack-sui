@@ -17,11 +17,11 @@ const playerSigner = new RawSigner(playerKeypair, provider);
 
 console.log("Connecting to SUI network: ", SUI_NETWORK);
 console.log("Player Address =  ", playerKeypair.getPublicKey().toSuiAddress());
-
+console.log("---------------------------");
 const betAmount = 200000000;
 
 
-const getCounterNftObjectIfExists = (userId: string) : Promise<string|void> => {
+const getCounterNftObjectIfExists = async (userId: string) : Promise<string|void> => {
     return provider.getOwnedObjects({
         owner: userId,
         filter: {
@@ -46,16 +46,26 @@ const createGameByPlayer = async () => {
 
     //Trying to find the counterNftId for this user
     let counterNftId = await getCounterNftObjectIfExists(playerKeypair.getPublicKey().toSuiAddress());
-
+    console.log("Counter object found: ", counterNftId);
+    
     //If not found, create a new one
     if(!counterNftId){
+        console.log("Counter object not found, creating a new one...")
         counterNftId = await createCounterObjectByPlayer();
     }
 
     //If Creation didn't work, use the default counterNftId for the default user.
     if(!counterNftId){
+        console.log("Creation didn't work, using the default counterNftId for the default user...");
         counterNftId = process.env.COUNTER_NFT_ID;
     }
+
+    console.log({
+        counterNftId,
+        betAmountCoin,
+        randomBytesAsHexString,
+        HOUSE_DATA_ID
+    });
 
     tx.moveCall({
         target: `${PACKAGE_ADDRESS}::single_player_blackjack::place_bet_and_create_game`,
@@ -69,7 +79,7 @@ const createGameByPlayer = async () => {
 
     tx.setGasBudget(1000000000);
 
-    playerSigner
+    await playerSigner
         .signAndExecuteTransactionBlock({
             transactionBlock: tx,
             requestType: "WaitForLocalExecution",

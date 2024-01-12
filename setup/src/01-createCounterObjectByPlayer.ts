@@ -14,6 +14,7 @@ const playerSigner = new RawSigner(playerKeypair, provider);
 console.log("Connecting to SUI network: ", SUI_NETWORK);
 console.log("Player Address =  ", playerKeypair.getPublicKey().toSuiAddress());
 
+//TODO: add a validation that the specific player does not already own a counter object
 export const createCounterObjectByPlayer = async (): Promise<string|void> => {
 
     const tx = new TransactionBlock();
