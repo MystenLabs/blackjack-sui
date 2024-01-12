@@ -95,13 +95,13 @@ const listenForHitRequests = async () => {
 
     provider.subscribeEvent({
         filter: {
-            MoveEventType: `${PACKAGE_ADDRESS}::single_player_blackjack::HitRequested`
+            MoveEventType: `${PACKAGE_ADDRESS}::single_player_blackjack::HitRequestedEvent`
         },
         onMessage(event: SuiEvent) {
             doHit(event);
         }
     }).then((subscriptionId) => {
-        console.log("HitRequested Subscriber subscribed. SubId = ", subscriptionId);
+        console.log("HitRequestedEvent Subscriber subscribed. SubId = ", subscriptionId);
     });
 
 }

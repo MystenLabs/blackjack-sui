@@ -99,13 +99,13 @@ const listenForStandRequests = async () => {
 
     provider.subscribeEvent({
         filter: {
-            MoveEventType: `${PACKAGE_ADDRESS}::single_player_blackjack::StandRequested`
+            MoveEventType: `${PACKAGE_ADDRESS}::single_player_blackjack::StandRequestedEvent`
         },
         onMessage(event: SuiEvent) {
             doStand(event);
         }
     }).then((subscriptionId) => {
-        console.log("StandRequested  Subscriber subscribed. SubId = ", subscriptionId);
+        console.log("StandRequestedEvent Subscriber subscribed. SubId = ", subscriptionId);
     });
 
 }

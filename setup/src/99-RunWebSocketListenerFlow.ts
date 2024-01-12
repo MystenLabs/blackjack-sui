@@ -165,7 +165,7 @@ async function doHit(gameId: string) {
                     const events = res.events;
 
                     const hitDoneEvent=
-                        events?.filter((event =>event.type.endsWith("HitDone")))[0];
+                        events?.filter((event =>event.type.endsWith("HitDoneEvent")))[0];
 
                     const gameMessage : GameMessage =  {
                         gameId: hitDoneEvent?.parsedJson?.game_id,
