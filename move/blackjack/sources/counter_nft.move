@@ -5,17 +5,20 @@
 /// Creates a counter object that can be incremented and burned.
 /// The counter NFT is non transferable, i.e. it can only be ever owned by one account.
 module blackjack::counter_nft {
+    // Imports
     use std::vector;
     use sui::object::{Self, UID};
     use sui::tx_context::{Self, TxContext};
     use sui::transfer::{Self};
     use sui::bcs::{Self};
 
+    // Structs
     struct Counter has key {
         id: UID,
         count: u64,
     }
 
+    // Functions
     /// Creates a new counter object & transfers it to the sender.
     public entry fun mint_and_transfer(ctx: &mut TxContext) {
         let counter = Counter {
