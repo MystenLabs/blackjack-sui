@@ -543,7 +543,7 @@ module blackjack::single_player_blackjack {
 
     /// Returns the player's randomn bytes input
     /// @param game: A Game object
-    public fun player_randomness(game: &Game): vector<u8> {
+    public fun user_randomness(game: &Game): vector<u8> {
         game.user_randomness
     }
 
@@ -600,6 +600,41 @@ module blackjack::single_player_blackjack {
             id: object::new(ctx)
         };
         transfer::transfer(house_cap, tx_context::sender(ctx));
+    }
+
+    #[test_only]
+    public fun draw_player_card_for_testing(
+        game: &mut Game,
+        card: u8,
+    ) {
+        vector::push_back(&mut game.player_cards, card);
+        game.player_sum = get_card_sum(&game.player_cards);
+    }
+
+    #[test_only]
+    public fun player_won_post_handling_for_test(
+        game: &mut Game,
+        ctx: &mut TxContext
+    ) {
+        player_won_post_handling(game, b"Player won!", ctx);
+    }
+
+    #[test_only]
+    public fun house_won_post_handling_for_test(
+        game: &mut Game,
+        house_data: &mut HouseData,
+        ctx: &mut TxContext
+    ) {
+        house_won_post_handling(game, house_data, ctx);
+    }
+
+    #[test_only]
+    public fun tie_post_handling_for_test(
+        game: &mut Game,
+        house_data: &mut HouseData,
+        ctx: &mut TxContext
+    ) {
+        tie_post_handling(game, house_data, ctx);
     }
 
     #[test_only]
