@@ -155,7 +155,7 @@ module blackjack::single_player_blackjack {
 
         let new_game = Game {
             id: object::new(ctx),
-            user_randomness : initial_randomness,
+            user_randomness: initial_randomness,
             total_stake: stake,
             player: tx_context::sender(ctx),
             player_cards: vector[],
@@ -189,9 +189,8 @@ module blackjack::single_player_blackjack {
         vector::append(&mut messageVector, game_counter_vector(game));
 
         // Step 1: Check the bls signature, if its invalid, house loses
-        let _is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
-        //! Temp commented out to get unblocked for unit tests
-        // assert!(is_sig_valid, EInvalidBlsSig);
+        let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
+        assert!(is_sig_valid, EInvalidBlsSig);
 
         //Check that deal hasn't already happened.
         assert!(game.player_sum == 0, EDealAlreadyHappened);
@@ -239,9 +238,8 @@ module blackjack::single_player_blackjack {
         vector::append(&mut messageVector, game_counter_vector(game));
 
         // Step 1: Check the bls signature, if its invalid, house loses
-        let _is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
-        //! Temp commented out to get unblocked for unit tests
-        // assert!(is_sig_valid, EInvalidBlsSig);
+        let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
+        assert!(is_sig_valid, EInvalidBlsSig);
 
         assert!(game.status == IN_PROGRESS, EGameHasFinished);
 
@@ -283,9 +281,8 @@ module blackjack::single_player_blackjack {
         vector::append(&mut messageVector, game_counter_vector(game));
 
         // Step 1: Check the bls signature, if its invalid, house loses
-        let _is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
-        //! Temp commented out to get unblocked for unit tests
-        // assert!(is_sig_valid, EInvalidBlsSig);
+        let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
+        assert!(is_sig_valid, EInvalidBlsSig);
 
         assert!(game.status == IN_PROGRESS, EGameHasFinished);
 
@@ -600,6 +597,15 @@ module blackjack::single_player_blackjack {
             id: object::new(ctx)
         };
         transfer::transfer(house_cap, tx_context::sender(ctx));
+    }
+
+    #[test_only]
+    public fun set_game_randomness_for_testing(
+        new_randomness: vector<u8>,
+        game: &mut Game,
+        _ctx: &mut TxContext
+    ) {
+        game.user_randomness = new_randomness;
     }
 
     #[test_only]

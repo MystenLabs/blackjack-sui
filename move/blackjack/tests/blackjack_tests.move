@@ -11,43 +11,16 @@ module blackjack::single_player_blackjack_tests {
     use sui::coin;
     use sui::sui::SUI;
     use sui::test_scenario::{Self, Scenario, TransactionEffects};
+    use sui::bls12381::bls12381_min_pk_verify;
     use blackjack::single_player_blackjack::{Self as bj, HouseAdminCap, HouseData, Game};
     use blackjack::counter_nft::{Self, Counter};
 
     const ADMIN: address = @0x65391674eb4210940ea98ae451237d9335920297e7c8abaeb7e05b221ee36917;
-    const PLAYER: address = @0x403eb2b0512ee18c24d96878f8beabf54734798c22f06e8c8569eecd31a17909;
+    const PLAYER: address = @0xfff196b9e146b115301408f624903fc488f42d357a7fa6fc70f5751e3d0570fc;
     const INITIAL_HOUSE_BALANCE: u64 = 5000000000;
     const PLAYER_BET: u64 = 300000000;
     const HOUSE_BET: u64 =  200000000;
-    // The house BLS signature, generated with a TS script
-    // For admin address 0x65391674eb4210940ea98ae451237d9335920297e7c8abaeb7e05b221ee36917
-    // and counter 0
-    // and randomness [1, 2, 3, 4, 5, 6]
     
-    const FIRST_DEAL_HOUSE_BLS_SIG: vector<u8> = vector<u8> [
-        165,182,96,175,46,248,108,245,240,176,
-        255,231,13,224,212,204,246,105,127,139,
-        171,176,130,230,84,133,204,95,124,226,
-        128,81,195,153,188,233,187,101,240,152,
-        83,150,244,112,97,223,93,27,21,113,195,
-        86,124,219,254,20,42,151,107,82,222,38,
-        12,138,60,163,158,251,189,97,158,224,107,
-        140,164,104,205,11,184,202,154,38,81,203,
-        127,152,118,191,2,208,31,29,84,89,79,16
-    ];
-
-    const HOUSE_BLS_SIG: vector<u8> = vector<u8> [
-        133,76,229,199,93,8,247,209,25,83,252,
-        113,123,4,71,233,21,6,83,125,33,136,235,
-        121,208,184,207,191,198,63,119,227,117,70,
-        86,229,241,253,85,63,189,199,108,168,30,9,
-        198,199,23,44,179,227,122,251,169,160,136,
-        22,102,216,24,178,225,117,18,132,211,150,
-        20,197,78,112,150,225,29,158,93,98,115,91,
-        103,164,24,241,100,187,14,209,227,246,121,
-        110,184,115,69,226
-    ];
-
     const HOUSE_PUBLIC_KEY: vector<u8> = vector<u8> [
         185, 195,  27,  41,  48, 111, 208,  32,  77,
         189, 168,  94,  72, 179, 194, 183,  67, 237,
@@ -57,16 +30,50 @@ module blackjack::single_player_blackjack_tests {
         32, 114,  74
     ];
 
-    const USER_RANDOMNESS: vector<u8> = vector<u8> [
-        53, 100, 101, 52, 56, 53, 55, 57, 54, 54, 98, 100, 101,
-        99, 99, 99, 97, 101, 55, 51, 53, 57, 99, 100, 50, 102,
-        101, 56, 51, 101, 55, 98, 98, 57, 54, 48, 100, 52, 99,
-        49, 54, 50, 51, 49, 55, 50, 52, 49, 55, 52, 50, 99, 52,
-        50, 99, 48, 54, 99, 57, 99, 53, 50, 50, 53, 83, 184, 22,
-        30, 225, 28, 25, 224, 104, 236, 53, 110, 47, 81, 201, 153,
-        94, 254, 152, 6, 33, 40, 0, 250, 87, 217, 217, 211, 55, 140,
-        63, 115, 2, 0, 0, 0, 0, 0, 0, 0
+    const GAME_RANDOMNESS: vector<u8> = vector<u8> [
+        49, 54, 54, 100, 57, 55, 51, 51, 52, 48, 57, 55, 57, 99,
+        101, 101, 101, 54, 56, 97, 101, 55, 57, 97, 57, 48, 98,
+        98, 56, 100, 55, 52, 203, 238, 99, 168, 234, 77, 171, 131,
+        149, 30, 131, 196, 89, 118, 163, 234, 52, 79, 168, 132,
+        153, 253, 170, 108, 219, 244, 73, 224, 168, 245, 135, 100,
+        0, 0, 0, 0, 0, 0, 0, 0
     ];
+
+    const BLS_SIG_0: vector<u8> = vector<u8> [
+        169,  88, 140, 191, 205,  35, 255, 181, 115, 187, 198,  50,
+        217, 127,  22, 249, 255, 162, 240, 175, 121, 135,  45, 171,
+        185, 195, 190,  95, 206, 115, 147, 173, 237, 202, 155, 184,
+        49, 143, 135, 156,  51, 101,  52,  10, 202, 169,  54, 137,
+        0, 155,  35, 203,  50, 193, 171, 198, 219, 160, 237, 171,
+        251, 144,  91,  30,  20, 227, 235, 176, 241, 228, 193, 149,
+        134,  51, 233,  74, 151,  97,  71,  93, 216, 191,  12, 174,
+        212, 203, 120,  70,  86,  57, 230, 150,  21,  60,  24,  49
+    ];
+
+    const BLS_SIG_1: vector<u8> = vector<u8> [
+        175,  38, 188, 119, 128, 205, 237, 223, 127,  57,  99,  63,
+        10,  25, 156, 246,  20, 189, 174, 252,   0,  30, 175, 193,
+        149, 241, 198, 106, 239, 127,  60,  59, 217, 147,  18, 172,
+        154, 241, 201,  38,  20,  84,  93,  18, 251,  77,   5, 245,
+        12, 133,  20,  16,  72, 177,  54, 165, 219, 227,  14, 116,
+        56, 251, 179, 156, 215, 195, 134,  65, 209,  47, 210,  54,
+        161, 155, 248,  11, 230, 251, 156,  70, 102, 103,   8,  29,
+        122, 156,  40, 121, 198, 220, 116,  73, 114,  66,  74, 217
+    ];
+
+    #[test]
+    fun test_bls_signature_for_first_deal() {
+        let messageVector = GAME_RANDOMNESS;
+        vector::append(&mut messageVector, vector<u8> [0]);
+        let bls_sig = BLS_SIG_0;
+        let house_public_key = HOUSE_PUBLIC_KEY;
+        let is_sig_valid = bls12381_min_pk_verify(
+            &bls_sig,
+            &house_public_key,
+            &messageVector
+        );
+        assert!(is_sig_valid, 1);
+    }
 
     #[test]
     fun test_initialize_house_data() {
@@ -159,7 +166,7 @@ module blackjack::single_player_blackjack_tests {
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
-        do_first_deal_for_test(scenario, ADMIN, false);
+        do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
 
         test_scenario::next_tx(scenario, ADMIN);
         {
@@ -174,6 +181,19 @@ module blackjack::single_player_blackjack_tests {
         test_scenario::end(scenario_val);
     }
 
+     #[test]
+     #[expected_failure(abort_code = bj::EInvalidBlsSig)]
+    fun test_first_deal_with_invalid_bls_sig() {
+        let scenario_val = test_scenario::begin(PLAYER);
+        let scenario = &mut scenario_val;
+
+        initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
+        initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
+        do_first_deal_for_test(scenario, ADMIN, BLS_SIG_1, false);
+
+        test_scenario::end(scenario_val);
+    }
+
     #[test]
     #[expected_failure(abort_code = bj::EDealAlreadyHappened)]
     public fun test_first_deal_twice() {
@@ -182,8 +202,8 @@ module blackjack::single_player_blackjack_tests {
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
-        do_first_deal_for_test(scenario, ADMIN, false);
-        do_first_deal_for_test(scenario, ADMIN, false);
+        do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
+        do_first_deal_for_test(scenario, ADMIN, BLS_SIG_1, false);
 
         test_scenario::end(scenario_val);
     }
@@ -195,7 +215,7 @@ module blackjack::single_player_blackjack_tests {
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
-        do_first_deal_for_test(scenario, ADMIN, false);
+        do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
 
         let _player_sum_before: u8 = 0;
         let _player_cards_before: vector<u8> = vector<u8>[];
@@ -212,7 +232,7 @@ module blackjack::single_player_blackjack_tests {
             test_scenario::return_shared(game);
         };
 
-        hit_for_test(scenario, ADMIN);
+        hit_for_test(scenario, ADMIN, BLS_SIG_1);
 
         test_scenario::next_tx(scenario, ADMIN);
         {
@@ -239,7 +259,7 @@ module blackjack::single_player_blackjack_tests {
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
-        do_first_deal_for_test(scenario, ADMIN, false);
+        do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
 
         let _player_sum_before: u8 = 0;
         let _player_cards_before: vector<u8> = vector<u8>[];
@@ -256,7 +276,7 @@ module blackjack::single_player_blackjack_tests {
             test_scenario::return_shared(game);
         };
 
-        stand_for_test(scenario, ADMIN);
+        stand_for_test(scenario, ADMIN, BLS_SIG_1);
 
         test_scenario::next_tx(scenario, ADMIN);
         {
@@ -284,7 +304,7 @@ module blackjack::single_player_blackjack_tests {
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
-        do_first_deal_for_test(scenario, ADMIN, false);
+        do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
         player_won_post_handling_for_test(scenario, ADMIN);
         do_hit_for_test(scenario, PLAYER);
 
@@ -300,7 +320,7 @@ module blackjack::single_player_blackjack_tests {
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
-        do_first_deal_for_test(scenario, ADMIN, false);
+        do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
         do_hit_for_test(scenario, player2);
 
         test_scenario::end(scenario_val);
@@ -314,7 +334,7 @@ module blackjack::single_player_blackjack_tests {
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
-        do_first_deal_for_test(scenario, ADMIN, false);
+        do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
         player_won_post_handling_for_test(scenario, ADMIN);
         do_stand_for_test(scenario, PLAYER);
         test_scenario::end(scenario_val);
@@ -329,7 +349,7 @@ module blackjack::single_player_blackjack_tests {
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
-        do_first_deal_for_test(scenario, ADMIN, false);
+        do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
         do_stand_for_test(scenario, player2);
 
         test_scenario::end(scenario_val);
@@ -341,7 +361,7 @@ module blackjack::single_player_blackjack_tests {
         let scenario = &mut scenario_val;
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
-        do_first_deal_for_test(scenario, ADMIN, false);
+        do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
         player_won_post_handling_for_test(scenario, ADMIN);
 
         test_scenario::next_tx(scenario, PLAYER);
@@ -363,7 +383,7 @@ module blackjack::single_player_blackjack_tests {
         let scenario = &mut scenario_val;
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
-        do_first_deal_for_test(scenario, ADMIN, false);
+        do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
         house_won_post_handling_for_test(scenario, ADMIN);
 
         test_scenario::next_tx(scenario, PLAYER);
@@ -385,7 +405,7 @@ module blackjack::single_player_blackjack_tests {
         let scenario = &mut scenario_val;
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
-        do_first_deal_for_test(scenario, ADMIN, false);
+        do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
         tie_post_handling_for_test(scenario, ADMIN);
 
         test_scenario::next_tx(scenario, PLAYER);
@@ -402,7 +422,7 @@ module blackjack::single_player_blackjack_tests {
         test_scenario::end(scenario_val);
     }
 
-    // Test a whole flow where the user exceeds 21
+    // Test a whole flow where the user exceeds total sum of 21.
     #[test]
     fun test_player_exceeds_21() {
         let scenario_val = test_scenario::begin(PLAYER);
@@ -410,9 +430,9 @@ module blackjack::single_player_blackjack_tests {
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
-        do_first_deal_for_test(scenario, ADMIN, false);
+        do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
         draw_card_seven_for_player_for_test(scenario, PLAYER, false);
-        hit_for_test(scenario, ADMIN);
+        hit_for_test(scenario, ADMIN, BLS_SIG_1);
 
         test_scenario::next_tx(scenario, ADMIN);
         {
@@ -468,7 +488,10 @@ module blackjack::single_player_blackjack_tests {
             let coin = coin::mint_for_testing<SUI>(balance, test_scenario::ctx(scenario));
             let house_data = test_scenario::take_shared<HouseData>(scenario);
             bj::place_bet_and_create_game(
-                USER_RANDOMNESS,
+                // Just a placeholder for the user_randomness.
+                // Will be replaced with a hard-coded value in the testing flow
+                // By the `bj::set_game_randomness_for_testing` function.
+                vector<u8>[],
                 &mut counter,
                 coin,
                 &mut house_data,
@@ -477,11 +500,23 @@ module blackjack::single_player_blackjack_tests {
             test_scenario::return_to_sender(scenario, counter);
             test_scenario::return_shared(house_data);
         };
+
+        test_scenario::next_tx(scenario, player);
+        {
+            let game = test_scenario::take_shared<Game>(scenario);
+            bj::set_game_randomness_for_testing(
+                GAME_RANDOMNESS,
+                &mut game,
+                test_scenario::ctx(scenario),
+            );
+            test_scenario::return_shared(game);
+        };
     }
 
     fun do_first_deal_for_test(
         scenario: &mut Scenario,
         admin: address,
+        bls_sig: vector<u8>,
         log_points: bool,
     ) {
         test_scenario::next_tx(scenario, admin);
@@ -490,7 +525,7 @@ module blackjack::single_player_blackjack_tests {
             let house_data = test_scenario::take_shared<HouseData>(scenario);
             bj::first_deal(
                 &mut game,
-                FIRST_DEAL_HOUSE_BLS_SIG,
+                bls_sig,
                 &mut house_data,
                 test_scenario::ctx(scenario),
             );
@@ -548,6 +583,7 @@ module blackjack::single_player_blackjack_tests {
     fun hit_for_test(
         scenario: &mut Scenario,
         admin: address,
+        bls_sig: vector<u8>,
     ) {
         test_scenario::next_tx(scenario, admin);
         {
@@ -555,7 +591,7 @@ module blackjack::single_player_blackjack_tests {
             let house_data = test_scenario::take_shared<HouseData>(scenario);
             bj::hit(
                 &mut game,
-                HOUSE_BLS_SIG,
+                bls_sig,
                 &mut house_data,
                 test_scenario::ctx(scenario),
             );
@@ -567,6 +603,7 @@ module blackjack::single_player_blackjack_tests {
     fun stand_for_test(
         scenario: &mut Scenario,
         admin: address,
+        bls_sig: vector<u8>,
     ) {
         test_scenario::next_tx(scenario, admin);
         {
@@ -574,7 +611,7 @@ module blackjack::single_player_blackjack_tests {
             let house_data = test_scenario::take_shared<HouseData>(scenario);
             bj::stand(
                 &mut game,
-                HOUSE_BLS_SIG,
+                bls_sig,
                 &mut house_data,
                 test_scenario::ctx(scenario),
             );
