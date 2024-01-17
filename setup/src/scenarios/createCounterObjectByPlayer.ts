@@ -1,4 +1,4 @@
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient, SuiObjectChangeCreated } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { BJ_PLAYER_SECRET_KEY, PACKAGE_ADDRESS, SUI_NETWORK } from "../config";
 import { getKeypair } from "../helpers/getKeyPair";
@@ -35,9 +35,11 @@ export const createCounterObjectByPlayer = async (): Promise<string | void> => {
       if (status !== "success") {
         throw new Error("CounterNft not created");
       }
-      const createdCounterNft = resp.objectChanges?.find(
-        ({ type, objectType }: any) =>
-          type === "created" && objectType.endsWith("counter_nft::Counter")
+      const createdObjects = resp.objectChanges?.filter(
+        ({ type }) => type === "created"
+      ) as SuiObjectChangeCreated[];
+      const createdCounterNft = createdObjects.find(({ objectType }) =>
+        objectType.endsWith("counter_nft::Counter")
       );
       if (!createdCounterNft) {
         throw new Error("CounterNft not created");

@@ -1,4 +1,4 @@
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient, SuiObjectChangeCreated } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import fs from "fs";
 import { getKeypair } from "../helpers/getKeyPair";
@@ -48,10 +48,11 @@ export const initializeHouseData = async () => {
         throw new Error("HouseData not created");
       }
       if (status === "success") {
-        const createdHouseData = resp.objectChanges?.find(
-          ({ type, objectType }: any) =>
-            type === "created" &&
-            objectType.endsWith("single_player_blackjack::HouseData")
+        const createdObjects = resp.objectChanges?.filter(
+          ({ type }) => type === "created"
+        ) as SuiObjectChangeCreated[];
+        const createdHouseData = createdObjects.find(({ objectType }) =>
+          objectType.endsWith("single_player_blackjack::HouseData")
         );
         if (!createdHouseData) {
           throw new Error("HouseData not created");
