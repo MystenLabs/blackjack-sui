@@ -10,6 +10,7 @@ import {
   ADMIN_SECRET_KEY,
   HOUSE_DATA_ID,
 } from "./config";
+import { HitDoneEvent } from "./types/HitDoneEvent";
 
 const io = new Server(8080, {
   cors: {
@@ -37,7 +38,7 @@ const onHitSuccess = (event: SuiEvent) => {
     game_id: gameId,
     player_cards: playerCards,
     current_player_hand_sum: playerScore,
-  } = event?.parsedJson as any;
+  } = event?.parsedJson as HitDoneEvent;
   const gameMessage: GameMessage = {
     gameId,
     playerCards,

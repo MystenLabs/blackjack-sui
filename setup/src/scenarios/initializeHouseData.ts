@@ -57,7 +57,7 @@ export const initializeHouseData = async () => {
         if (!createdHouseData) {
           throw new Error("HouseData not created");
         }
-        const { objectId } = createdHouseData as any;
+        const { objectId } = createdHouseData;
         console.log({ houseDataId: objectId });
         const houseDataEnvString = `HOUSE_DATA_ID=${objectId}\n`;
         const appHouseDataEnvString = `NEXT_PUBLIC_HOUSE_DATA_ID=${objectId}\n`;
