@@ -8,8 +8,9 @@ import {
   deriveBLS_SecretKey,
 } from "../config";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { bytesToHex, hexToBytes } from "@noble/curves/abstract/utils";
+import { bytesToHex } from "@noble/curves/abstract/utils";
 import { bls12_381 } from "@noble/curves/bls12-381";
+import { GameOnChain } from "../types/GameOnChain";
 
 interface HouseHitOrStandProps {
   eventParsedJson: {
@@ -42,11 +43,10 @@ export const houseHitOrStand = async ({
     .then(async (res) => {
       const tx = new TransactionBlock();
       const gameObject = res?.data?.content as SuiMoveObject;
-      const { fields } = gameObject as any;
-      const counterHex = bytesToHex(Uint8Array.from([fields.counter]));
-      const randomnessHexString = bytesToHex(
-        Uint8Array.from(fields.user_randomness)
-      );
+      const { counter, user_randomness } =
+        gameObject.fields as unknown as GameOnChain;
+      const counterHex = bytesToHex(Uint8Array.from([counter]));
+      const randomnessHexString = bytesToHex(Uint8Array.from(user_randomness));
 
       const messageToSign = randomnessHexString.concat(counterHex);
 
@@ -55,9 +55,9 @@ export const houseHitOrStand = async ({
         deriveBLS_SecretKey(ADMIN_SECRET_KEY!)
       );
 
-    //   console.log("randomness = ", fields.user_randomness);
-    //   console.log("counter = ", counterHex);
-    //   console.log("Full MessageTo Sign Bytes = ", hexToBytes(messageToSign));
+      //   console.log("randomness = ", fields.user_randomness);
+      //   console.log("counter = ", counterHex);
+      //   console.log("Full MessageTo Sign Bytes = ", hexToBytes(messageToSign));
 
       tx.setGasBudget(10000000000);
 

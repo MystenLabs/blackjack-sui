@@ -7,14 +7,13 @@ const houseExecuteStand = async () => {
   const suiClient = new SuiClient({
     url: SUI_NETWORK,
   });
-  const game = await getGameObject({
+  const { player_sum } = await getGameObject({
     suiClient,
     gameId: GAME_ID,
   });
-  const { fields } = game as any;
   await houseHitOrStand({
     eventParsedJson: {
-      current_player_hand_sum: fields.player_sum,
+      current_player_hand_sum: player_sum,
       gameId: GAME_ID,
     },
     move: "stand",

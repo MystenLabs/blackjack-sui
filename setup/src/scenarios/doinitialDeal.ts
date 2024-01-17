@@ -14,6 +14,7 @@ import {
 import { generateCards } from "../helpers/cards/generateCards";
 import { getGameObject } from "../helpers/getGameObject";
 import { getPlayerHand } from "../helpers/cards/getPlayerHand";
+import { GameOnChain } from "../types/GameOnChain";
 
 interface DoInitialDealProps {
   gameId: string;
@@ -26,7 +27,7 @@ export const doInitialDeal = async ({
   houseDataId,
   onSuccess,
 }: DoInitialDealProps) => {
-  console.log("Doing initial deal as the house...")
+  console.log("Doing initial deal as the house...");
   const suiClient = new SuiClient({
     url: SUI_NETWORK,
   });
@@ -47,12 +48,11 @@ export const doInitialDeal = async ({
     })
     .then(async (res) => {
       const gameObject = res?.data?.content as SuiMoveObject;
-      const { fields } = gameObject as any;
+      const { counter, user_randomness } =
+        gameObject.fields as unknown as GameOnChain;
 
-      const counterHex = bytesToHex(Uint8Array.from([fields.counter]));
-      const randomnessHexString = bytesToHex(
-        Uint8Array.from(fields.user_randomness)
-      );
+      const counterHex = bytesToHex(Uint8Array.from([counter]));
+      const randomnessHexString = bytesToHex(Uint8Array.from(user_randomness));
 
       const messageToSign = randomnessHexString.concat(counterHex);
 
@@ -61,7 +61,7 @@ export const doInitialDeal = async ({
         deriveBLS_SecretKey(ADMIN_SECRET_KEY!)
       );
 
-      console.log("randomness = ", fields.user_randomness);
+      console.log("randomness = ", user_randomness);
       console.log("counter = ", counterHex);
       console.log(
         "Full MessageTo Sign Bytes = ",
@@ -95,12 +95,10 @@ export const doInitialDeal = async ({
           if (status !== "success") {
             throw new Error("Transaction failed");
           }
-          const updatedGameObject = await getGameObject({
+          const { player_cards: playerCards } = await getGameObject({
             suiClient,
             gameId,
           });
-          const playerCards = (updatedGameObject?.fields as any).player_cards;
-
           console.log(playerCards);
           const playerHand = getPlayerHand({ cardsMap: cards, playerCards });
           console.log("Player Hand = ", playerHand);

@@ -99,7 +99,7 @@ export const createGameByPlayer = async () => {
       if (!createdGame) {
         throw new Error("Game not created");
       }
-      const { objectId } = createdGame as any;
+      const { objectId } = createdGame;
       console.log({ gameId: objectId });
       fs.appendFileSync("./.env", `GAME_ID=${objectId}\n`);
     });

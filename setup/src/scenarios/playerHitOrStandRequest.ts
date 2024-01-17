@@ -2,6 +2,7 @@ import { SuiClient, SuiEvent, SuiMoveObject } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { getKeypair } from "../helpers/getKeyPair";
 import { PACKAGE_ADDRESS, SUI_NETWORK, BJ_PLAYER_SECRET_KEY } from "../config";
+import { GameOnChain } from "../types/GameOnChain";
 
 interface DoPlayerHitProps {
   gameId: string;
@@ -32,12 +33,12 @@ export const doPlayerHitOrStand = async ({
     })
     .then(async (res) => {
       const gameObject = res?.data?.content as SuiMoveObject;
-      const { fields } = gameObject as any;
+      const { player_sum } = gameObject.fields as unknown as GameOnChain;
 
       const tx = new TransactionBlock();
       tx.moveCall({
         target: `${PACKAGE_ADDRESS}::single_player_blackjack::do_${move}`,
-        arguments: [tx.object(gameId), tx.pure(fields.player_sum, "u8")],
+        arguments: [tx.object(gameId), tx.pure(player_sum, "u8")],
       });
 
       suiClient

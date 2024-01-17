@@ -44,7 +44,7 @@ export const createCounterObjectByPlayer = async (): Promise<string | void> => {
       if (!createdCounterNft) {
         throw new Error("CounterNft not created");
       }
-      console.log({ counterNftId: (createdCounterNft as any).objectId });
+      console.log({ counterNftId: createdCounterNft.objectId });
     })
     .catch((err) => {
       console.log(err);

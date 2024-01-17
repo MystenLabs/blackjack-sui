@@ -15,6 +15,7 @@
     "player-stand-request": "env-cmd -f .env ts-node src/06-PlayerStandRequest",
     "house-hit": "env-cmd -f .env ts-node src/05-HouseRespondToHitRequest",
     "house-stand": "env-cmd -f .env ts-node src/07-HouseRespondToStandRequest",
+    "get-game": "env-cmd -f .env ts-node src/08-GetGameObject",
     "start-socket": "env-cmd -f .env ts-node src/99-RunWebsocketListenerFlow"
   },
   "author": "",
