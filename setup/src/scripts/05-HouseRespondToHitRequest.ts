@@ -1,9 +1,9 @@
 import { SuiClient } from "@mysten/sui.js/client";
-import { GAME_ID, SUI_NETWORK } from "./config";
-import { getGameObject } from "./helpers/getObject/getGameObject";
-import { houseHitOrStand } from "./helpers/scenarios/houseHitOrStand";
+import { GAME_ID, SUI_NETWORK } from "../config";
+import { getGameObject } from "../helpers/getObject/getGameObject";
+import { houseHitOrStand } from "../helpers/actions/houseHitOrStand";
 
-const houseExecuteStand = async () => {
+const houseExecuteHit = async () => {
   const suiClient = new SuiClient({
     url: SUI_NETWORK,
   });
@@ -16,9 +16,9 @@ const houseExecuteStand = async () => {
       current_player_hand_sum: player_sum,
       gameId: GAME_ID,
     },
-    move: "stand",
+    move: "hit",
     suiClient,
   });
 };
 
-houseExecuteStand();
+houseExecuteHit();

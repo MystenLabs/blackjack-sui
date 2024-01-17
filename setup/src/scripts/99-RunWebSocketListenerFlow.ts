@@ -1,16 +1,16 @@
 import { SuiClient, SuiEvent } from "@mysten/sui.js/client";
 import { Server } from "socket.io";
-import { houseHitOrStand } from "./helpers/scenarios/houseHitOrStand";
-import { doInitialDeal } from "./helpers/scenarios/doinitialDeal";
-import { getKeypair } from "./helpers/keypair/getKeyPair";
-import { GameMessage } from "./types/GameMessage";
+import { houseHitOrStand } from "../helpers/actions/houseHitOrStand";
+import { doInitialDeal } from "../helpers/actions/doinitialDeal";
+import { getKeypair } from "../helpers/keypair/getKeyPair";
+import { GameMessage } from "../types/GameMessage";
 import {
   PACKAGE_ADDRESS,
   SUI_NETWORK,
   ADMIN_SECRET_KEY,
   HOUSE_DATA_ID,
-} from "./config";
-import { HitDoneEvent } from "./types/HitDoneEvent";
+} from "../config";
+import { HitDoneEvent } from "../types/HitDoneEvent";
 
 const io = new Server(8080, {
   cors: {

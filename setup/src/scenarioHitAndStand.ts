@@ -1,12 +1,12 @@
 import { SuiClient } from "@mysten/sui.js/client";
 import { HOUSE_DATA_ID, SUI_NETWORK } from "./config";
 import { getIsHouseAdminCapBurnt } from "./helpers/getObject/getIsHouseAdminCapBurnt";
-import { initializeHouseData } from "./helpers/scenarios/initializeHouseData";
-import { createGameByPlayer } from "./helpers/scenarios/createGameByPlayer";
+import { initializeHouseData } from "./helpers/actions/initializeHouseData";
+import { createGameByPlayer } from "./helpers/actions/createGameByPlayer";
 import { getGameObject } from "./helpers/getObject/getGameObject";
-import { doInitialDeal } from "./helpers/scenarios/doinitialDeal";
-import { doPlayerHitOrStand } from "./helpers/scenarios/playerHitOrStandRequest";
-import { houseHitOrStand } from "./helpers/scenarios/houseHitOrStand";
+import { doInitialDeal } from "./helpers/actions/doinitialDeal";
+import { doPlayerHitOrStand } from "./helpers/actions/playerHitOrStandRequest";
+import { houseHitOrStand } from "./helpers/actions/houseHitOrStand";
 import { GameOnChain } from "./types/GameOnChain";
 import { delay } from "./helpers/general/delay";
 

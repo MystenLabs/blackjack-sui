@@ -1,7 +1,7 @@
 import { SuiClient } from "@mysten/sui.js/client";
-import { initializeHouseData } from "./helpers/scenarios/initializeHouseData";
+import { initializeHouseData } from "../helpers/actions/initializeHouseData";
 import fs from "fs";
-import { SUI_NETWORK } from "./config";
+import { SUI_NETWORK } from "../config";
 
 const initializeHouse = async () => {
   const houseDataId = await initializeHouseData({

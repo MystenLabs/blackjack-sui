@@ -1,6 +1,6 @@
 import { SuiClient } from "@mysten/sui.js/client";
-import { getGameObject } from "./helpers/getObject/getGameObject";
-import { GAME_ID, SUI_NETWORK } from "./config";
+import { getGameObject } from "../helpers/getObject/getGameObject";
+import { GAME_ID, SUI_NETWORK } from "../config";
 
 const getGame = async () => {
   const suiClient = new SuiClient({
