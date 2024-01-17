@@ -95,6 +95,7 @@ io.on("connection", (socket) => {
       move: "hit",
       suiClient,
       onHitSuccess,
+      houseDataId: HOUSE_DATA_ID,
     });
   });
 
@@ -109,6 +110,7 @@ io.on("connection", (socket) => {
       move: "stand",
       suiClient,
       onStandSuccess,
+      houseDataId: HOUSE_DATA_ID,
     });
   });
 });

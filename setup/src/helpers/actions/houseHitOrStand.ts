@@ -5,12 +5,8 @@ import { bytesToHex } from "@noble/curves/abstract/utils";
 import { bls12_381 } from "@noble/curves/bls12-381";
 import { getGameObject } from "../getObject/getGameObject";
 import { getKeypair } from "../keypair/getKeyPair";
-import {
-  ADMIN_SECRET_KEY,
-  HOUSE_DATA_ID,
-  PACKAGE_ADDRESS,
-  deriveBLS_SecretKey,
-} from "../../config";
+import { ADMIN_SECRET_KEY, PACKAGE_ADDRESS } from "../../config";
+import { getBLSSecreyKey } from "../bls/getBLSSecretKey";
 
 interface HouseHitOrStandProps {
   eventParsedJson: {
@@ -19,6 +15,7 @@ interface HouseHitOrStandProps {
   };
   move: "hit" | "stand";
   suiClient: SuiClient;
+  houseDataId: string;
   onHitSuccess?: (event: SuiEvent) => void;
   onStandSuccess?: (gameId: string) => void;
 }
@@ -27,6 +24,7 @@ export const houseHitOrStand = async ({
   eventParsedJson,
   move,
   suiClient,
+  houseDataId,
   onHitSuccess,
   onStandSuccess,
 }: HouseHitOrStandProps) => {
@@ -48,7 +46,7 @@ export const houseHitOrStand = async ({
       const messageToSign = randomnessHexString.concat(counterHex);
       let signedHouseHash = bls12_381.sign(
         messageToSign,
-        deriveBLS_SecretKey(ADMIN_SECRET_KEY!)
+        getBLSSecreyKey(ADMIN_SECRET_KEY!)
       );
 
       tx.setGasBudget(10000000000);
@@ -57,7 +55,7 @@ export const houseHitOrStand = async ({
         arguments: [
           tx.object(gameId),
           tx.pure(Array.from(signedHouseHash), "vector<u8>"),
-          tx.object(HOUSE_DATA_ID),
+          tx.object(houseDataId),
         ],
       });
 

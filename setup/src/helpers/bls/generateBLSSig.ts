@@ -1,6 +1,7 @@
-import { deriveBLS_SecretKey, ADMIN_SECRET_KEY } from "../../config";
+import { ADMIN_SECRET_KEY } from "../../config";
 import { bls12_381 } from "@noble/curves/bls12-381";
 import { bytesToHex } from "@noble/curves/abstract/utils";
+import { getBLSSecreyKey } from "./getBLSSecretKey";
 
 interface GenerateBLSSigProps {
   counter: number;
@@ -15,7 +16,7 @@ export const generateBLSSig = ({
   const randomnessHexString = bytesToHex(userRandomness);
   const messageToSign = randomnessHexString.concat(counterHex);
 
-  const secretKey = deriveBLS_SecretKey(ADMIN_SECRET_KEY!);
+  const secretKey = getBLSSecreyKey(ADMIN_SECRET_KEY!);
   const signedHouseHash = bls12_381.sign(messageToSign, secretKey);
 
   const adminPublicKey = bls12_381.getPublicKey(secretKey);

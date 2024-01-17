@@ -3,17 +3,19 @@ import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { getKeypair } from "../keypair/getKeyPair";
 import { getUserRandomnessAsHexString } from "../bls/getUserRandomBytesAsHex";
 import { createCounterObjectByPlayer } from "./createCounterObjectByPlayer";
-import { HOUSE_DATA_ID, PACKAGE_ADDRESS } from "../../config";
+import { PACKAGE_ADDRESS } from "../../config";
 import { getCounterNftId } from "../getObject/getCounterNftId";
 
 interface CreateGameByPlayerProps {
   suiClient: SuiClient;
   playerSecretKey: string;
+  houseDataId: string;
 }
 
 export const createGameByPlayer = async ({
   suiClient,
   playerSecretKey,
+  houseDataId,
 }: CreateGameByPlayerProps): Promise<string | undefined> => {
   const playerKeypair = getKeypair(playerSecretKey);
   const playerAddress = playerKeypair.getPublicKey().toSuiAddress();
@@ -45,7 +47,7 @@ export const createGameByPlayer = async ({
       tx.pure(randomBytesAsHexString),
       tx.object(counterNftId!),
       betAmountCoin,
-      tx.object(HOUSE_DATA_ID),
+      tx.object(houseDataId),
     ],
   });
 

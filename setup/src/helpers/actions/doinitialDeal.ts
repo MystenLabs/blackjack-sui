@@ -9,10 +9,8 @@ import { getPlayerHand } from "../cards/getPlayerHand";
 import {
   PACKAGE_ADDRESS,
   ADMIN_SECRET_KEY,
-  HOUSE_DATA_ID,
-  deriveBLS_SecretKey,
 } from "../../config";
-
+import { getBLSSecreyKey } from "../bls/getBLSSecretKey";
 
 interface DoInitialDealProps {
   suiClient: SuiClient;
@@ -41,7 +39,7 @@ export const doInitialDeal = async ({
       const messageToSign = randomnessHexString.concat(counterHex);
       let signedHouseHash = bls12_381.sign(
         messageToSign,
-        deriveBLS_SecretKey(ADMIN_SECRET_KEY!)
+        getBLSSecreyKey(ADMIN_SECRET_KEY!)
       );
       tx.setGasBudget(10000000000);
       tx.moveCall({
@@ -49,7 +47,7 @@ export const doInitialDeal = async ({
         arguments: [
           tx.object(gameId),
           tx.pure(Array.from(signedHouseHash), "vector<u8>"),
-          tx.object(HOUSE_DATA_ID),
+          tx.object(houseDataId),
         ],
       });
 

@@ -49,6 +49,7 @@ export class Scenario {
       const gameId = await createGameByPlayer({
         suiClient: this.suiClient,
         playerSecretKey: this.playerSecretKey,
+        houseDataId: this.state.houseDataId!,
       });
       if (!gameId) {
         throw new Error("Game creation failed");
@@ -84,6 +85,7 @@ export class Scenario {
           current_player_hand_sum: this.state.game!.player_sum,
         },
         move: "hit",
+        houseDataId: this.state.houseDataId!,
       }),
     "house-stand": async () =>
       await houseHitOrStand({
@@ -93,6 +95,7 @@ export class Scenario {
           current_player_hand_sum: this.state.game!.player_sum,
         },
         move: "stand",
+        houseDataId: this.state.houseDataId!,
       }),
   };
 

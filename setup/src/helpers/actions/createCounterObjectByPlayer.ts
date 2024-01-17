@@ -13,7 +13,6 @@ export const createCounterObjectByPlayer = async ({
   suiClient,
 }: CreateCounterObjectByPlayerProps): Promise<string | undefined> => {
   const playerKeypair = getKeypair(playerSecretKey);
-  console.log({ playerAddress: playerKeypair.getPublicKey().toSuiAddress() });
 
   const tx = new TransactionBlock();
   tx.moveCall({

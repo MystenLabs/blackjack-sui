@@ -1,5 +1,5 @@
 import { SuiClient } from "@mysten/sui.js/client";
-import { GAME_ID, SUI_NETWORK } from "../config";
+import { GAME_ID, HOUSE_DATA_ID, SUI_NETWORK } from "../config";
 import { getGameObject } from "../helpers/getObject/getGameObject";
 import { houseHitOrStand } from "../helpers/actions/houseHitOrStand";
 
@@ -18,6 +18,7 @@ const houseExecuteHit = async () => {
     },
     move: "hit",
     suiClient,
+    houseDataId: HOUSE_DATA_ID,
   });
 };
 
