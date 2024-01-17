@@ -15,7 +15,8 @@
     "house-stand": "env-cmd -f .env ts-node src/scripts/07-HouseRespondToStandRequest",
     "get-game": "env-cmd -f .env ts-node src/scripts/08-GetGameObject",
     "start-socket": "env-cmd -f .env ts-node src/scripts/99-RunWebsocketListenerFlow",
-    "scenario-hit-and-stand": "env-cmd -f .env ts-node src/scenarioHitAndStand"
+    "scenario-hit-and-stand": "env-cmd -f .env ts-node src/scenarioHitAndStand",
+    "scenario-stand": "env-cmd -f .env ts-node src/scenarioStand"
   },
   "author": "",
   "license": "ISC",
