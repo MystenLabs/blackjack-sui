@@ -1,76 +1,63 @@
-import { SuiClient, SuiEvent, SuiMoveObject } from "@mysten/sui.js/client";
+import { SuiClient, SuiEvent } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { getKeypair } from "../helpers/getKeyPair";
-import { PACKAGE_ADDRESS, SUI_NETWORK, BJ_PLAYER_SECRET_KEY } from "../config";
-import { GameOnChain } from "../types/GameOnChain";
+import { PACKAGE_ADDRESS } from "../config";
+import { getGameObject } from "../helpers/getGameObject";
 
 interface DoPlayerHitProps {
+  playerSecretKey: string;
+  suiClient: SuiClient;
   gameId: string;
   move: "hit" | "stand";
   onSuccess?: (event: SuiEvent) => void;
 }
 
 export const doPlayerHitOrStand = async ({
+  playerSecretKey,
+  suiClient,
   gameId,
   move,
   onSuccess,
 }: DoPlayerHitProps) => {
-  const playerKeypair = getKeypair(BJ_PLAYER_SECRET_KEY!);
-  const suiClient = new SuiClient({
-    url: SUI_NETWORK,
-  });
+  const playerKeypair = getKeypair(playerSecretKey);
 
-  console.log("Connecting to SUI network: ", SUI_NETWORK);
-  console.log(
-    "Player Address =  ",
-    playerKeypair.getPublicKey().toSuiAddress()
-  );
+  await getGameObject({ suiClient, gameId }).then(async (resp) => {
+    const { player_sum } = resp;
 
-  await suiClient
-    .getObject({
-      id: gameId,
-      options: { showContent: true },
-    })
-    .then(async (res) => {
-      const gameObject = res?.data?.content as SuiMoveObject;
-      const { player_sum } = gameObject.fields as unknown as GameOnChain;
-
-      const tx = new TransactionBlock();
-      tx.moveCall({
-        target: `${PACKAGE_ADDRESS}::single_player_blackjack::do_${move}`,
-        arguments: [tx.object(gameId), tx.pure(player_sum, "u8")],
-      });
-
-      suiClient
-        .signAndExecuteTransactionBlock({
-          signer: playerKeypair,
-          transactionBlock: tx,
-          requestType: "WaitForLocalExecution",
-          options: {
-            showObjectChanges: true,
-            showEffects: true,
-            showEvents: true,
-          },
-        })
-        .then((resp) => {
-          const status = resp?.effects?.status.status;
-          console.log("executed! status = ", status);
-
-          if (status !== "success") {
-            throw new Error("Transaction failed");
-          }
-          const event = resp.events?.find(
-            ({ type }) =>
-              type ===
-              `${PACKAGE_ADDRESS}::single_player_blackjack::${
-                move === "hit" ? "Hit" : "Stand"
-              }RequestedEvent`
-          );
-          console.log({ event });
-          !!onSuccess && onSuccess(event!);
-        })
-        .catch((err) => {
-          console.log("Error = ", err);
-        });
+    const tx = new TransactionBlock();
+    tx.moveCall({
+      target: `${PACKAGE_ADDRESS}::single_player_blackjack::do_${move}`,
+      arguments: [tx.object(gameId), tx.pure(player_sum, "u8")],
     });
+
+    await suiClient
+      .signAndExecuteTransactionBlock({
+        signer: playerKeypair,
+        transactionBlock: tx,
+        requestType: "WaitForLocalExecution",
+        options: {
+          showObjectChanges: true,
+          showEffects: true,
+          showEvents: true,
+        },
+      })
+      .then((resp) => {
+        const status = resp?.effects?.status.status;
+        if (status !== "success") {
+          throw new Error("Transaction failed");
+        }
+        const event = resp.events?.find(
+          ({ type }) =>
+            type ===
+            `${PACKAGE_ADDRESS}::single_player_blackjack::${
+              move === "hit" ? "Hit" : "Stand"
+            }RequestedEvent`
+        );
+        console.log({ event });
+        !!onSuccess && onSuccess(event!);
+      })
+      .catch((err) => {
+        console.log({ err });
+      });
+  });
 };

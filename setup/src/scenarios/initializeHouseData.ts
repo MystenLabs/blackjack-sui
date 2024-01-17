@@ -1,24 +1,19 @@
 import { SuiClient, SuiObjectChangeCreated } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import fs from "fs";
 import { getKeypair } from "../helpers/getKeyPair";
 import { getBLSPublicKey } from "../helpers/bls/getBLSPublicKey";
-import {
-  PACKAGE_ADDRESS,
-  HOUSE_ADMIN_CAP,
-  SUI_NETWORK,
-  ADMIN_SECRET_KEY,
-} from "../config";
+import { PACKAGE_ADDRESS, HOUSE_ADMIN_CAP, ADMIN_SECRET_KEY } from "../config";
 
-const suiClient = new SuiClient({
-  url: SUI_NETWORK,
-});
-const initHouseBalance = 10000000000;
+interface InitializeHouseBalanceProps {
+  suiClient: SuiClient;
+}
 
-export const initializeHouseData = async () => {
+export const initializeHouseData = async ({
+  suiClient,
+}: InitializeHouseBalanceProps): Promise<string | undefined> => {
   const tx = new TransactionBlock();
 
-  const houseCoin = tx.splitCoins(tx.gas, [tx.pure(initHouseBalance)]);
+  const houseCoin = tx.splitCoins(tx.gas, [tx.pure(10000000000)]);
   let adminBLSPublicKey = getBLSPublicKey(ADMIN_SECRET_KEY!);
 
   tx.moveCall({
@@ -30,7 +25,7 @@ export const initializeHouseData = async () => {
     ],
   });
 
-  suiClient
+  return suiClient
     .signAndExecuteTransactionBlock({
       signer: getKeypair(ADMIN_SECRET_KEY!),
       transactionBlock: tx,
@@ -44,7 +39,6 @@ export const initializeHouseData = async () => {
       const status = resp?.effects?.status.status;
       console.log("executed! status = ", status);
       if (status !== "success") {
-        fs.writeFileSync("./tx_res.json", JSON.stringify(resp));
         throw new Error("HouseData not created");
       }
       if (status === "success") {
@@ -57,17 +51,13 @@ export const initializeHouseData = async () => {
         if (!createdHouseData) {
           throw new Error("HouseData not created");
         }
-        const { objectId } = createdHouseData;
-        console.log({ houseDataId: objectId });
-        const houseDataEnvString = `HOUSE_DATA_ID=${objectId}\n`;
-        const appHouseDataEnvString = `NEXT_PUBLIC_HOUSE_DATA_ID=${objectId}\n`;
-
-        fs.writeFileSync("./tx_res.json", JSON.stringify(resp));
-        fs.appendFileSync("./.env", houseDataEnvString);
-        fs.appendFileSync("../app/.env", appHouseDataEnvString);
+        const { objectId: houseDataId } = createdHouseData;
+        console.log({ houseDataId });
+        return houseDataId;
       }
     })
     .catch((err) => {
       console.error("Error = ", err);
+      return undefined;
     });
 };

@@ -17,6 +17,7 @@ const houseExecuteHit = async () => {
       gameId: GAME_ID,
     },
     move: "hit",
+    suiClient,
   });
 };
 

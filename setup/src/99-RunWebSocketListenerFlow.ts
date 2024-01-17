@@ -1,4 +1,4 @@
-import { SuiEvent } from "@mysten/sui.js/client";
+import { SuiClient, SuiEvent } from "@mysten/sui.js/client";
 import { Server } from "socket.io";
 import { houseHitOrStand } from "./scenarios/houseHitOrStand";
 import { doInitialDeal } from "./scenarios/doinitialDeal";
@@ -17,6 +17,10 @@ const io = new Server(8080, {
     origin: "http://localhost:3000",
     methods: ["GET", "POST"],
   },
+});
+
+const suiClient = new SuiClient({
+  url: SUI_NETWORK,
 });
 
 const keypairAdmin = getKeypair(ADMIN_SECRET_KEY!);
@@ -75,6 +79,7 @@ io.on("connection", (socket) => {
     doInitialDeal({
       gameId: game.gameId,
       houseDataId: HOUSE_DATA_ID,
+      suiClient,
       onSuccess: onInitialDealSuccess,
     });
   });
@@ -88,6 +93,7 @@ io.on("connection", (socket) => {
         current_player_hand_sum: parseInt(game.playerScore!),
       },
       move: "hit",
+      suiClient,
       onHitSuccess,
     });
   });
@@ -101,6 +107,7 @@ io.on("connection", (socket) => {
         current_player_hand_sum: parseInt(game.playerScore!),
       },
       move: "stand",
+      suiClient,
       onStandSuccess,
     });
   });

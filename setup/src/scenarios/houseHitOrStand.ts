@@ -1,16 +1,15 @@
-import { SuiClient, SuiEvent, SuiMoveObject } from "@mysten/sui.js/client";
+import { SuiClient, SuiEvent } from "@mysten/sui.js/client";
 import { getKeypair } from "../helpers/getKeyPair";
 import {
   ADMIN_SECRET_KEY,
   HOUSE_DATA_ID,
   PACKAGE_ADDRESS,
-  SUI_NETWORK,
   deriveBLS_SecretKey,
 } from "../config";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { bytesToHex } from "@noble/curves/abstract/utils";
 import { bls12_381 } from "@noble/curves/bls12-381";
-import { GameOnChain } from "../types/GameOnChain";
+import { getGameObject } from "../helpers/getGameObject";
 
 interface HouseHitOrStandProps {
   eventParsedJson: {
@@ -18,6 +17,7 @@ interface HouseHitOrStandProps {
     gameId: string;
   };
   move: "hit" | "stand";
+  suiClient: SuiClient;
   onHitSuccess?: (event: SuiEvent) => void;
   onStandSuccess?: (gameId: string) => void;
 }
@@ -25,42 +25,26 @@ interface HouseHitOrStandProps {
 export const houseHitOrStand = async ({
   eventParsedJson,
   move,
+  suiClient,
   onHitSuccess,
   onStandSuccess,
 }: HouseHitOrStandProps) => {
   const adminKeypair = getKeypair(ADMIN_SECRET_KEY!);
-  const suiClient = new SuiClient({
-    url: SUI_NETWORK,
-  });
-
   const { gameId } = eventParsedJson;
 
-  await suiClient
-    .getObject({
-      id: gameId,
-      options: { showContent: true },
-    })
-    .then(async (res) => {
+  await getGameObject({ suiClient, gameId })
+    .then(async (resp) => {
       const tx = new TransactionBlock();
-      const gameObject = res?.data?.content as SuiMoveObject;
-      const { counter, user_randomness } =
-        gameObject.fields as unknown as GameOnChain;
+      const { counter, user_randomness } = resp;
       const counterHex = bytesToHex(Uint8Array.from([counter]));
       const randomnessHexString = bytesToHex(Uint8Array.from(user_randomness));
-
       const messageToSign = randomnessHexString.concat(counterHex);
-
       let signedHouseHash = bls12_381.sign(
         messageToSign,
         deriveBLS_SecretKey(ADMIN_SECRET_KEY!)
       );
 
-      //   console.log("randomness = ", fields.user_randomness);
-      //   console.log("counter = ", counterHex);
-      //   console.log("Full MessageTo Sign Bytes = ", hexToBytes(messageToSign));
-
       tx.setGasBudget(10000000000);
-
       tx.moveCall({
         target: `${PACKAGE_ADDRESS}::single_player_blackjack::${move}`,
         arguments: [
@@ -83,10 +67,10 @@ export const houseHitOrStand = async ({
         })
         .then((resp) => {
           const status = resp?.effects?.status.status;
+          console.log({ status });
           if (status !== "success") {
             throw new Error("Transaction failed");
           }
-          console.log(`${move} executed`);
           if (move === "hit") {
             const event = resp.events?.find(
               ({ type }) =>
@@ -99,10 +83,10 @@ export const houseHitOrStand = async ({
           }
         })
         .catch((err) => {
-          console.log("Error = ", err);
+          console.log({ err });
         });
     })
     .catch((err) => {
-      console.log("Game not found!");
+      console.log({ err });
     });
 };

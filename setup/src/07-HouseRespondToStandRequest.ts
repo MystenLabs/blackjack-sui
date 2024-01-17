@@ -17,6 +17,7 @@ const houseExecuteStand = async () => {
       gameId: GAME_ID,
     },
     move: "stand",
+    suiClient,
   });
 };
 
