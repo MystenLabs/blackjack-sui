@@ -1,7 +1,7 @@
 import { SuiClient, SuiObjectChangeCreated } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { PACKAGE_ADDRESS } from "../config";
-import { getKeypair } from "../helpers/keypair/getKeyPair";
+import { PACKAGE_ADDRESS } from "../../config";
+import { getKeypair } from "../keypair/getKeyPair";
 
 interface CreateCounterObjectByPlayerProps {
   playerSecretKey: string;

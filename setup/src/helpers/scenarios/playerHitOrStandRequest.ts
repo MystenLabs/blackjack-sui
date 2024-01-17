@@ -1,8 +1,8 @@
 import { SuiClient, SuiEvent } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { getKeypair } from "../helpers/keypair/getKeyPair";
-import { PACKAGE_ADDRESS } from "../config";
-import { getGameObject } from "../helpers/getObject/getGameObject";
+import { getKeypair } from "../keypair/getKeyPair";
+import { PACKAGE_ADDRESS } from "../../config";
+import { getGameObject } from "../getObject/getGameObject";
 
 interface DoPlayerHitProps {
   playerSecretKey: string;

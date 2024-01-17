@@ -1,5 +1,5 @@
 import { SuiClient } from "@mysten/sui.js/client";
-import { createGameByPlayer } from "./scenarios/createGameByPlayer";
+import { createGameByPlayer } from "./helpers/scenarios/createGameByPlayer";
 import fs from "fs";
 import { BJ_PLAYER_SECRET_KEY, SUI_NETWORK } from "./config";
 

@@ -1,15 +1,15 @@
 import { SuiClient, SuiEvent } from "@mysten/sui.js/client";
-import { getKeypair } from "../helpers/keypair/getKeyPair";
+import { getKeypair } from "../keypair/getKeyPair";
 import {
   ADMIN_SECRET_KEY,
   HOUSE_DATA_ID,
   PACKAGE_ADDRESS,
   deriveBLS_SecretKey,
-} from "../config";
+} from "../../config";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { bytesToHex } from "@noble/curves/abstract/utils";
 import { bls12_381 } from "@noble/curves/bls12-381";
-import { getGameObject } from "../helpers/getObject/getGameObject";
+import { getGameObject } from "../getObject/getGameObject";
 
 interface HouseHitOrStandProps {
   eventParsedJson: {

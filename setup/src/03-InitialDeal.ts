@@ -1,5 +1,5 @@
 import { SuiClient } from "@mysten/sui.js/client";
-import { doInitialDeal } from "./scenarios/doinitialDeal";
+import { doInitialDeal } from "./helpers/scenarios/doinitialDeal";
 import { GAME_ID, HOUSE_DATA_ID, SUI_NETWORK } from "./config";
 
 if (!GAME_ID) {

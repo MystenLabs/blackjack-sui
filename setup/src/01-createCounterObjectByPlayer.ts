@@ -1,5 +1,5 @@
 import { SuiClient } from "@mysten/sui.js/client";
-import { createCounterObjectByPlayer } from "./scenarios/createCounterObjectByPlayer";
+import { createCounterObjectByPlayer } from "./helpers/scenarios/createCounterObjectByPlayer";
 import { BJ_PLAYER_SECRET_KEY, SUI_NETWORK } from "./config";
 
 const suiClient = new SuiClient({

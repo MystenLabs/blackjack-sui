@@ -1,17 +1,17 @@
 import { SuiClient } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { getKeypair } from "../helpers/keypair/getKeyPair";
+import { getKeypair } from "../keypair/getKeyPair";
 import { bytesToHex } from "@noble/hashes/utils";
 import { bls12_381 } from "@noble/curves/bls12-381";
-import { generateCards } from "../helpers/cards/generateCards";
-import { getGameObject } from "../helpers/getObject/getGameObject";
-import { getPlayerHand } from "../helpers/cards/getPlayerHand";
+import { generateCards } from "../cards/generateCards";
+import { getGameObject } from "../getObject/getGameObject";
+import { getPlayerHand } from "../cards/getPlayerHand";
 import {
   PACKAGE_ADDRESS,
   ADMIN_SECRET_KEY,
   HOUSE_DATA_ID,
   deriveBLS_SecretKey,
-} from "../config";
+} from "../../config";
 
 
 interface DoInitialDealProps {
