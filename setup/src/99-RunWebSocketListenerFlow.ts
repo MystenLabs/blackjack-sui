@@ -2,7 +2,7 @@ import { SuiClient, SuiEvent } from "@mysten/sui.js/client";
 import { Server } from "socket.io";
 import { houseHitOrStand } from "./scenarios/houseHitOrStand";
 import { doInitialDeal } from "./scenarios/doinitialDeal";
-import { getKeypair } from "./helpers/getKeyPair";
+import { getKeypair } from "./helpers/keypair/getKeyPair";
 import { GameMessage } from "./types/GameMessage";
 import {
   PACKAGE_ADDRESS,

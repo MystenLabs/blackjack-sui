@@ -1,10 +1,10 @@
 import { SuiClient, SuiObjectChangeCreated } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { getKeypair } from "../helpers/getKeyPair";
+import { getKeypair } from "../helpers/keypair/getKeyPair";
 import { getUserRandomnessAsHexString } from "../helpers/bls/getUserRandomBytesAsHex";
 import { createCounterObjectByPlayer } from "./createCounterObjectByPlayer";
 import { HOUSE_DATA_ID, PACKAGE_ADDRESS } from "../config";
-import { getCounterNftId } from "../helpers/getCounterNftId";
+import { getCounterNftId } from "../helpers/getObject/getCounterNftId";
 
 interface CreateGameByPlayerProps {
   suiClient: SuiClient;

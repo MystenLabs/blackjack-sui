@@ -1,10 +1,10 @@
 import { SuiClient } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { getKeypair } from "../helpers/getKeyPair";
+import { getKeypair } from "../helpers/keypair/getKeyPair";
 import { bytesToHex } from "@noble/hashes/utils";
 import { bls12_381 } from "@noble/curves/bls12-381";
 import { generateCards } from "../helpers/cards/generateCards";
-import { getGameObject } from "../helpers/getGameObject";
+import { getGameObject } from "../helpers/getObject/getGameObject";
 import { getPlayerHand } from "../helpers/cards/getPlayerHand";
 import {
   PACKAGE_ADDRESS,

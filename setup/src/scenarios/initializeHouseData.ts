@@ -1,6 +1,6 @@
 import { SuiClient, SuiObjectChangeCreated } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { getKeypair } from "../helpers/getKeyPair";
+import { getKeypair } from "../helpers/keypair/getKeyPair";
 import { getBLSPublicKey } from "../helpers/bls/getBLSPublicKey";
 import { PACKAGE_ADDRESS, HOUSE_ADMIN_CAP, ADMIN_SECRET_KEY } from "../config";
 

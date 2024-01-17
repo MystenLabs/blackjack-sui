@@ -1,6 +1,6 @@
 import { SuiClient } from "@mysten/sui.js/client";
 import { GAME_ID, SUI_NETWORK } from "./config";
-import { getGameObject } from "./helpers/getGameObject";
+import { getGameObject } from "./helpers/getObject/getGameObject";
 import { houseHitOrStand } from "./scenarios/houseHitOrStand";
 
 const houseExecuteHit = async () => {

@@ -1,5 +1,5 @@
 import { SuiClient } from "@mysten/sui.js/client";
-import { PACKAGE_ADDRESS } from "../config";
+import { PACKAGE_ADDRESS } from "../../config";
 
 interface GetCounterNftObjectProps {
   address: string;
