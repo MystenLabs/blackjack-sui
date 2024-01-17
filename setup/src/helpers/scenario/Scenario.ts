@@ -132,7 +132,7 @@ export class Scenario {
     return !!status;
   }
 
-  private async runStep(step: ScenarioStep): Promise<void> {
+  private async runStep(step: ScenarioStep): Promise<boolean> {
     await this.actions[step]();
     await delay(2000);
     console.log("--------------------------");
@@ -140,16 +140,17 @@ export class Scenario {
     await this.refreshState();
     await delay(2000);
     console.log("--------------------------");
-    
+
     const isFinal2 = this.isFinalState();
-    if (isFinal2) {
-      return;
-    }
+    return isFinal2;
   }
 
   public async run() {
     for (const step of this.steps) {
-      await this.runStep(step);
+      const isFinalState = await this.runStep(step);
+      if (isFinalState) {
+        break;
+      }
     }
   }
 }

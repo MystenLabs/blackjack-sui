@@ -5,3 +5,9 @@ export type UserScenarioStep =
   | "request-hit"
   | "house-stand"
   | "house-hit";
+
+export const isUserScenarioStep = (step: string): step is UserScenarioStep => {
+  return ["request-stand", "request-hit", "house-stand", "house-hit"].includes(
+    step
+  );
+};

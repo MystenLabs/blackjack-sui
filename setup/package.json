@@ -16,7 +16,8 @@
     "get-game": "env-cmd -f .env ts-node src/scripts/08-GetGameObject",
     "start-socket": "env-cmd -f .env ts-node src/scripts/99-RunWebsocketListenerFlow",
     "scenario-hit-stand": "env-cmd -f .env ts-node src/scenarioHitAndStand",
-    "scenario-stand": "env-cmd -f .env ts-node src/scenarioStand"
+    "scenario-stand": "env-cmd -f .env ts-node src/scenarioStand",
+    "scenario": "env-cmd -f .env ts-node src/customScenario --"
   },
   "author": "",
   "license": "ISC",
