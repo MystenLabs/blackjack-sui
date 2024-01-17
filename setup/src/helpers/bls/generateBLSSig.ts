@@ -1,4 +1,4 @@
-import { deriveBLS_SecretKey, ADMIN_SECRET_KEY } from "./config";
+import { deriveBLS_SecretKey, ADMIN_SECRET_KEY } from "../../config";
 import { bls12_381 } from "@noble/curves/bls12-381";
 import { bytesToHex } from "@noble/curves/abstract/utils";
 
