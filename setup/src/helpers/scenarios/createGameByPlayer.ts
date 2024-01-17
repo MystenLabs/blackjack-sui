@@ -14,14 +14,15 @@ interface CreateGameByPlayerProps {
 export const createGameByPlayer = async ({
   suiClient,
   playerSecretKey,
-}: CreateGameByPlayerProps) => {
-  console.log("Creating game...");
-  const tx = new TransactionBlock();
-
+}: CreateGameByPlayerProps): Promise<string | undefined> => {
   const playerKeypair = getKeypair(playerSecretKey);
+  const playerAddress = playerKeypair.getPublicKey().toSuiAddress();
+  console.log(`Creating game for player ${playerAddress} ...`);
+
+  const tx = new TransactionBlock();
   let counterNftId = await getCounterNftId({
     suiClient,
-    address: playerKeypair.getPublicKey().toSuiAddress(),
+    address: playerAddress,
   });
   console.log("Counter object found: ", counterNftId);
   if (!counterNftId) {
@@ -73,7 +74,11 @@ export const createGameByPlayer = async ({
         throw new Error("Game not created");
       }
       const { objectId } = createdGame;
-      console.log({ gameId: objectId });
+      console.log("Created game id:", objectId);
       return objectId;
+    })
+    .catch((err) => {
+      console.log(err);
+      return undefined;
     });
 };

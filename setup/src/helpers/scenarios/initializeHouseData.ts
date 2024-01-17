@@ -11,6 +11,7 @@ interface InitializeHouseBalanceProps {
 export const initializeHouseData = async ({
   suiClient,
 }: InitializeHouseBalanceProps): Promise<string | undefined> => {
+  console.log("Initializing HouseData...")
   const tx = new TransactionBlock();
 
   const houseCoin = tx.splitCoins(tx.gas, [tx.pure(10000000000)]);

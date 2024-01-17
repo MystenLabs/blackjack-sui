@@ -1,4 +1,9 @@
 import { SuiClient, SuiEvent } from "@mysten/sui.js/client";
+import { formatAddress } from "@mysten/sui.js/utils";
+import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { bytesToHex } from "@noble/curves/abstract/utils";
+import { bls12_381 } from "@noble/curves/bls12-381";
+import { getGameObject } from "../getObject/getGameObject";
 import { getKeypair } from "../keypair/getKeyPair";
 import {
   ADMIN_SECRET_KEY,
@@ -6,10 +11,6 @@ import {
   PACKAGE_ADDRESS,
   deriveBLS_SecretKey,
 } from "../../config";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { bytesToHex } from "@noble/curves/abstract/utils";
-import { bls12_381 } from "@noble/curves/bls12-381";
-import { getGameObject } from "../getObject/getGameObject";
 
 interface HouseHitOrStandProps {
   eventParsedJson: {
@@ -31,6 +32,12 @@ export const houseHitOrStand = async ({
 }: HouseHitOrStandProps) => {
   const adminKeypair = getKeypair(ADMIN_SECRET_KEY!);
   const { gameId } = eventParsedJson;
+
+  console.log(
+    `House is ${
+      move === "hit" ? "hitting" : "standing"
+    } for game ${formatAddress(gameId)}...`
+  );
 
   await getGameObject({ suiClient, gameId })
     .then(async (resp) => {

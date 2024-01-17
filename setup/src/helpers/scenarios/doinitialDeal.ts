@@ -28,7 +28,6 @@ export const doInitialDeal = async ({
   onSuccess,
 }: DoInitialDealProps) => {
   console.log("Doing initial deal as the house...");
-  console.log({ gameId, houseDataId });
 
   const adminKeypair = getKeypair(ADMIN_SECRET_KEY!);
   const cards = generateCards();

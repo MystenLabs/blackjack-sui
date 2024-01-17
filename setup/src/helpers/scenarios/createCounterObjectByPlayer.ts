@@ -8,7 +8,6 @@ interface CreateCounterObjectByPlayerProps {
   suiClient: SuiClient;
 }
 
-//TODO: add a validation that the specific player does not already own a counter object
 export const createCounterObjectByPlayer = async ({
   playerSecretKey,
   suiClient,

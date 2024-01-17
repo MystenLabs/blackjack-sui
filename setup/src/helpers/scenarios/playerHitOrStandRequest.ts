@@ -3,6 +3,7 @@ import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { getKeypair } from "../keypair/getKeyPair";
 import { PACKAGE_ADDRESS } from "../../config";
 import { getGameObject } from "../getObject/getGameObject";
+import { formatAddress } from "@mysten/sui.js/utils";
 
 interface DoPlayerHitProps {
   playerSecretKey: string;
@@ -20,6 +21,8 @@ export const doPlayerHitOrStand = async ({
   onSuccess,
 }: DoPlayerHitProps) => {
   const playerKeypair = getKeypair(playerSecretKey);
+  const playerAddress = playerKeypair.getPublicKey().toSuiAddress();
+  console.log(`Player ${formatAddress(playerAddress)} is requesting a ${move}...`);
 
   await getGameObject({ suiClient, gameId }).then(async (resp) => {
     const { player_sum } = resp;
