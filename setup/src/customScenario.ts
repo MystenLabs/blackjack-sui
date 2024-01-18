@@ -1,5 +1,6 @@
 import { Scenario } from "./helpers/scenario/Scenario";
 import { UserScenarioStep, isUserScenarioStep } from "./types/ScenarioStep";
+import { BJ_PLAYER_SECRET_KEY } from "./config";
 
 const customScenario = () => {
   const args = process.argv;
@@ -16,9 +17,12 @@ const customScenario = () => {
     throw new Error(`Invalid steps: ${invalidSteps.join(", ")}`);
   }
 
+  if (!BJ_PLAYER_SECRET_KEY) {
+    throw new Error("BJ_PLAYER_SECRET_KEY is not set");
+  }
   const scenario = new Scenario({
     steps: steps as UserScenarioStep[],
-    playerSecretKey: "AOhmUbeF+mDZeW5Vk+jU0dGDcAYuxQES0ftRH505yAQv",
+    playerSecretKey: BJ_PLAYER_SECRET_KEY,
   });
 
   scenario.run();
