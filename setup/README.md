@@ -30,15 +30,31 @@ DO NOT ADD THE ADMIN SECRET KEY IN ANY PLACE INSIDE THE CODE BASE!
 ## Quickstart
 
 - install the npm dependencies with: `npm i`
-- initialize your environmental variables based on the previous section of the README.md file
-- publish the contracts with: `./publish.sh testnet`
-- run a custom e2e game scenario with: `npm run scenario -- request-hit house-hit request-stand house-stand`
+- initialize your `environmental variables` based on the previous section of the README.md file
+
+- Two ways to run the intergration tests:
+- A whole scenario:
+  1. publish the contracts with: `./publish.sh testnet`
+  2. run a custom scenario with: `npm run scenario -- request-hit house-hit request-stand stand`
+- run the e2e scenario in multiple steps:
+  1. publish the contracts with: `./publish.sh testnet`
+  2. Run these scripts consecutively to prepare and run a custom game:
+    1. `npm run init-house`
+    2. `npm run create-counter`
+    3. `npm run create-game`
+    4. `npm run initial-deal`
+    5. `npm run player-hit-request`
+    6. `npm run house-hit`
+    7. `npm run player-stand-request`
+    8. `npm run house-stand`
+    
 
 ## Npm scripts to generate and run e2e flows
 
 A first approach is executing the npm scripts that execute single steps of a whole e2e flow, and store the created objects ids in the .env file, to reuse them in upcoming executions. <br />
+
 > In this approach the following scripts can be executed:
-> 
+>
 > - `npm run init-house`
 > - `npm run create-counter`
 > - `npm run create-game`
@@ -49,17 +65,20 @@ A first approach is executing the npm scripts that execute single steps of a who
 > - `npm run house-stand`
 
 Another approach is to use the custom `Scenario` class, in order to generate and run whole e2e flows of a custom game scenario. <br />
+
 > In this approach, we can use the npm script:
+>
 > - `npm run scenario -- <step> <step> ....`
 >
 > Where each step is one of the strings:
-> 
+>
 > - request-stand
 > - request-hit
 > - house-stand
 > - house-hit
 >
 > For example, to generate and run a custom game scenario, where the player just makes a hit and then a stand move, we can just run the script:
+>
 > - `npm run scenario -- request-hit house-hit request-stand house-stand`
 
 ## Project structure
