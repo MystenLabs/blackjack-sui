@@ -33,21 +33,20 @@ DO NOT ADD THE ADMIN SECRET KEY IN ANY PLACE INSIDE THE CODE BASE!
 - initialize your `environmental variables` based on the previous section of the README.md file
 
 - Two ways to run the intergration tests:
-- A whole scenario:
-  1. publish the contracts with: `./publish.sh testnet`
-  2. run a custom scenario with: `npm run scenario -- request-hit house-hit request-stand stand`
-- run the e2e scenario in multiple steps:
-  1. publish the contracts with: `./publish.sh testnet`
-  2. Run these scripts consecutively to prepare and run a custom game:
-    1. `npm run init-house`
-    2. `npm run create-counter`
-    3. `npm run create-game`
-    4. `npm run initial-deal`
-    5. `npm run player-hit-request`
-    6. `npm run house-hit`
-    7. `npm run player-stand-request`
-    8. `npm run house-stand`
-    
+  - Run a whole e2e scenario with a single script:
+    1. Publish the contracts with: `./publish.sh testnet`
+    2. Run a custom scenario with: `npm run scenario -- request-hit house-hit request-stand stand`
+  - Run the e2e scenario in multiple steps:
+    1. publish the contracts with: `./publish.sh testnet`
+    2. Run these scripts consecutively to prepare and run a custom game:
+       1. `npm run init-house`
+       2. `npm run create-counter`
+       3. `npm run create-game`
+       4. `npm run initial-deal`
+       5. `npm run player-hit-request`
+       6. `npm run house-hit`
+       7. `npm run player-stand-request`
+       8. `npm run house-stand`
 
 ## Npm scripts to generate and run e2e flows
 
@@ -64,7 +63,7 @@ A first approach is executing the npm scripts that execute single steps of a who
 > - `npm run house-hit`
 > - `npm run house-stand`
 
-Another approach is to use the custom `Scenario` class, in order to generate and run whole e2e flows of a custom game scenario. <br />
+Another approach is to use the custom `Scenario` class (as defined in `setup/src/helpers/scenario/Scenario.ts`), in order to generate and run whole e2e flows of a custom game scenario. <br />
 
 > In this approach, we can use the npm script:
 >
@@ -106,7 +105,7 @@ Another approach is to use the custom `Scenario` class, in order to generate and
     - `99-RunWebsocketListenerFlow`: Starts the websocket server which listens for incoming websocket connections from the frontend.
       **This is required for the UI to work correctly!**
   - `types/`: the typescript types and interfaces used throughout the setup project
-  - `customScenario.ts`
+  - `customScenario.ts`: the generic script that is called when executing `npm run scenario -- <args>` to create and run a totally custom e2e test scenario
   - `scenarioStand.ts`: a simple e2e scenario where a new game is initialized, and the player makes only a stand move after the initial deal
   - `scenarioHitAndStand.ts`: a simple e2e scenario where a new game is initialized, and the player makes a hit and a stand move after the initial deal
 
