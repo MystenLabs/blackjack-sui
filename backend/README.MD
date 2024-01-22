@@ -12,9 +12,14 @@ Main libraries used:
 
 ## Quickstart
 
-1. Move intot the backend directory with: `cd backend`
+1. Cd into the backend directory with: `cd backend`
 2. Install the required npm dependencies with: `npm i`
 3. Start the development server with: `npm run dev`
-4. Start the production server and monitor with pm2 with:
-   1. `npm run build`
-   2. `npm run start`
+4. Start the production server:
+   1. Update your Dockerfile:
+      - If you would like to use pm2, use `CMD ["npm", "run", "start-pm2"]` in the last line of the Dockerfile
+      - If you would not like to use pm2, use `CMD ["npm", "run", "start"]` in the last line of the Dockerfile
+   2. Run `docker-compose build`
+   3. Run `docker-compose up`
+5. In the case of using pm2, you can monitor the api by running:
+   `docker exec -it <container-name> pm2 monit`
