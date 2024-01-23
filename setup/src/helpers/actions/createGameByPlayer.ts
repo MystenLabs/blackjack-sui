@@ -18,8 +18,7 @@ export const createGameByPlayer = async ({
   houseDataId,
 }: CreateGameByPlayerProps): Promise<string | undefined> => {
   const playerKeypair = getKeypair(playerSecretKey);
-  const playerPublicKey = playerKeypair.getPublicKey();
-  const playerAddress = playerPublicKey.toSuiAddress();
+  const playerAddress = playerKeypair.getPublicKey().toSuiAddress();
   console.log(`Creating game for player ${playerAddress} ...`);
 
   const tx = new TransactionBlock();
@@ -45,7 +44,6 @@ export const createGameByPlayer = async ({
   tx.moveCall({
     target: `${PACKAGE_ADDRESS}::single_player_blackjack::place_bet_and_create_game`,
     arguments: [
-      tx.pure(Array.from(playerPublicKey.toRawBytes()), "vector<u8>"),
       tx.pure(randomBytesAsHexString),
       tx.object(counterNftId!),
       betAmountCoin,

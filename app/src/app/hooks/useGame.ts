@@ -91,7 +91,9 @@ export const useGame = () => {
           let gameMessage = new GameMessage();
           gameMessage.packageId = process.env.NEXT_PUBLIC_PACKAGE_ADDRESS!;
           gameMessage.gameId = currentGameId!;
-          gameMessage.playerSignature = await createSignature("hit") as string;
+          gameMessage.playerSignature = (await createSignature(
+            "hit"
+          )) as string;
 
           console.log("hit request transaction successful!");
           socket.emit("hitRequested", gameMessage);
@@ -135,7 +137,7 @@ export const useGame = () => {
           let gameMessage = new GameMessage();
           gameMessage.packageId = process.env.NEXT_PUBLIC_PACKAGE_ADDRESS!;
           gameMessage.gameId = currentGameId!;
-          const signature = await createSignature("stand") as string;
+          const signature = (await createSignature("stand")) as string;
           gameMessage.playerSignature = signature;
           console.log("Stand request transaction successful!");
           socket.emit("standRequested", gameMessage);
@@ -183,9 +185,10 @@ export const useGame = () => {
 
   const handleNewGame = async (userRandomnessHexString: string) => {
     if (currentAccount?.address) {
-      const userCounterNFT =
-        (await getUserCounterNFT(provider, currentAccount?.address)) ||
-        process.env.NEXT_PUBLIC_COUNTER_NFT_ID!;
+      const userCounterNFT = await getUserCounterNFT(
+        provider,
+        currentAccount?.address
+      );
       if (!userCounterNFT) {
         console.error("User does not have a counter NFT");
       }
@@ -194,9 +197,8 @@ export const useGame = () => {
       tx.moveCall({
         target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::place_bet_and_create_game`,
         arguments: [
-          tx.pure(Array.from(currentAccount.publicKey), "vector<u8>"),
           tx.pure(userRandomnessHexString),
-          tx.object(userCounterNFT),
+          tx.object(userCounterNFT!),
           coin,
           tx.object(process.env.NEXT_PUBLIC_HOUSE_DATA_ID!),
         ],
@@ -281,7 +283,7 @@ export const useGame = () => {
   const getUserCounterNFT = async (
     provider: JsonRpcProvider,
     userAddress: string
-  ): Promise<string | void> => {
+  ): Promise<string | undefined> => {
     console.log("Checking for counter nft game...");
     return provider
       .getOwnedObjects({
@@ -295,6 +297,7 @@ export const useGame = () => {
         if (objects.length > 0) {
           return objects[0]?.data?.objectId;
         }
+        return undefined;
       });
   };
 
