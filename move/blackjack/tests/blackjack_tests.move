@@ -492,6 +492,7 @@ module blackjack::single_player_blackjack_tests {
                 // Will be replaced with a hard-coded value in the testing flow
                 // By the `bj::set_game_randomness_for_testing` function.
                 vector<u8>[],
+                vector<u8>[],
                 &mut counter,
                 coin,
                 &mut house_data,

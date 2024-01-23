@@ -9,10 +9,7 @@ import { ADMIN_SECRET_KEY, PACKAGE_ADDRESS } from "../../config";
 import { getBLSSecreyKey } from "../bls/getBLSSecretKey";
 
 interface HouseHitOrStandProps {
-  eventParsedJson: {
-    current_player_hand_sum: number;
-    gameId: string;
-  };
+  gameId: string;
   move: "hit" | "stand";
   suiClient: SuiClient;
   houseDataId: string;
@@ -21,7 +18,7 @@ interface HouseHitOrStandProps {
 }
 
 export const houseHitOrStand = async ({
-  eventParsedJson,
+  gameId,
   move,
   suiClient,
   houseDataId,
@@ -29,7 +26,6 @@ export const houseHitOrStand = async ({
   onStandSuccess,
 }: HouseHitOrStandProps) => {
   const adminKeypair = getKeypair(ADMIN_SECRET_KEY!);
-  const { gameId } = eventParsedJson;
 
   console.log(
     `House is ${

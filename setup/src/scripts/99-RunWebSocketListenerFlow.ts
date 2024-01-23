@@ -88,10 +88,7 @@ io.on("connection", (socket) => {
     const game: GameMessage = args[0];
     console.log("Client requested hit for game = ", game.gameId);
     houseHitOrStand({
-      eventParsedJson: {
-        gameId: game.gameId,
-        current_player_hand_sum: parseInt(game.playerScore!),
-      },
+      gameId: game.gameId,
       move: "hit",
       suiClient,
       onHitSuccess,
@@ -103,10 +100,7 @@ io.on("connection", (socket) => {
     const game: GameMessage = args[0];
     console.log("Stand requested for game = ", game.gameId);
     houseHitOrStand({
-      eventParsedJson: {
-        gameId: game.gameId,
-        current_player_hand_sum: parseInt(game.playerScore!),
-      },
+      gameId: game.gameId,
       move: "stand",
       suiClient,
       onStandSuccess,

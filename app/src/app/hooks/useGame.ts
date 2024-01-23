@@ -22,7 +22,7 @@ export const useGame = () => {
   const provider = new JsonRpcProvider(connection);
 
   const { executeSignedTransactionBlock } = useSui();
-  const { signTransactionBlock, currentAccount } = useWalletKit();
+  const { signTransactionBlock, currentAccount, signMessage } = useWalletKit();
   const [isLoading, setIsLoading] = useState(false);
   // const [gameResult, setGameResult] = useState<GameResult | null>(null);
   const [isGameCreated, setIsGameCreated] = useState(false);
@@ -84,13 +84,14 @@ export const useGame = () => {
         showEvents: true,
       },
     })
-      .then((resp) => {
+      .then(async (resp) => {
         console.log(resp);
         setIsLoading(true);
         if (resp.effects?.status.status === "success") {
           let gameMessage = new GameMessage();
           gameMessage.packageId = process.env.NEXT_PUBLIC_PACKAGE_ADDRESS!;
           gameMessage.gameId = currentGameId!;
+          gameMessage.playerSignature = await createSignature("hit") as string;
 
           console.log("hit request transaction successful!");
           socket.emit("hitRequested", gameMessage);
@@ -127,14 +128,15 @@ export const useGame = () => {
         showEvents: true,
       },
     })
-      .then((resp) => {
+      .then(async (resp) => {
         console.log(resp);
         setIsLoading(true);
         if (resp.effects?.status.status === "success") {
           let gameMessage = new GameMessage();
           gameMessage.packageId = process.env.NEXT_PUBLIC_PACKAGE_ADDRESS!;
           gameMessage.gameId = currentGameId!;
-
+          const signature = await createSignature("stand") as string;
+          gameMessage.playerSignature = signature;
           console.log("Stand request transaction successful!");
           socket.emit("standRequested", gameMessage);
         } else {
@@ -166,6 +168,19 @@ export const useGame = () => {
       });
   };
 
+  const createSignature = async (move: "hit" | "stand") => {
+    if (!currentGame) {
+      console.error("No current game");
+      return;
+    }
+    const message = currentGame.id + move + currentGame.playerSum;
+    const encodedMessage = new TextEncoder().encode(message);
+    const { signature } = await signMessage({
+      message: encodedMessage,
+    });
+    return signature;
+  };
+
   const handleNewGame = async (userRandomnessHexString: string) => {
     if (currentAccount?.address) {
       const userCounterNFT =
@@ -179,6 +194,7 @@ export const useGame = () => {
       tx.moveCall({
         target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::place_bet_and_create_game`,
         arguments: [
+          tx.pure(Array.from(currentAccount.publicKey), "vector<u8>"),
           tx.pure(userRandomnessHexString),
           tx.object(userCounterNFT),
           coin,

@@ -81,6 +81,7 @@ module blackjack::single_player_blackjack {
         user_randomness: vector<u8>,
         total_stake: Balance<SUI>,
         player: address,
+        player_public_key: vector<u8>,
         player_cards: vector<u8>,
         player_sum: u8,
         dealer_cards: vector<u8>,
@@ -133,6 +134,7 @@ module blackjack::single_player_blackjack {
     /// @param user_bet: The coin object that will be used to take the player's stake
     /// @param house_data: The HouseData object
     public entry fun place_bet_and_create_game(
+        user_public_key: vector<u8>,
         user_randomness: vector<u8>,
         user_counter: &mut Counter,
         user_bet: Coin<SUI>,
@@ -158,6 +160,7 @@ module blackjack::single_player_blackjack {
             user_randomness: initial_randomness,
             total_stake: stake,
             player: tx_context::sender(ctx),
+            player_public_key: user_public_key,
             player_cards: vector[],
             player_sum: 0,
             dealer_cards: vector[],

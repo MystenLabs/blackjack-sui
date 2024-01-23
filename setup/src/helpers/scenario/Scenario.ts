@@ -80,20 +80,14 @@ export class Scenario {
     "house-hit": async () =>
       await houseHitOrStand({
         suiClient: this.suiClient,
-        eventParsedJson: {
-          gameId: this.state.gameId!,
-          current_player_hand_sum: this.state.game!.player_sum,
-        },
+        gameId: this.state.gameId!,
         move: "hit",
         houseDataId: this.state.houseDataId!,
       }),
     "house-stand": async () =>
       await houseHitOrStand({
         suiClient: this.suiClient,
-        eventParsedJson: {
-          gameId: this.state.gameId!,
-          current_player_hand_sum: this.state.game!.player_sum,
-        },
+        gameId: this.state.gameId!,
         move: "stand",
         houseDataId: this.state.houseDataId!,
       }),

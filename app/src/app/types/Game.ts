@@ -26,6 +26,7 @@ export class GameMessage {
     type?: string;
     playerCards: number[];
     playerScore: number;
+    playerSignature: string;
 
     constructor() {
         this.type = "";
@@ -33,5 +34,6 @@ export class GameMessage {
         this.packageId = "";
         this.playerScore = 0;
         this.playerCards = [];
+        this.playerSignature = "";
     }
 }
