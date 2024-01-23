@@ -9,6 +9,7 @@ Main libraries used:
 - [http-status-codes](https://www.npmjs.com/package/http-status-codes) for ensuring following the best practices in terms of the status codes used in our responses
 - [winston](https://www.npmjs.com/package/winston) and [logform](https://www.npmjs.com/package/logform) for logging
 - [pm2](https://pm2.keymetrics.io/) for monitoring the backend
+- [socket.io](https://socket.io/) for setting up the socket communication between the backend and the frontend
 
 ## Quickstart
 
