@@ -58,7 +58,7 @@ const onStandSuccess = (gameId: string) => {
     playerScore: "",
   };
 
-  io.emit("StandExecuted", gameMessage);
+  io.emit("standExecuted", gameMessage);
 };
 
 io.on("connection", (socket) => {
