@@ -8,7 +8,10 @@ import { logger } from "./utils/logger";
 import bodyParser from "body-parser";
 import { Server } from "socket.io";
 import { doInitialDeal } from "./services/doInitialDeal";
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient, SuiEvent } from "@mysten/sui.js/client";
+import { houseHitOrStand } from "./services/houseHitOrStand";
+import { HitDoneEvent } from "./types/HitDoneEvent";
+import { GameMessage } from "./types/GameMessage";
 
 const app = express();
 app.use(bodyParser.json());
@@ -54,6 +57,49 @@ io.on("connection", (socket) => {
       onSuccess: () => {
         io.emit("dealExecuted", { gameId });
       },
+    });
+  });
+
+  socket.on("hitRequested", (...args) => {
+    const { gameId } = args[0];
+    logger.info(`Received hit requested message: ${gameId}`);
+    houseHitOrStand({
+      gameId,
+      move: "hit",
+      suiClient,
+      onHitSuccess: (event: SuiEvent) => {
+        const {
+          game_id: gameId,
+          player_cards: playerCards,
+          current_player_hand_sum: playerScore,
+        } = event?.parsedJson as HitDoneEvent;
+        const gameMessage: GameMessage = {
+          gameId,
+          playerCards,
+          playerScore,
+        };
+        io.emit("hitExecuted", gameMessage);
+      },
+      houseDataId: HOUSE_DATA_ID,
+    });
+  });
+
+  socket.on("standRequested", (...args) => {
+    const { gameId } = args[0];
+    logger.info(`Received stand requested message: ${gameId}`);
+    houseHitOrStand({
+      gameId,
+      move: "stand",
+      suiClient,
+      onStandSuccess: (gameId: string) => {
+        const gameMessage: GameMessage = {
+          gameId: gameId,
+          playerCards: [], // unused
+          playerScore: "", // unused
+        };
+        io.emit("standExecuted", gameMessage);
+      },
+      houseDataId: HOUSE_DATA_ID,
     });
   });
 });
