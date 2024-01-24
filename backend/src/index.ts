@@ -12,7 +12,6 @@ import { SuiClient, SuiEvent } from "@mysten/sui.js/client";
 import { houseHitOrStand } from "./services/houseHitOrStand";
 import { HitDoneEvent } from "./types/HitDoneEvent";
 import { GameMessage } from "./types/GameMessage";
-import { isSignatureForPlayerMoveValid } from "./utils/validateSignatureForPlayerMove";
 
 const app = express();
 app.use(bodyParser.json());
@@ -62,23 +61,14 @@ io.on("connection", (socket) => {
   });
 
   socket.on("hitRequested", async (...args) => {
-    const { gameId, playerSignature } = args[0];
+    const { gameId, requestObjectId } = args[0];
     logger.info(`Received hit requested message: ${gameId}`);
-
-    const isSignatureValid = await isSignatureForPlayerMoveValid({
-      suiClient,
-      gameId,
-      signature: playerSignature,
-      move: "hit",
-    });
-    if (!isSignatureValid) {
-      return;
-    }
 
     houseHitOrStand({
       gameId,
       move: "hit",
       suiClient,
+      requestObjectId,
       onHitSuccess: (event: SuiEvent) => {
         const {
           game_id: gameId,
@@ -97,23 +87,14 @@ io.on("connection", (socket) => {
   });
 
   socket.on("standRequested", async (...args) => {
-    const { gameId, playerSignature } = args[0];
+    const { gameId, requestObjectId } = args[0];
     logger.info(`Received stand requested message: ${gameId}`);
-
-    const isSignatureValid = await isSignatureForPlayerMoveValid({
-      suiClient,
-      gameId,
-      signature: playerSignature,
-      move: "stand",
-    });
-    if (!isSignatureValid) {
-      return;
-    }
 
     houseHitOrStand({
       gameId,
       move: "stand",
       suiClient,
+      requestObjectId,
       onStandSuccess: (gameId: string) => {
         const gameMessage: GameMessage = {
           gameId: gameId,
