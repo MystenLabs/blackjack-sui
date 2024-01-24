@@ -35,7 +35,7 @@ DO NOT ADD THE ADMIN SECRET KEY IN ANY PLACE INSIDE THE CODE BASE!
 - Two ways to run the intergration tests:
   - Run a whole e2e scenario with a single script:
     1. Publish the contracts with: `./publish.sh testnet`
-    2. Run a custom scenario with: `npm run scenario -- request-hit house-hit request-stand stand`
+    2. Run a custom scenario with: `npm run scenario -- request-hit house-hit request-stand house-stand`
   - Run the e2e scenario in multiple steps:
     1. publish the contracts with: `./publish.sh testnet`
     2. Run these scripts consecutively to prepare and run a custom game:

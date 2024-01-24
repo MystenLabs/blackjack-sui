@@ -60,13 +60,15 @@ io.on("connection", (socket) => {
     });
   });
 
-  socket.on("hitRequested", (...args) => {
-    const { gameId } = args[0];
+  socket.on("hitRequested", async (...args) => {
+    const { gameId, requestObjectId } = args[0];
     logger.info(`Received hit requested message: ${gameId}`);
+
     houseHitOrStand({
       gameId,
       move: "hit",
       suiClient,
+      requestObjectId,
       onHitSuccess: (event: SuiEvent) => {
         const {
           game_id: gameId,
@@ -84,13 +86,15 @@ io.on("connection", (socket) => {
     });
   });
 
-  socket.on("standRequested", (...args) => {
-    const { gameId } = args[0];
+  socket.on("standRequested", async (...args) => {
+    const { gameId, requestObjectId } = args[0];
     logger.info(`Received stand requested message: ${gameId}`);
+
     houseHitOrStand({
       gameId,
       move: "stand",
       suiClient,
+      requestObjectId,
       onStandSuccess: (gameId: string) => {
         const gameMessage: GameMessage = {
           gameId: gameId,

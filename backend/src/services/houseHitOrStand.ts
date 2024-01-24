@@ -14,6 +14,7 @@ interface HouseHitOrStandProps {
   move: "hit" | "stand";
   suiClient: SuiClient;
   houseDataId: string;
+  requestObjectId: string;
   onHitSuccess?: (event: SuiEvent) => void;
   onStandSuccess?: (gameId: string) => void;
 }
@@ -23,6 +24,7 @@ export const houseHitOrStand = async ({
   move,
   suiClient,
   houseDataId,
+  requestObjectId,
   onHitSuccess,
   onStandSuccess,
 }: HouseHitOrStandProps) => {
@@ -53,6 +55,7 @@ export const houseHitOrStand = async ({
           tx.object(gameId),
           tx.pure(Array.from(signedHouseHash), "vector<u8>"),
           tx.object(houseDataId),
+          tx.object(requestObjectId),
         ],
       });
 

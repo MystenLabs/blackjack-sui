@@ -6,6 +6,7 @@ import {
   Connection,
   JsonRpcProvider,
   SuiMoveObject,
+  SuiObjectChangeCreated,
   SuiObjectResponse,
   TransactionBlock,
 } from "@mysten/sui.js";
@@ -22,7 +23,7 @@ export const useGame = () => {
   const provider = new JsonRpcProvider(connection);
 
   const { executeSignedTransactionBlock } = useSui();
-  const { signTransactionBlock, currentAccount } = useWalletKit();
+  const { signTransactionBlock, currentAccount, signMessage } = useWalletKit();
   const [isLoading, setIsLoading] = useState(false);
   // const [gameResult, setGameResult] = useState<GameResult | null>(null);
   const [isGameCreated, setIsGameCreated] = useState(false);
@@ -67,10 +68,11 @@ export const useGame = () => {
 
   const handleHit = async (): Promise<void> => {
     const tx = new TransactionBlock();
-    tx.moveCall({
+    let requestObject = tx.moveCall({
       target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::do_hit`,
       arguments: [tx.object(currentGameId!), tx.pure(currentGame?.playerSum)],
     });
+    tx.transferObjects([requestObject], tx.pure(process.env.NEXT_PUBLIC_ADMIN_ADDRESS!));
     const signedTx = await signTransactionBlock({
       transactionBlock: tx,
     });
@@ -81,17 +83,24 @@ export const useGame = () => {
       requestType: "WaitForLocalExecution",
       options: {
         showEffects: true,
-        showEvents: true,
+        showObjectChanges: true,
       },
     })
-      .then((resp) => {
+      .then(async (resp) => {
         console.log(resp);
         setIsLoading(true);
         if (resp.effects?.status.status === "success") {
           let gameMessage = new GameMessage();
           gameMessage.packageId = process.env.NEXT_PUBLIC_PACKAGE_ADDRESS!;
           gameMessage.gameId = currentGameId!;
-
+          const createdObjects = resp.objectChanges?.filter(({ type }) => type === "created") as SuiObjectChangeCreated[];
+          const requestObjectId = createdObjects.find(({ objectType }) => (
+            objectType === `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::HitRequest`
+          ));
+          if (!requestObjectId) {
+            throw new Error("Hit request object not found");
+          }
+          gameMessage.requestObjectId = requestObjectId.objectId!;
           console.log("hit request transaction successful!");
           socket.emit("hitRequested", gameMessage);
         } else {
@@ -110,10 +119,11 @@ export const useGame = () => {
 
   const handleStand = async (): Promise<void> => {
     const tx = new TransactionBlock();
-    tx.moveCall({
+    let requestObject = tx.moveCall({
       target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::do_stand`,
       arguments: [tx.object(currentGameId!), tx.pure(currentGame?.playerSum)],
     });
+    tx.transferObjects([requestObject], tx.pure(process.env.NEXT_PUBLIC_ADMIN_ADDRESS!));
     const signedTx = await signTransactionBlock({
       transactionBlock: tx,
     });
@@ -124,17 +134,24 @@ export const useGame = () => {
       requestType: "WaitForLocalExecution",
       options: {
         showEffects: true,
-        showEvents: true,
+        showObjectChanges: true,
       },
     })
-      .then((resp) => {
+      .then(async (resp) => {
         console.log(resp);
         setIsLoading(true);
         if (resp.effects?.status.status === "success") {
           let gameMessage = new GameMessage();
           gameMessage.packageId = process.env.NEXT_PUBLIC_PACKAGE_ADDRESS!;
           gameMessage.gameId = currentGameId!;
-
+          const createdObjects = resp.objectChanges?.filter(({ type }) => type === "created") as SuiObjectChangeCreated[];
+          const requestObjectId = createdObjects.find(({ objectType }) => (
+            objectType === `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::StandRequest`
+          ));
+          if (!requestObjectId) {
+            throw new Error("Hit request object not found");
+          }
+          gameMessage.requestObjectId = requestObjectId.objectId!;
           console.log("Stand request transaction successful!");
           socket.emit("standRequested", gameMessage);
         } else {
@@ -168,9 +185,10 @@ export const useGame = () => {
 
   const handleNewGame = async (userRandomnessHexString: string) => {
     if (currentAccount?.address) {
-      const userCounterNFT =
-        (await getUserCounterNFT(provider, currentAccount?.address)) ||
-        process.env.NEXT_PUBLIC_COUNTER_NFT_ID!;
+      const userCounterNFT = await getUserCounterNFT(
+        provider,
+        currentAccount?.address
+      );
       if (!userCounterNFT) {
         console.error("User does not have a counter NFT");
       }
@@ -180,7 +198,7 @@ export const useGame = () => {
         target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::place_bet_and_create_game`,
         arguments: [
           tx.pure(userRandomnessHexString),
-          tx.object(userCounterNFT),
+          tx.object(userCounterNFT!),
           coin,
           tx.object(process.env.NEXT_PUBLIC_HOUSE_DATA_ID!),
         ],
@@ -265,7 +283,7 @@ export const useGame = () => {
   const getUserCounterNFT = async (
     provider: JsonRpcProvider,
     userAddress: string
-  ): Promise<string | void> => {
+  ): Promise<string | undefined> => {
     console.log("Checking for counter nft game...");
     return provider
       .getOwnedObjects({
@@ -279,6 +297,7 @@ export const useGame = () => {
         if (objects.length > 0) {
           return objects[0]?.data?.objectId;
         }
+        return undefined;
       });
   };
 

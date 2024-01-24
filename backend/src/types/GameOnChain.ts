@@ -2,6 +2,7 @@ export interface GameOnChain {
   id: {
     id: string;
   };
+  player: string;
   counter: number;
   dealer_cards: number[];
   dealer_sum: number;

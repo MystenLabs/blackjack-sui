@@ -7,29 +7,28 @@ import { getGameObject } from "../getObject/getGameObject";
 import { getKeypair } from "../keypair/getKeyPair";
 import { ADMIN_SECRET_KEY, PACKAGE_ADDRESS } from "../../config";
 import { getBLSSecreyKey } from "../bls/getBLSSecretKey";
+import { getHitOrStandRequestForGameAndSum } from "../getObject/getHitOrStandRequestForGameAndSum";
 
 interface HouseHitOrStandProps {
-  eventParsedJson: {
-    current_player_hand_sum: number;
-    gameId: string;
-  };
+  gameId: string;
   move: "hit" | "stand";
   suiClient: SuiClient;
   houseDataId: string;
+  requestObjectId?: string;
   onHitSuccess?: (event: SuiEvent) => void;
   onStandSuccess?: (gameId: string) => void;
 }
 
 export const houseHitOrStand = async ({
-  eventParsedJson,
+  gameId,
   move,
   suiClient,
   houseDataId,
+  requestObjectId,
   onHitSuccess,
   onStandSuccess,
 }: HouseHitOrStandProps) => {
   const adminKeypair = getKeypair(ADMIN_SECRET_KEY!);
-  const { gameId } = eventParsedJson;
 
   console.log(
     `House is ${
@@ -49,6 +48,19 @@ export const houseHitOrStand = async ({
         getBLSSecreyKey(ADMIN_SECRET_KEY!)
       );
 
+      let hitOrStandRequest = requestObjectId || await getHitOrStandRequestForGameAndSum({
+        move,
+        gameId,
+        playerSum: resp.player_sum,
+        suiClient,
+      });
+
+      if (!hitOrStandRequest) {
+        throw new Error("No hit or stand request found for this move in the admin's owned objects");
+      }
+
+      console.log({ hitOrStandRequest });
+
       tx.setGasBudget(10000000000);
       tx.moveCall({
         target: `${PACKAGE_ADDRESS}::single_player_blackjack::${move}`,
@@ -56,6 +68,7 @@ export const houseHitOrStand = async ({
           tx.object(gameId),
           tx.pure(Array.from(signedHouseHash), "vector<u8>"),
           tx.object(houseDataId),
+          tx.object(hitOrStandRequest),
         ],
       });
 
