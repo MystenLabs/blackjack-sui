@@ -6,6 +6,7 @@ import {
   Connection,
   JsonRpcProvider,
   SuiMoveObject,
+  SuiObjectChangeCreated,
   SuiObjectResponse,
   TransactionBlock,
 } from "@mysten/sui.js";
@@ -67,10 +68,11 @@ export const useGame = () => {
 
   const handleHit = async (): Promise<void> => {
     const tx = new TransactionBlock();
-    tx.moveCall({
+    let requestObject = tx.moveCall({
       target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::do_hit`,
       arguments: [tx.object(currentGameId!), tx.pure(currentGame?.playerSum)],
     });
+    tx.transferObjects([requestObject], tx.pure(process.env.NEXT_PUBLIC_ADMIN_ADDRESS!));
     const signedTx = await signTransactionBlock({
       transactionBlock: tx,
     });
@@ -81,7 +83,7 @@ export const useGame = () => {
       requestType: "WaitForLocalExecution",
       options: {
         showEffects: true,
-        showEvents: true,
+        showObjectChanges: true,
       },
     })
       .then(async (resp) => {
@@ -91,10 +93,14 @@ export const useGame = () => {
           let gameMessage = new GameMessage();
           gameMessage.packageId = process.env.NEXT_PUBLIC_PACKAGE_ADDRESS!;
           gameMessage.gameId = currentGameId!;
-          gameMessage.playerSignature = (await createSignature(
-            "hit"
-          )) as string;
-
+          const createdObjects = resp.objectChanges?.filter(({ type }) => type === "created") as SuiObjectChangeCreated[];
+          const requestObjectId = createdObjects.find(({ objectType }) => (
+            objectType === `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::HitRequest`
+          ));
+          if (!requestObjectId) {
+            throw new Error("Hit request object not found");
+          }
+          gameMessage.requestObjectId = requestObjectId.objectId!;
           console.log("hit request transaction successful!");
           socket.emit("hitRequested", gameMessage);
         } else {
@@ -113,10 +119,11 @@ export const useGame = () => {
 
   const handleStand = async (): Promise<void> => {
     const tx = new TransactionBlock();
-    tx.moveCall({
+    let requestObject = tx.moveCall({
       target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::do_stand`,
       arguments: [tx.object(currentGameId!), tx.pure(currentGame?.playerSum)],
     });
+    tx.transferObjects([requestObject], tx.pure(process.env.NEXT_PUBLIC_ADMIN_ADDRESS!));
     const signedTx = await signTransactionBlock({
       transactionBlock: tx,
     });
@@ -127,7 +134,7 @@ export const useGame = () => {
       requestType: "WaitForLocalExecution",
       options: {
         showEffects: true,
-        showEvents: true,
+        showObjectChanges: true,
       },
     })
       .then(async (resp) => {
@@ -137,8 +144,14 @@ export const useGame = () => {
           let gameMessage = new GameMessage();
           gameMessage.packageId = process.env.NEXT_PUBLIC_PACKAGE_ADDRESS!;
           gameMessage.gameId = currentGameId!;
-          const signature = (await createSignature("stand")) as string;
-          gameMessage.playerSignature = signature;
+          const createdObjects = resp.objectChanges?.filter(({ type }) => type === "created") as SuiObjectChangeCreated[];
+          const requestObjectId = createdObjects.find(({ objectType }) => (
+            objectType === `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::StandRequest`
+          ));
+          if (!requestObjectId) {
+            throw new Error("Hit request object not found");
+          }
+          gameMessage.requestObjectId = requestObjectId.objectId!;
           console.log("Stand request transaction successful!");
           socket.emit("standRequested", gameMessage);
         } else {
@@ -168,19 +181,6 @@ export const useGame = () => {
         console.log(err);
         toast.error("Something went wrong.");
       });
-  };
-
-  const createSignature = async (move: "hit" | "stand") => {
-    if (!currentGame) {
-      console.error("No current game");
-      return;
-    }
-    const message = currentGame.id + move + currentGame.playerSum;
-    const encodedMessage = new TextEncoder().encode(message);
-    const { signature } = await signMessage({
-      message: encodedMessage,
-    });
-    return signature;
   };
 
   const handleNewGame = async (userRandomnessHexString: string) => {

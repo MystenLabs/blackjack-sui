@@ -4,4 +4,5 @@ export interface GameMessage {
     type?: string;
     playerCards?: string[];
     playerScore?: string;
+    requestObjectId?: string;
 }

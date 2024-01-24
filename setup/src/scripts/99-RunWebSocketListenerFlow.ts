@@ -85,23 +85,25 @@ io.on("connection", (socket) => {
   });
 
   socket.on("hitRequested", (...args) => {
-    const game: GameMessage = args[0];
-    console.log("Client requested hit for game = ", game.gameId);
+    const { gameId, requestObjectId }: GameMessage = args[0];
+    console.log("Client requested hit for game = ", gameId);
     houseHitOrStand({
-      gameId: game.gameId,
+      gameId,
       move: "hit",
       suiClient,
+      requestObjectId,
       onHitSuccess,
       houseDataId: HOUSE_DATA_ID,
     });
   });
 
   socket.on("StandRequested", (...args) => {
-    const game: GameMessage = args[0];
-    console.log("Stand requested for game = ", game.gameId);
+    const { gameId, requestObjectId }: GameMessage = args[0];
+    console.log("Stand requested for game = ", gameId);
     houseHitOrStand({
-      gameId: game.gameId,
+      gameId,
       move: "stand",
+      requestObjectId,
       suiClient,
       onStandSuccess,
       houseDataId: HOUSE_DATA_ID,

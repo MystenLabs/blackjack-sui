@@ -14,6 +14,7 @@ interface HouseHitOrStandProps {
   move: "hit" | "stand";
   suiClient: SuiClient;
   houseDataId: string;
+  requestObjectId?: string;
   onHitSuccess?: (event: SuiEvent) => void;
   onStandSuccess?: (gameId: string) => void;
 }
@@ -23,6 +24,7 @@ export const houseHitOrStand = async ({
   move,
   suiClient,
   houseDataId,
+  requestObjectId,
   onHitSuccess,
   onStandSuccess,
 }: HouseHitOrStandProps) => {
@@ -46,7 +48,7 @@ export const houseHitOrStand = async ({
         getBLSSecreyKey(ADMIN_SECRET_KEY!)
       );
 
-      let hitOrStandRequest = await getHitOrStandRequestForGameAndSum({
+      let hitOrStandRequest = requestObjectId || await getHitOrStandRequestForGameAndSum({
         move,
         gameId,
         playerSum: resp.player_sum,
