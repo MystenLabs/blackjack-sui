@@ -30,7 +30,7 @@ export const doPlayerHitOrStand = async ({
     `Player ${formatAddress(playerAddress)} is requesting a ${move}...`
   );
 
-  await getGameObject({ suiClient, gameId }).then(async (resp) => {
+  return getGameObject({ suiClient, gameId }).then(async (resp) => {
     const { player_sum } = resp;
 
     const tx = new TransactionBlock();
@@ -40,7 +40,7 @@ export const doPlayerHitOrStand = async ({
     });
     tx.transferObjects([request], getAddress(ADMIN_SECRET_KEY));
 
-    await suiClient
+    return suiClient
       .signAndExecuteTransactionBlock({
         signer: playerKeypair,
         transactionBlock: tx,
@@ -75,6 +75,7 @@ export const doPlayerHitOrStand = async ({
         console.log({
           [`${move}RequestId`]: hitOrStandRequest?.objectId,
         });
+        return hitOrStandRequest?.objectId;
       })
       .catch((err) => {
         console.log({ err });

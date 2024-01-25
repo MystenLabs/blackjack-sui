@@ -22,7 +22,7 @@ export class Scenario {
   private playerSecretKey: string;
   private state: ScenarioState;
   private steps: ScenarioStep[];
-  private actions: { [key in ScenarioStep]: () => Promise<void> } = {
+  private actions: { [key in ScenarioStep]: () => Promise<any> } = {
     initialize: async () => {
       console.log("Initializing...");
       const isHouseAdminCapBurnt = await getIsHouseAdminCapBurnt({

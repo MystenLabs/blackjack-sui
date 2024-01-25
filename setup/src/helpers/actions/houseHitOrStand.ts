@@ -15,6 +15,7 @@ interface HouseHitOrStandProps {
   suiClient: SuiClient;
   houseDataId: string;
   requestObjectId?: string;
+  executeTx?: boolean;
   onHitSuccess?: (event: SuiEvent) => void;
   onStandSuccess?: (gameId: string) => void;
 }
@@ -25,6 +26,7 @@ export const houseHitOrStand = async ({
   suiClient,
   houseDataId,
   requestObjectId,
+  executeTx = true,
   onHitSuccess,
   onStandSuccess,
 }: HouseHitOrStandProps) => {
@@ -36,7 +38,7 @@ export const houseHitOrStand = async ({
     } for game ${formatAddress(gameId)}...`
   );
 
-  await getGameObject({ suiClient, gameId })
+  return getGameObject({ suiClient, gameId })
     .then(async (resp) => {
       const tx = new TransactionBlock();
       const { counter, user_randomness } = resp;
@@ -71,6 +73,10 @@ export const houseHitOrStand = async ({
           tx.object(hitOrStandRequest),
         ],
       });
+
+      if (!executeTx) {
+        return tx;
+      }
 
       await suiClient
         .signAndExecuteTransactionBlock({

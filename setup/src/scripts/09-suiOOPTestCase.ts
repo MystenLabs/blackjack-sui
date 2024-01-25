@@ -1,5 +1,6 @@
 import { SuiClient } from "@mysten/sui.js/client";
 import {
+  ADMIN_SECRET_KEY,
   BJ_PLAYER_2_SECRET_KEY,
   BJ_PLAYER_SECRET_KEY,
   HOUSE_DATA_ID,
@@ -11,12 +12,17 @@ import { delay } from "../helpers/general/delay";
 import { createGameByPlayer } from "../helpers/actions/createGameByPlayer";
 import { doInitialDeal } from "../helpers/actions/doinitialDeal";
 import { doPlayerHitOrStand } from "../helpers/actions/playerHitOrStandRequest";
-import { houseHitOrStand } from "../helpers/actions/houseHitOrStand";
+import { ExecutorServiceHandler, TransactionBlockWithLambda } from "suioop";
+import { getKeypair } from "../helpers/keypair/getKeyPair";
+import { houseHitOrStandForSuiOOP } from "../helpers/actions/houseHitOrStandForSuiOOP";
+import { getGameObject } from "../helpers/getObject/getGameObject";
 
 const main = async () => {
   const suiClient = new SuiClient({
     url: SUI_NETWORK,
   });
+
+
 
   const houseDataId = await initialize({
     suiClient,
@@ -24,32 +30,57 @@ const main = async () => {
 
   await delay(2000);
 
-  const gameId1 = await initializeGameAndPrepareHit({
-    playerSecretKey: BJ_PLAYER_SECRET_KEY,
-    houseDataId,
-    suiClient,
-  });
-  const gameId2 = await initializeGameAndPrepareHit({
-    playerSecretKey: BJ_PLAYER_2_SECRET_KEY,
-    houseDataId,
-    suiClient,
-  });
+  const { gameId: gameId1, requestObjectId: hitRequest1 } =
+    await initializeGameAndPrepareHit({
+      playerSecretKey: BJ_PLAYER_SECRET_KEY,
+      houseDataId,
+      suiClient,
+    });
+  const { gameId: gameId2, requestObjectId: hitRequest2 } =
+    await initializeGameAndPrepareHit({
+      playerSecretKey: BJ_PLAYER_2_SECRET_KEY,
+      houseDataId,
+      suiClient,
+    });
 
   await delay(2000);
 
-  houseHitOrStand({
-    suiClient,
-    gameId: gameId1,
-    move: "hit",
-    houseDataId,
-  });
+  const game1 = await getGameObject({ suiClient, gameId: gameId1 });
 
-  houseHitOrStand({
-    suiClient,
-    gameId: gameId2,
-    move: "hit",
-    houseDataId,
-  });
+  await delay(5000);
+  console.log("Let's see...");
+
+  const eshandler = await ExecutorServiceHandler.initialize(
+    getKeypair(ADMIN_SECRET_KEY) as any,
+    suiClient as any
+  );
+
+  console.log(eshandler);
+
+  const txWithLambda1 = new TransactionBlockWithLambda(() =>
+    houseHitOrStandForSuiOOP({
+      gameId: gameId1,
+      requestObjectId: hitRequest1,
+      counter: game1.counter,
+      user_randomness: game1.user_randomness,
+      move: "hit",
+      houseDataId,
+    }) as any
+  );
+  eshandler.execute(txWithLambda1, suiClient as any, );
+
+  const txWithLambda2 = new TransactionBlockWithLambda(() =>
+    houseHitOrStandForSuiOOP({
+      gameId: gameId2,
+      requestObjectId: hitRequest2,
+      counter: game1.counter,
+      user_randomness: game1.user_randomness,
+      move: "hit",
+      houseDataId,
+    }) as any
+  );
+
+  eshandler.execute(txWithLambda2, suiClient as any);
 };
 
 interface InitializeGameAndPrepareHitProps {
@@ -84,7 +115,10 @@ const initializeGameAndPrepareHit = async ({
   playerSecretKey,
   houseDataId,
   suiClient,
-}: InitializeGameAndPrepareHitProps): Promise<string> => {
+}: InitializeGameAndPrepareHitProps): Promise<{
+  gameId: string;
+  requestObjectId: string;
+}> => {
   let gameId = "";
 
   await createGameByPlayer({
@@ -113,14 +147,14 @@ const initializeGameAndPrepareHit = async ({
 
   await delay(2000);
 
-  await doPlayerHitOrStand({
+  const requestObjectId = (await doPlayerHitOrStand({
     suiClient,
     gameId,
     playerSecretKey,
     move: "hit",
-  });
+  })) as string;
 
-  return gameId;
+  return { gameId, requestObjectId };
 };
 
 main();
