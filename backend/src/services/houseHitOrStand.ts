@@ -8,6 +8,7 @@ import { ADMIN_SECRET_KEY, PACKAGE_ADDRESS } from "../utils/config";
 import { getGameObject } from "../helpers/getGameObject";
 import { getBLSSecreyKey } from "../helpers/getBLSSecretKey";
 import { logger } from "../utils/logger";
+import { sponsorAndSignTransaction } from "../utils/sponsorAndSignTransaction";
 
 interface HouseHitOrStandProps {
   gameId: string;
@@ -59,10 +60,19 @@ export const houseHitOrStand = async ({
         ],
       });
 
+      const { signedTransaction, sponsoredTransaction } =
+        await sponsorAndSignTransaction({
+          tx,
+          suiClient,
+        });
+
       await suiClient
-        .signAndExecuteTransactionBlock({
-          signer: adminKeypair,
-          transactionBlock: tx,
+        .executeTransactionBlock({
+          transactionBlock: signedTransaction.bytes,
+          signature: [
+            signedTransaction.signature,
+            sponsoredTransaction.signature,
+          ],
           requestType: "WaitForLocalExecution",
           options: {
             showObjectChanges: true,

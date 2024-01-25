@@ -23,6 +23,7 @@
     "helmet": "^7.1.0",
     "http-status-codes": "^2.3.0",
     "logform": "^2.6.0",
+    "shinami": "^0.7.0",
     "socket.io": "^4.7.4",
     "winston": "^3.11.0"
   },
