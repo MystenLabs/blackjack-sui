@@ -15,12 +15,23 @@ Main libraries used:
 
 1. Cd into the backend directory with: `cd backend`
 2. Install the required npm dependencies with: `npm i`
-3. Start the development server with: `npm run dev`
-4. Start the production server:
+3. Prepare your .env file to follow the structure of the `.env.example` file
+   ```
+   PORT=8080
+   DEBUG_LEVEL=info
+   SUI_NETWORK=https://rpc.testnet.sui.io:443
+   PACKAGE_ADDRESS=
+   HOUSE_ADMIN_CAP=
+   HOUSE_DATA_ID=
+   ADMIN_SECRET_KEY=
+   SHINAMI_GAS_STATION_API_KEY=
+   ```
+4. Start the development server with: `npm run dev`
+5. Start the production server:
    1. Update your Dockerfile:
       - If you would like to use pm2, use `CMD ["npm", "run", "start-pm2"]` in the last line of the Dockerfile
       - If you would not like to use pm2, use `CMD ["npm", "run", "start"]` in the last line of the Dockerfile
    2. Run `docker-compose build`
    3. Run `docker-compose up`
-5. In the case of using pm2, you can monitor the api by running:
+6. In the case of using pm2, you can monitor the api by running:
    `docker exec -it <container-name> pm2 monit`

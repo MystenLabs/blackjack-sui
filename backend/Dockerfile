@@ -13,4 +13,4 @@ COPY . .
 WORKDIR /usr/src/app/
 RUN npm install
 RUN npm run build
-CMD ["npm", "run", "start-pm2"]
+CMD ["npm", "run", "start"]

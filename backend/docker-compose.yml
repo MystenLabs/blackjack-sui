@@ -9,5 +9,3 @@ services:
         protocol: tcp
     env_file:
       - .env
-    # environment:
-    #   ADMIN_SECRET_KEY: ${TEST}
