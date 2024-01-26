@@ -67,10 +67,11 @@ export const useGame = () => {
   };
 
   const handleHit = async (): Promise<void> => {
+    const latestGame = await checkForUpdatedGame(provider, currentGameId!);
     const tx = new TransactionBlock();
     let requestObject = tx.moveCall({
       target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::do_hit`,
-      arguments: [tx.object(currentGameId!), tx.pure(currentGame?.playerSum)],
+      arguments: [tx.object(currentGameId!), tx.pure(latestGame.playerSum)],
     });
     tx.transferObjects([requestObject], tx.pure(process.env.NEXT_PUBLIC_ADMIN_ADDRESS!));
     const signedTx = await signTransactionBlock({
@@ -118,10 +119,11 @@ export const useGame = () => {
   };
 
   const handleStand = async (): Promise<void> => {
+    const latestGame = await checkForUpdatedGame(provider, currentGameId!);
     const tx = new TransactionBlock();
     let requestObject = tx.moveCall({
       target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::do_stand`,
-      arguments: [tx.object(currentGameId!), tx.pure(currentGame?.playerSum)],
+      arguments: [tx.object(currentGameId!), tx.pure(latestGame.playerSum)],
     });
     tx.transferObjects([requestObject], tx.pure(process.env.NEXT_PUBLIC_ADMIN_ADDRESS!));
     const signedTx = await signTransactionBlock({
