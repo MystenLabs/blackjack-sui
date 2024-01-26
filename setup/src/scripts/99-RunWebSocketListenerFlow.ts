@@ -58,7 +58,7 @@ const onStandSuccess = (gameId: string) => {
     playerScore: "",
   };
 
-  io.emit("StandExecuted", gameMessage);
+  io.emit("standExecuted", gameMessage);
 };
 
 io.on("connection", (socket) => {
@@ -85,29 +85,25 @@ io.on("connection", (socket) => {
   });
 
   socket.on("hitRequested", (...args) => {
-    const game: GameMessage = args[0];
-    console.log("Client requested hit for game = ", game.gameId);
+    const { gameId, requestObjectId }: GameMessage = args[0];
+    console.log("Client requested hit for game = ", gameId);
     houseHitOrStand({
-      eventParsedJson: {
-        gameId: game.gameId,
-        current_player_hand_sum: parseInt(game.playerScore!),
-      },
+      gameId,
       move: "hit",
       suiClient,
+      requestObjectId,
       onHitSuccess,
       houseDataId: HOUSE_DATA_ID,
     });
   });
 
   socket.on("StandRequested", (...args) => {
-    const game: GameMessage = args[0];
-    console.log("Stand requested for game = ", game.gameId);
+    const { gameId, requestObjectId }: GameMessage = args[0];
+    console.log("Stand requested for game = ", gameId);
     houseHitOrStand({
-      eventParsedJson: {
-        gameId: game.gameId,
-        current_player_hand_sum: parseInt(game.playerScore!),
-      },
+      gameId,
       move: "stand",
+      requestObjectId,
       suiClient,
       onStandSuccess,
       houseDataId: HOUSE_DATA_ID,

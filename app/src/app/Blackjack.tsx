@@ -90,10 +90,10 @@ const BlackjackBoard = () => {
     }, [socket, currentGameId, setPlayerHand, setPlayerTotal, setIsGameCreated]);
 
     useEffect(() => {
-        socket.on("StandExecuted", (...args) => {
+        socket.on("standExecuted", (...args) => {
             const gameMessage: GameMessage = args[0];
             if (currentGameId && gameMessage.gameId == currentGameId) {
-                console.log("StandExecuted");
+                console.log("standExecuted");
                 console.log("Current game id: ", currentGameId);
 
                 handleGameFinale(currentGameId!).then((finalGame) => {

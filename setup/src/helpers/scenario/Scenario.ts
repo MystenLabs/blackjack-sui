@@ -10,6 +10,7 @@ import { delay } from "../general/delay";
 import { doPlayerHitOrStand } from "../actions/playerHitOrStandRequest";
 import { houseHitOrStand } from "../actions/houseHitOrStand";
 import { doInitialDeal } from "../actions/doinitialDeal";
+import fs from "fs";
 
 interface ScnearioConstructorProps {
   steps: UserScenarioStep[];
@@ -27,6 +28,7 @@ export class Scenario {
       const isHouseAdminCapBurnt = await getIsHouseAdminCapBurnt({
         suiClient: this.suiClient,
       });
+      console.log(`AdminCap is ${isHouseAdminCapBurnt ? "" : "not "}burnt`);
       // if the house admin cap is not burnt
       // initialize the house data object
       if (!isHouseAdminCapBurnt) {
@@ -36,6 +38,12 @@ export class Scenario {
         if (!houseDataId) {
           throw new Error("House data initialization failed");
         }
+        fs.appendFileSync("./.env", `HOUSE_DATA_ID=${houseDataId}\n`);
+        fs.appendFileSync("../backend/.env", `HOUSE_DATA_ID=${houseDataId}\n`);
+        fs.appendFileSync(
+          "../app/.env",
+          `NEXT_PUBLIC_HOUSE_DATA_ID=${houseDataId}\n`
+        );
         this.state.houseDataId = houseDataId;
       } else {
         // if the house admin cap is burnt
@@ -80,20 +88,14 @@ export class Scenario {
     "house-hit": async () =>
       await houseHitOrStand({
         suiClient: this.suiClient,
-        eventParsedJson: {
-          gameId: this.state.gameId!,
-          current_player_hand_sum: this.state.game!.player_sum,
-        },
+        gameId: this.state.gameId!,
         move: "hit",
         houseDataId: this.state.houseDataId!,
       }),
     "house-stand": async () =>
       await houseHitOrStand({
         suiClient: this.suiClient,
-        eventParsedJson: {
-          gameId: this.state.gameId!,
-          current_player_hand_sum: this.state.game!.player_sum,
-        },
+        gameId: this.state.gameId!,
         move: "stand",
         houseDataId: this.state.houseDataId!,
       }),

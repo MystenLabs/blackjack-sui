@@ -3,18 +3,19 @@ import { formatAddress } from "@mysten/sui.js/utils";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { bytesToHex } from "@noble/curves/abstract/utils";
 import { bls12_381 } from "@noble/curves/bls12-381";
-import { getGameObject } from "../getObject/getGameObject";
-import { getKeypair } from "../keypair/getKeyPair";
-import { ADMIN_SECRET_KEY, PACKAGE_ADDRESS } from "../../config";
-import { getBLSSecreyKey } from "../bls/getBLSSecretKey";
-import { getHitOrStandRequestForGameAndSum } from "../getObject/getHitOrStandRequestForGameAndSum";
+import { getKeypair } from "../helpers/getKeyPair";
+import { ADMIN_SECRET_KEY, PACKAGE_ADDRESS } from "../utils/config";
+import { getGameObject } from "../helpers/getGameObject";
+import { getBLSSecreyKey } from "../helpers/getBLSSecretKey";
+import { logger } from "../utils/logger";
+import { sponsorAndSignTransaction } from "../utils/sponsorAndSignTransaction";
 
 interface HouseHitOrStandProps {
   gameId: string;
   move: "hit" | "stand";
   suiClient: SuiClient;
   houseDataId: string;
-  requestObjectId?: string;
+  requestObjectId: string;
   onHitSuccess?: (event: SuiEvent) => void;
   onStandSuccess?: (gameId: string) => void;
 }
@@ -30,7 +31,7 @@ export const houseHitOrStand = async ({
 }: HouseHitOrStandProps) => {
   const adminKeypair = getKeypair(ADMIN_SECRET_KEY!);
 
-  console.log(
+  logger.info(
     `House is ${
       move === "hit" ? "hitting" : "standing"
     } for game ${formatAddress(gameId)}...`
@@ -48,19 +49,6 @@ export const houseHitOrStand = async ({
         getBLSSecreyKey(ADMIN_SECRET_KEY!)
       );
 
-      let hitOrStandRequest = requestObjectId || await getHitOrStandRequestForGameAndSum({
-        move,
-        gameId,
-        playerSum: resp.player_sum,
-        suiClient,
-      });
-
-      if (!hitOrStandRequest) {
-        throw new Error("No hit or stand request found for this move in the admin's owned objects");
-      }
-
-      console.log({ hitOrStandRequest });
-
       tx.setGasBudget(10000000000);
       tx.moveCall({
         target: `${PACKAGE_ADDRESS}::single_player_blackjack::${move}`,
@@ -68,14 +56,23 @@ export const houseHitOrStand = async ({
           tx.object(gameId),
           tx.pure(Array.from(signedHouseHash), "vector<u8>"),
           tx.object(houseDataId),
-          tx.object(hitOrStandRequest),
+          tx.object(requestObjectId),
         ],
       });
 
+      const { signedTransaction, sponsoredTransaction } =
+        await sponsorAndSignTransaction({
+          tx,
+          suiClient,
+        });
+
       await suiClient
-        .signAndExecuteTransactionBlock({
-          signer: adminKeypair,
-          transactionBlock: tx,
+        .executeTransactionBlock({
+          transactionBlock: signedTransaction.bytes,
+          signature: [
+            signedTransaction.signature,
+            sponsoredTransaction.signature,
+          ],
           requestType: "WaitForLocalExecution",
           options: {
             showObjectChanges: true,
@@ -85,7 +82,7 @@ export const houseHitOrStand = async ({
         })
         .then((resp) => {
           const status = resp?.effects?.status.status;
-          console.log({ status });
+          logger.info(`status: ${status}`);
           if (status !== "success") {
             throw new Error("Transaction failed");
           }
@@ -101,10 +98,10 @@ export const houseHitOrStand = async ({
           }
         })
         .catch((err) => {
-          console.log({ err });
+          logger.error({ err });
         });
     })
     .catch((err) => {
-      console.log({ err });
+      logger.error({ err });
     });
 };

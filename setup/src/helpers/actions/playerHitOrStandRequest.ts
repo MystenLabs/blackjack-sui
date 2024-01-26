@@ -1,16 +1,21 @@
-import { SuiClient, SuiEvent } from "@mysten/sui.js/client";
+import {
+  SuiClient,
+  SuiEvent,
+  SuiObjectChange,
+  SuiObjectChangeCreated,
+} from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { getKeypair } from "../keypair/getKeyPair";
-import { PACKAGE_ADDRESS } from "../../config";
+import { ADMIN_SECRET_KEY, PACKAGE_ADDRESS } from "../../config";
 import { getGameObject } from "../getObject/getGameObject";
 import { formatAddress } from "@mysten/sui.js/utils";
+import { getAddress } from "../keypair/getAddress";
 
 interface DoPlayerHitProps {
   playerSecretKey: string;
   suiClient: SuiClient;
   gameId: string;
   move: "hit" | "stand";
-  onSuccess?: (event: SuiEvent) => void;
 }
 
 export const doPlayerHitOrStand = async ({
@@ -18,20 +23,22 @@ export const doPlayerHitOrStand = async ({
   suiClient,
   gameId,
   move,
-  onSuccess,
 }: DoPlayerHitProps) => {
   const playerKeypair = getKeypair(playerSecretKey);
   const playerAddress = playerKeypair.getPublicKey().toSuiAddress();
-  console.log(`Player ${formatAddress(playerAddress)} is requesting a ${move}...`);
+  console.log(
+    `Player ${formatAddress(playerAddress)} is requesting a ${move}...`
+  );
 
   await getGameObject({ suiClient, gameId }).then(async (resp) => {
     const { player_sum } = resp;
 
     const tx = new TransactionBlock();
-    tx.moveCall({
+    let request = tx.moveCall({
       target: `${PACKAGE_ADDRESS}::single_player_blackjack::do_${move}`,
       arguments: [tx.object(gameId), tx.pure(player_sum, "u8")],
     });
+    tx.transferObjects([request], getAddress(ADMIN_SECRET_KEY));
 
     await suiClient
       .signAndExecuteTransactionBlock({
@@ -49,15 +56,25 @@ export const doPlayerHitOrStand = async ({
         if (status !== "success") {
           throw new Error("Transaction failed");
         }
-        const event = resp.events?.find(
-          ({ type }) =>
-            type ===
-            `${PACKAGE_ADDRESS}::single_player_blackjack::${
-              move === "hit" ? "Hit" : "Stand"
-            }RequestedEvent`
+        const createdObjects = resp.objectChanges?.filter(
+          ({ type }) => type === "created"
+        ) as SuiObjectChangeCreated[];
+        const hitOrStandRequest = createdObjects.find(
+          ({ objectType }) =>
+            objectType ===
+            `${PACKAGE_ADDRESS}::single_player_blackjack::${move
+              .slice(0, 1)
+              .toUpperCase()
+              .concat(move.slice(1))}Request`
         );
-        console.log({ event });
-        !!onSuccess && onSuccess(event!);
+        if (!hitOrStandRequest) {
+          throw new Error(
+            `No ${move}Request found in the admin's owned objects`
+          );
+        }
+        console.log({
+          [`${move}RequestId`]: hitOrStandRequest?.objectId,
+        });
       })
       .catch((err) => {
         console.log({ err });

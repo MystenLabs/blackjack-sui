@@ -8,6 +8,7 @@ const initializeHouse = async () => {
     suiClient: new SuiClient({ url: SUI_NETWORK }),
   });
   fs.appendFileSync("./.env", `HOUSE_DATA_ID=${houseDataId}\n`);
+  fs.appendFileSync("../backend/.env", `HOUSE_DATA_ID=${houseDataId}\n`);
   fs.appendFileSync(
     "../app/.env",
     `NEXT_PUBLIC_HOUSE_DATA_ID=${houseDataId}\n`

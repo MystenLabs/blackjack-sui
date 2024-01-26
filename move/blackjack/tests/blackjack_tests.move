@@ -10,9 +10,11 @@ module blackjack::single_player_blackjack_tests {
     use sui::object::{ID};
     use sui::coin;
     use sui::sui::SUI;
-    use sui::test_scenario::{Self, Scenario, TransactionEffects};
+    use sui::object;
+    use sui::transfer;
+    use sui::test_scenario::{Self, Scenario};
     use sui::bls12381::bls12381_min_pk_verify;
-    use blackjack::single_player_blackjack::{Self as bj, HouseAdminCap, HouseData, Game};
+    use blackjack::single_player_blackjack::{Self as bj, HouseAdminCap, HouseData, Game, HitRequest, StandRequest};
     use blackjack::counter_nft::{Self, Counter};
 
     const ADMIN: address = @0x65391674eb4210940ea98ae451237d9335920297e7c8abaeb7e05b221ee36917;
@@ -232,16 +234,19 @@ module blackjack::single_player_blackjack_tests {
             test_scenario::return_shared(game);
         };
 
+        do_hit_for_test(scenario, PLAYER, ADMIN);
         hit_for_test(scenario, ADMIN, BLS_SIG_1);
 
         test_scenario::next_tx(scenario, ADMIN);
         {
             let game = test_scenario::take_shared<Game>(scenario);
+            let owned_hit_requests_by_admin = test_scenario::ids_for_sender<HitRequest>(scenario);
             let player_cards_length_before = vector::length(&_player_cards_before);
             let player_cards_length_after = vector::length(&bj::player_cards(&game));
             let dealer_cards_length_before = vector::length(&_dealer_cards_before);
             let dealer_cards_length_after = vector::length(&bj::dealer_cards(&game));
 
+            assert!(vector::length(&owned_hit_requests_by_admin) == 0, 1);
             assert!(bj::player_sum(&game) > _player_sum_before, 1);
             assert!(player_cards_length_after == player_cards_length_before + 1, 2);
             assert!(bj::dealer_sum(&game) == _dealer_sum_before, 3);
@@ -276,20 +281,48 @@ module blackjack::single_player_blackjack_tests {
             test_scenario::return_shared(game);
         };
 
+        do_stand_for_test(scenario, PLAYER, ADMIN);
         stand_for_test(scenario, ADMIN, BLS_SIG_1);
 
         test_scenario::next_tx(scenario, ADMIN);
         {
             let game = test_scenario::take_shared<Game>(scenario);
+            let owned_stand_requests_by_admin = test_scenario::ids_for_sender<StandRequest>(scenario);
             let player_cards_length_before = vector::length(&_player_cards_before);
             let player_cards_length_after = vector::length(&bj::player_cards(&game));
             let dealer_cards_length_before = vector::length(&_dealer_cards_before);
             let dealer_cards_length_after = vector::length(&bj::dealer_cards(&game));
 
+            assert!(vector::length(&owned_stand_requests_by_admin) == 0, 1);
             assert!(bj::player_sum(&game) == _player_sum_before, 1);
             assert!(player_cards_length_after == player_cards_length_before, 2);
             assert!(bj::dealer_sum(&game) > _dealer_sum_before, 3);
             assert!(dealer_cards_length_after > dealer_cards_length_before, 4);
+            test_scenario::return_shared(game);
+        };
+
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    fun test_do_hit() {
+        let scenario_val = test_scenario::begin(PLAYER);
+        let scenario = &mut scenario_val;
+
+        initialize_house_data_for_test(scenario, PLAYER, INITIAL_HOUSE_BALANCE);
+        initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
+        do_first_deal_for_test(scenario, PLAYER, BLS_SIG_0, false);
+        do_hit_for_test(scenario, PLAYER, ADMIN);
+
+        test_scenario::next_tx(scenario, ADMIN);
+        {
+            let hit_request = test_scenario::take_from_sender<HitRequest>(scenario);
+            let game = test_scenario::take_shared<Game>(scenario);
+
+            assert!(bj::hit_request_game_id(&hit_request) == object::id(&game), 1);
+            assert!(bj::hit_request_current_player_sum(&hit_request) == bj::player_sum(&game), 2);
+
+            test_scenario::return_to_sender(scenario, hit_request);
             test_scenario::return_shared(game);
         };
 
@@ -306,7 +339,7 @@ module blackjack::single_player_blackjack_tests {
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
         do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
         player_won_post_handling_for_test(scenario, ADMIN);
-        do_hit_for_test(scenario, PLAYER);
+        do_hit_for_test(scenario, PLAYER, ADMIN);
 
         test_scenario::end(scenario_val);
     }
@@ -321,7 +354,61 @@ module blackjack::single_player_blackjack_tests {
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
         do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
-        do_hit_for_test(scenario, player2);
+        do_hit_for_test(scenario, player2, ADMIN);
+
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = bj::EInvalidSumOfHitRequest)]
+    fun test_do_hit_with_invalid_player_sum() {
+        let scenario_val = test_scenario::begin(PLAYER);
+        let scenario = &mut scenario_val;
+
+        initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
+        initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
+        do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
+        
+        test_scenario::next_tx(scenario, PLAYER);
+        {
+            let game = test_scenario::take_shared<Game>(scenario);
+            let current_player_sum = bj::player_sum(&game);
+            let hit_request = bj::do_hit(
+                &mut game,
+                current_player_sum + 1,
+                test_scenario::ctx(scenario),
+            );
+            transfer::public_transfer(
+                hit_request,
+                ADMIN,
+            );
+            test_scenario::return_shared(game);
+        };
+
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    fun test_to_stand() {
+        let scenario_val = test_scenario::begin(PLAYER);
+        let scenario = &mut scenario_val;
+
+        initialize_house_data_for_test(scenario, PLAYER, INITIAL_HOUSE_BALANCE);
+        initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
+        do_first_deal_for_test(scenario, PLAYER, BLS_SIG_0, false);
+        do_stand_for_test(scenario, PLAYER, ADMIN);
+
+        test_scenario::next_tx(scenario, ADMIN);
+        {
+            let stand_request = test_scenario::take_from_sender<StandRequest>(scenario);
+            let game = test_scenario::take_shared<Game>(scenario);
+
+            assert!(bj::stand_request_game_id(&stand_request) == object::id(&game), 1);
+            assert!(bj::stand_request_current_player_sum(&stand_request) == bj::player_sum(&game), 2);
+
+            test_scenario::return_to_sender(scenario, stand_request);
+            test_scenario::return_shared(game);
+        };
 
         test_scenario::end(scenario_val);
     }
@@ -336,7 +423,7 @@ module blackjack::single_player_blackjack_tests {
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
         do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
         player_won_post_handling_for_test(scenario, ADMIN);
-        do_stand_for_test(scenario, PLAYER);
+        do_stand_for_test(scenario, PLAYER, ADMIN);
         test_scenario::end(scenario_val);
     }
 
@@ -350,7 +437,36 @@ module blackjack::single_player_blackjack_tests {
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
         do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
-        do_stand_for_test(scenario, player2);
+        do_stand_for_test(scenario, player2, ADMIN);
+
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = bj::EInvalidSumOfStandRequest)]
+    fun test_do_stand_with_invalid_player_sum() {
+        let scenario_val = test_scenario::begin(PLAYER);
+        let scenario = &mut scenario_val;
+
+        initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
+        initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
+        do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
+        
+        test_scenario::next_tx(scenario, PLAYER);
+        {
+            let game = test_scenario::take_shared<Game>(scenario);
+            let current_player_sum = bj::player_sum(&game);
+            let stand_request = bj::do_stand(
+                &mut game,
+                current_player_sum + 1,
+                test_scenario::ctx(scenario),
+            );
+            transfer::public_transfer(
+                stand_request,
+                ADMIN,
+            );
+            test_scenario::return_shared(game);
+        };
 
         test_scenario::end(scenario_val);
     }
@@ -432,6 +548,7 @@ module blackjack::single_player_blackjack_tests {
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
         do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
         draw_card_seven_for_player_for_test(scenario, PLAYER, false);
+        do_hit_for_test(scenario, PLAYER, ADMIN);
         hit_for_test(scenario, ADMIN, BLS_SIG_1);
 
         test_scenario::next_tx(scenario, ADMIN);
@@ -547,33 +664,42 @@ module blackjack::single_player_blackjack_tests {
     fun do_hit_for_test(
         scenario: &mut Scenario,
         player: address,
-    ): TransactionEffects {
-        let effects = test_scenario::next_tx(scenario, player);
+        admin: address,
+    ) {
+        test_scenario::next_tx(scenario, player);
         {
             let game = test_scenario::take_shared<Game>(scenario);
-            let current_hand_sum = bj::player_sum(&game);
-            bj::do_hit(
+            let current_player_sum = bj::player_sum(&game);
+            let hit_request = bj::do_hit(
                 &mut game,
-                current_hand_sum,
+                current_player_sum,
                 test_scenario::ctx(scenario),
+            );
+            transfer::public_transfer(
+                hit_request,
+                admin,
             );
             test_scenario::return_shared(game);
         };
-        effects
     }
 
     fun do_stand_for_test(
         scenario: &mut Scenario,
         player: address,
+        admin: address,
     ) {
         let effects = test_scenario::next_tx(scenario, player);
         {
             let game = test_scenario::take_shared<Game>(scenario);
-            let current_hand_sum = bj::player_sum(&game);
-            bj::do_stand(
+            let current_player_sum = bj::player_sum(&game);
+            let stand_request = bj::do_stand(
                 &mut game,
-                current_hand_sum,
+                current_player_sum,
                 test_scenario::ctx(scenario),
+            );
+            transfer::public_transfer(
+                stand_request,
+                admin,
             );
             test_scenario::return_shared(game);
         };
@@ -589,10 +715,12 @@ module blackjack::single_player_blackjack_tests {
         {
             let game = test_scenario::take_shared<Game>(scenario);
             let house_data = test_scenario::take_shared<HouseData>(scenario);
+            let hit_request = test_scenario::take_from_sender<HitRequest>(scenario);
             bj::hit(
                 &mut game,
                 bls_sig,
                 &mut house_data,
+                hit_request,
                 test_scenario::ctx(scenario),
             );
             test_scenario::return_shared(game);
@@ -609,10 +737,12 @@ module blackjack::single_player_blackjack_tests {
         {
             let game = test_scenario::take_shared<Game>(scenario);
             let house_data = test_scenario::take_shared<HouseData>(scenario);
+            let stand_request = test_scenario::take_from_sender<StandRequest>(scenario);
             bj::stand(
                 &mut game,
                 bls_sig,
                 &mut house_data,
+                stand_request,
                 test_scenario::ctx(scenario),
             );
             test_scenario::return_shared(game);
