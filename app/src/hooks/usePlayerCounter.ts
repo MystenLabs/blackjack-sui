@@ -24,7 +24,7 @@ export const usePlayerCounter = () => {
     let signedTx: any = null;
     try {
       signedTx = await signTransactionBlock({
-        transactionBlock: tx,
+        transactionBlock: tx as any,
       });
     } catch (err) {
       toast.error("Could not sign transaction block");

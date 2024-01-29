@@ -43,7 +43,7 @@ export const useCreateBlackjackGame = () => {
       try {
         console.log("Signing transaction...");
         signedTx = await signTransactionBlock({
-          transactionBlock: tx,
+          transactionBlock: tx as any,
         });
       } catch (err) {
         toast.error("Could not sign transaction block");
