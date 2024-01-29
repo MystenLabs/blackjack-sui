@@ -25,7 +25,7 @@ export const HomePage = () => {
   } = useBlackjackGame();
 
   if (!currentAccount?.address) {
-    return <ConnectWallet />
+    return <ConnectWallet />;
   }
 
   if (isCounterIdLoading) {
@@ -48,9 +48,7 @@ export const HomePage = () => {
   }
 
   if (isCreateGameLoading || (!game && isLoading)) {
-    return (
-      <Spinner />
-    )
+    return <Spinner />;
   }
 
   if (!game) {
@@ -98,6 +96,7 @@ export const HomePage = () => {
             id: "player_points",
             columns: [
               <SuiExplorerLink
+                key="game-id"
                 type="object"
                 objectId={game.id.id}
                 className="text-primary"
@@ -107,8 +106,8 @@ export const HomePage = () => {
                 : game.status === 1
                 ? "You won!"
                 : "You lost!",
-              <SuiExplorerLink type="address" objectId={game.player} />,
-              <SuiExplorerLink type="object" objectId={counterId} />,
+              <SuiExplorerLink key="game-player" type="address" objectId={game.player} />,
+              <SuiExplorerLink key="counter" type="object" objectId={counterId} />,
               `${game.player_sum}`,
               `${game.dealer_sum}`,
             ],
