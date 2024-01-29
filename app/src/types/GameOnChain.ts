@@ -5,6 +5,7 @@ export interface GameOnChain {
   counter: number;
   dealer_cards: number[];
   dealer_sum: number;
+  player: string;
   player_cards: number[];
   player_sum: number;
   status: number;

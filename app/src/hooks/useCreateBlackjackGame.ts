@@ -25,13 +25,11 @@ export const useCreateBlackjackGame = () => {
         toast.error("You need to own a Counter NFT to play");
         return null;
       }
-
       console.log("Creating game...");
       setIsCreateGameLoading(true);
       const tx = new TransactionBlock();
       const betAmountCoin = tx.splitCoins(tx.gas, [tx.pure("200000000")]);
       const randomBytesAsHexString = getUserRandomnessAsHexString();
-
       tx.moveCall({
         target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::place_bet_and_create_game`,
         arguments: [
@@ -41,11 +39,9 @@ export const useCreateBlackjackGame = () => {
           tx.object(process.env.NEXT_PUBLIC_HOUSE_DATA_ID!),
         ],
       });
-
       let signedTx: any = null;
       try {
         console.log("Signing transaction...");
-
         signedTx = await signTransactionBlock({
           transactionBlock: tx,
         });
@@ -54,7 +50,6 @@ export const useCreateBlackjackGame = () => {
         setIsCreateGameLoading(false);
         return null;
       }
-
       console.log("Executing transaction...");
       return executeSignedTransactionBlock({
         signedTx,
@@ -80,7 +75,6 @@ export const useCreateBlackjackGame = () => {
           }
           const { objectId } = createdGame;
           console.log("Created game id:", objectId);
-          setIsCreateGameLoading(false);
           return makeInitialDealRequest({
             gameId: objectId,
             txDigest: resp.effects?.transactionDigest!,
@@ -107,6 +101,7 @@ export const useCreateBlackjackGame = () => {
       .then((resp) => {
         const { message, txDigest } = resp.data;
         toast.success(message);
+        setIsCreateGameLoading(false);
         return {
           gameId,
           txDigest,
@@ -115,6 +110,7 @@ export const useCreateBlackjackGame = () => {
       .catch((error) => {
         console.log(error);
         toast.error("Game created, but initial deal failed.");
+        setIsCreateGameLoading(false);
         return null;
       });
   };

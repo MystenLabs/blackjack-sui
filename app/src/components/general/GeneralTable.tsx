@@ -22,6 +22,7 @@ interface GeneralTableProps {
   headers: string[];
   state: GeneralTableState;
   caption: string;
+  showFooter?: boolean;
 }
 
 interface GeneralTableRow {
@@ -41,6 +42,7 @@ export const GeneralTable = ({
   headers,
   state,
   caption,
+  showFooter = true,
 }: GeneralTableProps) => {
   const [currentState, setCurrentState] = useState<GeneralTableState>(state);
 
@@ -123,51 +125,54 @@ export const GeneralTable = ({
           </TableRow>
         ))}
       </TableBody>
-      <TableFooter className="border-t-2 border-grey-100 bg-inherit text-primary">
-        <TableRow>
-          <TableCell colSpan={headers.length}>
-            <div className="flex justify-between items-center">
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  className="border-primary"
-                  disabled={!hasPreviousPage}
-                  onClick={handleStartPage}
-                >
-                  <DoubleArrowLeftIcon />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-primary"
-                  disabled={!hasPreviousPage}
-                  onClick={handlePreviousPage}
-                >
-                  <TrackPreviousIcon />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-primary"
-                  disabled={!hasNextPage}
-                  onClick={handleNextPage}
-                >
-                  <TrackNextIcon />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-primary"
-                  disabled={!hasNextPage}
-                  onClick={handleEndPage}
-                >
-                  <DoubleArrowRightIcon />
-                </Button>
+      {!!showFooter && (
+        <TableFooter className="border-t-2 border-grey-100 bg-inherit text-primary">
+          <TableRow>
+            <TableCell colSpan={headers.length}>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    className="border-primary"
+                    disabled={!hasPreviousPage}
+                    onClick={handleStartPage}
+                  >
+                    <DoubleArrowLeftIcon />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="border-primary"
+                    disabled={!hasPreviousPage}
+                    onClick={handlePreviousPage}
+                  >
+                    <TrackPreviousIcon />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="border-primary"
+                    disabled={!hasNextPage}
+                    onClick={handleNextPage}
+                  >
+                    <TrackNextIcon />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="border-primary"
+                    disabled={!hasNextPage}
+                    onClick={handleEndPage}
+                  >
+                    <DoubleArrowRightIcon />
+                  </Button>
+                </div>
+                <div className="text-sm">
+                  Showing {startIndex + 1} to {endIndex} of {rows.length}{" "}
+                  results
+                </div>
               </div>
-              <div className="text-sm">
-                Showing {startIndex + 1} to {endIndex} of {rows.length} results
-              </div>
-            </div>
-          </TableCell>
-        </TableRow>
-      </TableFooter>
+            </TableCell>
+          </TableRow>
+        </TableFooter>
+      )}
     </Table>
   );
 };
