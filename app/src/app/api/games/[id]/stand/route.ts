@@ -2,6 +2,9 @@ import { houseHitOrStand } from "@/app/api/services/houseHitOrStand";
 import { SuiClient } from "@mysten/sui.js/client";
 import { NextRequest, NextResponse } from "next/server";
 
+// Waits for the transaction block that made the stand request
+// And then executes the stand move
+// It returns the txDigest, so that the UI will wait for this transaction block before re-fetching the game
 export const POST = async (
   req: NextRequest,
   { params }: { params: { id: string } }

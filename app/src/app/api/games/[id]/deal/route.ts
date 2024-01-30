@@ -2,6 +2,9 @@ import { doInitialDeal } from "@/app/api/services/doInitialDeal";
 import { SuiClient } from "@mysten/sui.js/client";
 import { NextRequest, NextResponse } from "next/server";
 
+// Waits for the transaction block that created the game
+// And then executes the initial deal
+// It returns the txDigest, so that the UI will wait for this transaction block before re-fetching the game
 export const POST = async (
   req: NextRequest,
   { params }: { params: { id: string } }

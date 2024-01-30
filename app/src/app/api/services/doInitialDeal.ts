@@ -12,7 +12,7 @@ interface DoInitialDealProps {
   houseDataId: string;
 }
 
-// not catching errors on puprose, they will be caught and logged by the corresponding route.ts file
+// Not catching errors on purpose, they will be caught and logged by the corresponding route.ts file
 export const doInitialDeal = async ({
   suiClient,
   gameId,

@@ -24,7 +24,9 @@ export const useBlackjackGame = () => {
     setGame(null);
     setIsLoading(false);
   }, [currentAccount?.address]);
-  
+
+  // Receives the txDigest of the transaction that updated the game
+  // Waits for this transaction block, and then re-fetches the game object
   const reFetchGame = async (gameId: string, txDigest?: string) => {
     if (!gameId) {
       setGame(null);

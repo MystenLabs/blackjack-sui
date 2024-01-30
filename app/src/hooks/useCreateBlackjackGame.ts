@@ -89,6 +89,8 @@ export const useCreateBlackjackGame = () => {
     []
   );
 
+  // Passes the txDigest from the game creation tx to the API
+  // So that the API will waitForTransactionBlock on it before making the initial deal
   const makeInitialDealRequest = async ({
     gameId,
     txDigest,

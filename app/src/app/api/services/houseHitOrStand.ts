@@ -15,7 +15,7 @@ interface HouseHitOrStandProps {
   requestObjectId: string;
 }
 
-// not catching errors on puprose, they will be caught and logged by the corresponding route.ts file
+// Not catching errors on puprose, they will be caught and logged by the corresponding route.ts file
 export const houseHitOrStand = async ({
   gameId,
   move,
