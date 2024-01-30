@@ -10,7 +10,12 @@ export const POST = async (
   const suiClient = new SuiClient({
     url: process.env.NEXT_PUBLIC_SUI_NETWORK!,
   });
-  const { requestObjectId } = await req.json();
+  const { requestObjectId, txDigest } = await req.json();
+
+  await suiClient.waitForTransactionBlock({
+    digest: txDigest,
+    timeout: 10_000,
+  });
 
   return houseHitOrStand({
     gameId,
