@@ -8,6 +8,7 @@ import { SuiExplorerLink } from "../general/SuiExplorerLink";
 import { GeneralTable } from "../general/GeneralTable";
 import { useWalletKit } from "@mysten/wallet-kit";
 import { ConnectWallet } from "../connectWallet/ConnectWallet";
+import { SignInBanner } from "./SignInBanner";
 
 export const HomePage = () => {
   const { currentAccount } = useWalletKit();
@@ -25,7 +26,7 @@ export const HomePage = () => {
   } = useBlackjackGame();
 
   if (!currentAccount?.address) {
-    return <ConnectWallet />;
+    return <SignInBanner />;
   }
 
   if (isCounterIdLoading) {

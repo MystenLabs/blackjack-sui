@@ -14,17 +14,7 @@ export const AppLogo = ({ className = "" }: AppLogoProps) => {
       href={`/${user.role === USER_ROLES.ROLE_4 ? "/" : user.role}`}
       className={`min-w-[175px] flex space-x-3 text-2xl font-bold text-contrast items-center ${className}`}
     >
-      <Image
-        src={
-          className.includes("text-black")
-            ? "/MystenLabs_Vertical_Logo_Black.svg"
-            : "/MystenLabs_Vertical_Logo_White.svg"
-        }
-        alt="Mysten Labs"
-        width={50}
-        height={50}
-      />
-      <div>PoC Template</div>
+      <div>Mysten Blackjack</div>
     </Link>
   );
 };

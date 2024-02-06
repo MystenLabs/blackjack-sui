@@ -19,18 +19,17 @@ export const TopNavbar = () => {
   };
 
   return (
-    <div className="sticky top-0 flex w-full h-full bg-primary p-5 space-x-4 justify-between items-center">
+    <div className="sticky top-0 flex w-full h-full bg-inherit p-5 space-x-4 justify-between items-center">
       <NavbarHeader showCloseButton={false} onClose={() => {}} />
-      <NavbarLinks position="top" />
       <div className="flex justify-end items-center space-x-1">
-        <div className="flex space-x-2 justify-end items-center min-w-[250px]">
-          {!!currentAccount?.address && (
+        {!!currentAccount?.address && (
+          <div className="flex space-x-2 justify-end items-center min-w-[250px]">
             <Button onClick={handleCopyAddress} variant="link">
               <CopyIcon className="w-5 h-5 text-white" />
             </Button>
-          )}
-          <ConnectButton className="!bg-white !text-primary" />
-        </div>
+            <ConnectButton className="!bg-white !text-primary" />
+          </div>
+        )}
         {user?.role !== USER_ROLES.ROLE_4 &&
           process.env.NEXT_PUBLIC_USE_TOP_NAVBAR_IN_LARGE_SCREEN === "1" && (
             <UserProfileMenu
