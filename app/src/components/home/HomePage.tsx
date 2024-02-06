@@ -7,8 +7,10 @@ import { Spinner } from "../general/Spinner";
 import { SuiExplorerLink } from "../general/SuiExplorerLink";
 import { GeneralTable } from "../general/GeneralTable";
 import { useWalletKit } from "@mysten/wallet-kit";
-import { ConnectWallet } from "../connectWallet/ConnectWallet";
 import { SignInBanner } from "./SignInBanner";
+import { StartGame } from "./StartGame";
+import { DealerCards } from "./DealerCards";
+import { PlayerCards } from "./PlayerCards";
 
 export const HomePage = () => {
   const { currentAccount } = useWalletKit();
@@ -48,22 +50,17 @@ export const HomePage = () => {
     );
   }
 
-  if (isCreateGameLoading || (!game && isLoading)) {
+  if (!game && isLoading) {
     return <Spinner />;
   }
 
   if (!game) {
     if (!isLoading) {
       return (
-        <div className="w-full flex flex-col items-center p-10">
-          <LoadingButton
-            onClick={handleCreateGame}
-            isLoading={isCreateGameLoading}
-            className="w-[300px] px-auto"
-          >
-            Start a game!
-          </LoadingButton>
-        </div>
+        <StartGame
+          handleCreateGame={handleCreateGame}
+          isLoading={isCreateGameLoading}
+        />
       );
     }
     return <Spinner />;
@@ -76,6 +73,8 @@ export const HomePage = () => {
           <Spinner />
         </div>
       )}
+      <DealerCards cards={game.dealer_cards} points={game.dealer_sum} />
+      <PlayerCards cards={game.player_cards} points={game.player_sum} />
       <GeneralTable
         caption="State of the game"
         showFooter={false}
@@ -107,8 +106,16 @@ export const HomePage = () => {
                 : game.status === 1
                 ? "You won!"
                 : "You lost!",
-              <SuiExplorerLink key="game-player" type="address" objectId={game.player} />,
-              <SuiExplorerLink key="counter" type="object" objectId={counterId} />,
+              <SuiExplorerLink
+                key="game-player"
+                type="address"
+                objectId={game.player}
+              />,
+              <SuiExplorerLink
+                key="counter"
+                type="object"
+                objectId={counterId}
+              />,
               `${game.player_sum}`,
               `${game.dealer_sum}`,
             ],

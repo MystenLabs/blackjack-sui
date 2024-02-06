@@ -20,6 +20,8 @@ export const ProvidersAndLayout = ({ children }: ChildrenProps) => {
           style={{
             backgroundImage: "url('/background.svg')",
             backgroundSize: "cover",
+            backgroundPositionX: "center",
+            backgroundPositionY: "top",
           }}
         >
           <LargeScreenLayout>{children}</LargeScreenLayout>

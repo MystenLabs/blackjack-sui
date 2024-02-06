@@ -1,17 +1,11 @@
 import React from "react";
 import { NavbarHeader } from "./NavbarHeader";
-import { NavbarLinks } from "./NavbarLinks";
-import { UserProfileMenu } from "@/components/general/UserProfileMenu";
-import { UserAvatar } from "@/components/general/UserAvatar";
-import { useAuthentication } from "@/contexts/Authentication";
-import { USER_ROLES } from "@/constants/USER_ROLES";
 import { ConnectButton, useWalletKit } from "@mysten/wallet-kit";
 import { Button } from "@/components/ui/button";
 import { CopyIcon } from "@radix-ui/react-icons";
 import toast from "react-hot-toast";
 
 export const TopNavbar = () => {
-  const { user } = useAuthentication();
   const { currentAccount } = useWalletKit();
   const handleCopyAddress = () => {
     navigator.clipboard.writeText(currentAccount?.address!);
@@ -30,12 +24,6 @@ export const TopNavbar = () => {
             <ConnectButton className="!bg-white !text-primary" />
           </div>
         )}
-        {user?.role !== USER_ROLES.ROLE_4 &&
-          process.env.NEXT_PUBLIC_USE_TOP_NAVBAR_IN_LARGE_SCREEN === "1" && (
-            <UserProfileMenu
-              trigger={<UserAvatar user={user} showNameEmail={false} />}
-            />
-          )}
       </div>
     </div>
   );
