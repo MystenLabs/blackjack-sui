@@ -4,10 +4,12 @@ import { Spinner } from "./Spinner";
 
 interface LoadingButtonProps extends ButtonProps {
   isLoading: boolean;
+  showSpinner?: boolean;
 }
 
 export const LoadingButton = ({
   isLoading,
+  showSpinner = true,
   children,
   ...props
 }: LoadingButtonProps) => {
@@ -17,7 +19,7 @@ export const LoadingButton = ({
       disabled={isLoading}
       {...props}
     >
-      {!!isLoading && <Spinner />}
+      {!!isLoading && !!showSpinner && <Spinner />}
       {children}
     </Button>
   );

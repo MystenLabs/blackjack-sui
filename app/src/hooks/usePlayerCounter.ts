@@ -27,6 +27,7 @@ export const usePlayerCounter = () => {
         transactionBlock: tx as any,
       });
     } catch (err) {
+      console.error(err);
       toast.error("Could not sign transaction block");
       setIsLoading(false);
       setCounterId(null);

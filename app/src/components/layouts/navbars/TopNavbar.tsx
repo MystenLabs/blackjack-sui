@@ -13,7 +13,7 @@ export const TopNavbar = () => {
   };
 
   return (
-    <div className="sticky top-0 flex w-full h-full bg-inherit p-5 space-x-4 justify-between items-center">
+    <div className="sticky top-0 flex w-full h-full bg-inherit p-5 space-x-4 justify-between items-center z-10">
       <NavbarHeader showCloseButton={false} onClose={() => {}} />
       <div className="flex justify-end items-center space-x-1">
         {!!currentAccount?.address && (

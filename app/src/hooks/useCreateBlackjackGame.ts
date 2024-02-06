@@ -46,6 +46,7 @@ export const useCreateBlackjackGame = () => {
           transactionBlock: tx as any,
         });
       } catch (err) {
+        console.error(err);
         toast.error("Could not sign transaction block");
         setIsCreateGameLoading(false);
         return null;
