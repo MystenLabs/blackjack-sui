@@ -2,7 +2,6 @@
 
 This repo contains code for the BlackJack on Sui Blockchain game, built with Move.
 
-
 ## Sui Blackjack Modules
 
 ### `single_player_blackjack.move`

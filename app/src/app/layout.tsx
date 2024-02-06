@@ -1,26 +1,20 @@
-import "./globals.css";
-import type { Metadata } from "next";
+import "../styles/globals.css";
 import { Inter } from "next/font/google";
-import GlobalContexts from "./globalContexts";
+import { ChildrenProps } from "@/types/ChildrenProps";
+import { ProvidersAndLayout } from "./ProvidersAndLayout";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "Sui Blackjack",
-  description: "A simple Blackjack game built by taking advantage the Sui Framework",
-};
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: ChildrenProps) {
+  console.log("layout.tsx is on server:", !!process.env.IS_SERVER_SIDE);
   return (
     <html lang="en">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/favicon.ico"></link>
+      </head>
       <body className={inter.className}>
-        <GlobalContexts>
-          {children}
-        </GlobalContexts>
+        <ProvidersAndLayout>{children}</ProvidersAndLayout>
       </body>
     </html>
   );
