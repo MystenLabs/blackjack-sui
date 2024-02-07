@@ -1,8 +1,6 @@
 "use client";
 
 import { LargeScreenLayout } from "@/components/layouts/LargeScreenLayout";
-import { MobileLayout } from "@/components/layouts/MobileLayout";
-import { AuthenticationProvider } from "@/contexts/Authentication";
 import { useRegisterServiceWorker } from "@/hooks/useRegisterServiceWorker";
 import { ChildrenProps } from "@/types/ChildrenProps";
 import { WalletKitProvider } from "@mysten/wallet-kit";
@@ -14,25 +12,23 @@ export const ProvidersAndLayout = ({ children }: ChildrenProps) => {
 
   return (
     <WalletKitProvider>
-      <AuthenticationProvider>
-        <main
-          className={`min-h-screen w-screen`}
-          style={{
-            backgroundImage: "url('/background.svg')",
-            backgroundSize: "cover",
-            backgroundPositionX: "center",
-            backgroundPositionY: "top",
+      <main
+        className={`min-h-screen w-screen`}
+        style={{
+          backgroundImage: "url('/background.svg')",
+          backgroundSize: "cover",
+          backgroundPositionX: "center",
+          backgroundPositionY: "top",
+        }}
+      >
+        <LargeScreenLayout>{children}</LargeScreenLayout>
+        <Toaster
+          position="bottom-center"
+          toastOptions={{
+            duration: 5000,
           }}
-        >
-          <LargeScreenLayout>{children}</LargeScreenLayout>
-          <Toaster
-            position="bottom-center"
-            toastOptions={{
-              duration: 5000,
-            }}
-          />
-        </main>
-      </AuthenticationProvider>
+        />
+      </main>
     </WalletKitProvider>
   );
 };
