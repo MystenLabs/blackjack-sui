@@ -16,10 +16,12 @@ export const useCreateBlackjackGame = () => {
   const { executeSignedTransactionBlock } = useSui();
   const { signTransactionBlock } = useWalletKit();
   const [isCreateGameLoading, setIsCreateGameLoading] = useState(false);
+  const [isInitialDealLoading, setIsInitialDealLoading] = useState(false);
 
-  const handleCreateGame = useCallback(
+  const handleCreateGameAndDeal = useCallback(
     async (
-      counterId: string | null
+      counterId: string | null,
+      reFetchGame: (gameId: string, txDigest?: string) => Promise<void>,
     ): Promise<HandleCreateGameSuccessResponse | null> => {
       if (!counterId) {
         toast.error("You need to own a Counter NFT to play");
@@ -46,6 +48,7 @@ export const useCreateBlackjackGame = () => {
           transactionBlock: tx as any,
         });
       } catch (err) {
+        console.error(err);
         toast.error("Could not sign transaction block");
         setIsCreateGameLoading(false);
         return null;
@@ -75,6 +78,10 @@ export const useCreateBlackjackGame = () => {
           }
           const { objectId } = createdGame;
           console.log("Created game id:", objectId);
+          reFetchGame(objectId, resp.effects?.transactionDigest!);
+          setIsCreateGameLoading(false);
+          setIsInitialDealLoading(true);
+          toast.success("Game created!");
           return makeInitialDealRequest({
             gameId: objectId,
             txDigest: resp.effects?.transactionDigest!,
@@ -102,8 +109,8 @@ export const useCreateBlackjackGame = () => {
       })
       .then((resp) => {
         const { message, txDigest } = resp.data;
-        toast.success(message);
-        setIsCreateGameLoading(false);
+        console.log(message);
+        setIsInitialDealLoading(false);
         return {
           gameId,
           txDigest,
@@ -112,13 +119,14 @@ export const useCreateBlackjackGame = () => {
       .catch((error) => {
         console.log(error);
         toast.error("Game created, but initial deal failed.");
-        setIsCreateGameLoading(false);
+        setIsInitialDealLoading(false);
         return null;
       });
   };
 
   return {
     isCreateGameLoading,
-    handleCreateGame,
+    isInitialDealLoading,
+    handleCreateGameAndDeal,
   };
 };

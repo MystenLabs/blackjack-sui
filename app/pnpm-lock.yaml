@@ -50,9 +50,6 @@ dependencies:
   '@types/react-dom':
     specifier: 18.2.6
     version: 18.2.6
-  '@vercel/kv':
-    specifier: ^0.2.2
-    version: 0.2.2(encoding@0.1.13)
   axios:
     specifier: ^1.6.7
     version: 1.6.7
@@ -2649,23 +2646,6 @@ packages:
     dependencies:
       '@typescript-eslint/types': 5.62.0
       eslint-visitor-keys: 3.4.3
-    dev: false
-
-  /@upstash/redis@1.21.0(encoding@0.1.13):
-    resolution: {integrity: sha512-c6M+cl0LOgGK/7Gp6ooMkIZ1IDAJs8zFR+REPkoSkAq38o7CWFX5FYwYEqGZ6wJpUGBuEOr/7hTmippXGgL25A==}
-    dependencies:
-      isomorphic-fetch: 3.0.0(encoding@0.1.13)
-    transitivePeerDependencies:
-      - encoding
-    dev: false
-
-  /@vercel/kv@0.2.2(encoding@0.1.13):
-    resolution: {integrity: sha512-mqnQOB6bkp4h5eObxfLNIlhlVqOGSH8cWOlC5pDVWTjX3zL8dETO1ZBl6M74HBmeBjbD5+J7wDJklRigY6UNKw==}
-    engines: {node: '>=14.6'}
-    dependencies:
-      '@upstash/redis': 1.21.0(encoding@0.1.13)
-    transitivePeerDependencies:
-      - encoding
     dev: false
 
   /@wallet-standard/app@1.0.1:

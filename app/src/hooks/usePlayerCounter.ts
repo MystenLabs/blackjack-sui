@@ -11,9 +11,10 @@ export const usePlayerCounter = () => {
   const { suiClient, executeSignedTransactionBlock } = useSui();
   const [counterId, setCounterId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreateLoading, setIsCreateLoading] = useState(false);
 
   const handleCreateCounter = async (): Promise<string | undefined> => {
-    setIsLoading(true);
+    setIsCreateLoading(true);
     const tx = new TransactionBlock();
     tx.moveCall({
       target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::counter_nft::mint_and_transfer`,
@@ -27,8 +28,9 @@ export const usePlayerCounter = () => {
         transactionBlock: tx as any,
       });
     } catch (err) {
+      console.error(err);
       toast.error("Could not sign transaction block");
-      setIsLoading(false);
+      setIsCreateLoading(false);
       setCounterId(null);
       return;
     }
@@ -56,12 +58,13 @@ export const usePlayerCounter = () => {
           throw new Error("CounterNft not created");
         }
         console.log({ createdCounterNftId: createdCounterNft.objectId });
-        setIsLoading(false);
+        toast.success("Counter NFT minted!");
+        setIsCreateLoading(false);
         setCounterId(createdCounterNft.objectId);
       })
       .catch((err) => {
         console.log(err);
-        setIsLoading(false);
+        setIsCreateLoading(false);
         setCounterId(null);
       });
   };
@@ -92,5 +95,6 @@ export const usePlayerCounter = () => {
     counterId,
     handleCreateCounter,
     isLoading,
+    isCreateLoading,
   };
 };

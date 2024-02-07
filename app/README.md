@@ -1,7 +1,6 @@
 # PoC Template app/ directory - UI, API & DB
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-This project is using the [NextJS App Router](https://nextjs.org/docs/app), and therefore following a corresponding project structure.
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [PoC Template NextJS](https://github.com/MystenLabs/poc-template-nextjs)
 
 ### Usage
 
@@ -9,6 +8,13 @@ This project is using the [NextJS App Router](https://nextjs.org/docs/app), and 
 - Start the development server with `pnpm run dev`
 - Build the project with: `pnpm run build`
 - Serve the built project with: `pnpm run start`
+
+### Environment variables
+
+- The `.env` file contains all of the environmental variables that are not secret and therefore can be tracked by git
+- The secret .env variables, such as the following ones, should be stored inside a separate `.env.development.local` file:
+  - `SHINAMI_GAS_STATION_API_KEY`
+  - `ADMIN_SECRET_KEY` (private key of the Sui account that acts as the house)
 
 ### Directories structure
 
@@ -35,7 +41,6 @@ This project is using the [NextJS App Router](https://nextjs.org/docs/app), and 
 
 ### Main libraries used in the UI
 
-
 - UI components:
   - [Radix UI](https://www.radix-ui.com/)
   - [Shadcn](https://ui.shadcn.com/)
@@ -49,35 +54,6 @@ This project is using the [NextJS App Router](https://nextjs.org/docs/app), and 
   - [React slick](https://www.npmjs.com/package/react-slick)
 - PWA:
   - [Next PWA](https://www.npmjs.com/package/next-pwa)
-
-### User roles and authentication
-
-- By default, in this template, we support three different user roles, as it is already mentioned in the root `README.md` file of the project
-- In order to disable the whole authentication flow, and have a single user role without requiring fullfilment of the LoginForm, the developer can set the environmental variable `NEXT_PUBLIC_USE_AUTHENTICATION` of the app/.env file to `0`.
-  - In this case, the role of the user is by default set to USER_ROLES.ROLE_4, therefore to 'anonymous'
-
-### Theming
-
-- Three different main layouts exist in the source code:
-  1. A layout for large screens with a Top Navbar
-  2. A layout for large screens with a Left Side Navbar, and a Top AppBar
-  3. A layout for mobile devices with a Bottom Navbar, and a Top AppBar
-- To quickly choose the layout you prefer for large screens, you can set the env variable `NEXT_PUBLIC_USE_TOP_NAVBAR_IN_LARGE_SCREEN` to either `1` or `0`
-- In order to have different coloring inside the app, based on the role of the current user:
-  - we wrap our components with the `role-{user.role}` class, inside the `LargeScreenLayout` (app/src/components/layouts/LargeScreenLayout.tsx) or the `MobileLayout` (app/src/components/layouts/MobileLayout.tsx) components
-  - inside the `app/src/styles/globals.css` directory, we define different primary, secondary, (text) contrast, and (text) contrast-disabled colors under the classes `.role-admin`, `.role-moderator`, `.role-member`, `.role-anonymous`
-  - this way, we just use the primary color in our UI components code, and their coloring is changing automatically based on the role of the current user
-
-### Responsive layout
-
-- The layout of the UI is changing based on the size of the device's screen
-  - In large screens (width >= 768px), the general layout is consistent of either a Top Navbar or a collapsible sidebar
-  - In small screens (width < 768px), the general layout is consistent of a bottom navbar
-- To achieve this, we use the tailwind css breakpoints, and in some cases the custom hook `useIsMobile` (app/src/hooks/useIsMobile.ts) which can (and eventually will) be replaced with the tailwind css breakpoints
-
-### Navigation Links
-
-- The links displayed in the NavBars of the template are retrieved based on the current user's role, as it defined in the `navigationsByUserRole.tsx` file (app/src/components/layouts/navbars/navigationsByUserRole.tsx)
 
 ### Adding a new page to the UI
 
@@ -121,21 +97,6 @@ This project is using the [NextJS App Router](https://nextjs.org/docs/app), and 
   }
   ```
 
-### Developing a new PoC with different names of the user roles
-
-- In case that the names of the user roles are not suitable for your PoC, for example if you want to rename `moderator` to `publisher`, take the following steps:
-  - In the `app/src/constants/USER_ROLES.ts` file:
-    - change the value of the corresponding key: - ROLE_2: "publisher",
-      -In the `app/src/types/Authentication.ts` file:
-    - change the corresponding choice for the UserRole type:
-      - export type UserRole = "admin" | "publisher" | "member" | "anonymous";
-  - Rename the corresponding directory so that NextJS auto-updates the routes:
-    - rename the `app/src/app/moderator` directory to `app/src/app/publisher`
-  - Edit the auth middleware in the corresponding `layout.tsx` file:
-    - in the `app/src/app/publisher/layout.tsx` file:
-      - change the condition to: `if (user?.role !== "publisher")`
-  - (Optional) You can also rename the components in the `app/src/app/publisher/page.tsx` file from `ModeratorHomePage` to `PublisherHomePage` for homogeneity
-
 ### Integration with Sui
 
 - In the Template PoC, we use the Wallet extensions of the browsers to sign the transactions
@@ -159,57 +120,6 @@ This project is using the [NextJS App Router](https://nextjs.org/docs/app), and 
     - `pnpm run dev` inside the app directory
     - or `vercel dev` in the project's root directory
   - visit the url: `http://localhost:3000/api/visits` in your browser, and observe the `pageVisits` counter being incremented with each visit
-
-### PWA features
-
-- The PoC Template is a `Progressive Web App`, offering the following features:
-  - it is `installable` in user's devices
-  - it provides a `service worker` and custom hooks for:
-    - generating and display `local (like push) notifications` from the UI
-    - accessing information on the `device's hardware`, such as the device's orientation and motion
-  - Quick explanation on the developer usage:
-    - The service worker code is in the file: `/public/service-worker.js`
-    - We register and unregister the service worker in the `RootLayout` component (app/src/app/layout.tsx), using the `useRegisterServiceWorker` custom hook
-    - To generate a push notification from the UI:
-      - We send a custom message to the service worker, by the `useNotifications` hook:
-    ```
-      navigator.serviceWorker?.controller?.postMessage({
-        type: "custom-push",
-        payload: customPushData,
-      });
-    ```
-    - And insige the service-worker.js code:
-      - We handle this message:
-      ```
-        self.addEventListener("message", (event) => {
-          console.log("messaeg received in service worker", event);
-          if (event.data && event.data.type === "custom-push") {
-            ...
-          }
-        });
-      ```
-    - And also handle the onClick of a notification:
-      ```
-      self.addEventListener("notificationclick", function (event) {
-        ...
-      });
-      ```
-
-### Common questions
-
-1. When I start a fresh development server, and I visit a random page, which components (and from which files) are being renderred?
-
-> Based on the way that the NextJS App Router works, the components that are renderred before all the pages are the following:
->
-> - `RootLayout` (app/src/app/layout.tsx), which wraps its children with the `ProvidersAndLayout` component, which then wrap its children with the `LargeScreenLayout` (app/src/components/layouts/LargeScreenLayout.tsx) or the `MobileLayout` (app/src/components/layouts/MobileLayout.tsx), depending on the screen width
->
-> Afterwards, based on the URL of the current page, we should follow the folder structure of the project.
-> If we are visiting for example the `/admin/test` page, then we should initially look into the `/admin` directory, and then in the `/admin/test` directory.
-> Each `layout.tsx` file that is located under these directories is rendered, before the final `page.tsx` component.
-> The renderred components are the:
->
-> - `AdminRootLayout` (app/src/app/admin/layout.tsx)
-> - `TestAdminPage` (app/src/app/admin/test/page.tsx)
 
 ### Learn More
 

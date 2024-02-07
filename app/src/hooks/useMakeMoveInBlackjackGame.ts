@@ -60,6 +60,7 @@ export const useMakeMoveInBlackjackGame = () => {
           transactionBlock: tx as any,
         });
       } catch (err) {
+        console.error(err);
         toast.error("Could not sign transaction block");
         setIsMoveLoading(false);
         return null;
@@ -128,7 +129,7 @@ export const useMakeMoveInBlackjackGame = () => {
       })
       .then((resp) => {
         const { message, txDigest } = resp.data;
-        toast.success(message);
+        console.log(message);
         setIsMoveLoading(false);
         return {
           gameId,
