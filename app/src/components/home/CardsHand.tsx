@@ -81,7 +81,7 @@ export const CardsHand = ({ cards, points, won, lost }: CardsHandProps) => {
           <Image src="/result/win-chip.svg" width={96} height={28} alt="win" />
         </div>
       )}
-      {points < 21 && !won && (
+      {points < 21 && lost && (
         <div className="absolute bottom-[7px] left-[7px]">
           <Image
             src="/result/lose-chip.svg"

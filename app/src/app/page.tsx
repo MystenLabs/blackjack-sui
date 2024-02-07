@@ -86,11 +86,13 @@ const HomePage = () => {
           cards={game.dealer_cards}
           points={game.dealer_sum}
           won={game.status === 2}
+          lost={game.status === 1}
         />
         <PlayerCards
           cards={game.player_cards}
           points={game.player_sum}
           won={game.status === 1}
+          lost={game.status === 2}
         />
         {game.status === 0 && (
           <GameActions
