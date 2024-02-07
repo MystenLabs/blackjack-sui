@@ -129,7 +129,7 @@ export const useMakeMoveInBlackjackGame = () => {
       })
       .then((resp) => {
         const { message, txDigest } = resp.data;
-        toast.success(message);
+        console.log(message);
         setIsMoveLoading(false);
         return {
           gameId,

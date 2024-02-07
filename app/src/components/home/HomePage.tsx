@@ -107,9 +107,10 @@ export const HomePage = () => {
             <LoadingButton
               onClick={handleCreateGame}
               isLoading={isCreateGameLoading}
-              className="w-[300px]"
+              className="rounded-full !py-[21px] px-[24px]"
+              spinnerClassName="text-white !w-5 !h-5 mr-2"
             >
-              Play new game
+              New game
             </LoadingButton>
           </div>
         )}

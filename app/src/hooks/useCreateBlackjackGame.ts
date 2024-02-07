@@ -108,7 +108,7 @@ export const useCreateBlackjackGame = () => {
       })
       .then((resp) => {
         const { message, txDigest } = resp.data;
-        toast.success(message);
+        console.log(message);
         setIsInitialDealLoading(false);
         return {
           gameId,

@@ -20,6 +20,7 @@ export const StartGame = ({ handleCreateGame, isLoading }: StartGameProps) => {
       />
       <LoadingButton
         className="rounded-full py-[10px] px-[14px]"
+        spinnerClassName="text-white !w-5 !h-5 mr-2"
         onClick={handleCreateGame}
         isLoading={isLoading}
       >
