@@ -6,7 +6,6 @@ import { ProvidersAndLayout } from "./ProvidersAndLayout";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({ children }: ChildrenProps) {
-  console.log("layout.tsx is on server:", !!process.env.IS_SERVER_SIDE);
   return (
     <html lang="en">
       <head>
