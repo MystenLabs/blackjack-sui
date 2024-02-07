@@ -11,7 +11,11 @@ export const AppLogo = ({ className = "" }: AppLogoProps) => {
   const { user } = useAuthentication();
   return (
     <Link
-      href={`/${user.role === USER_ROLES.ROLE_4 ? "/" : user.role}`}
+      href={
+        process.env.NEXT_PUBLIC_USE_AUTHENTICATION !== "0"
+          ? `/${user.role === USER_ROLES.ROLE_4 ? "/" : user.role}`
+          : "/"
+      }
       className={`min-w-[175px] flex space-x-3 text-2xl font-bold text-contrast items-center ${className}`}
     >
       <div>Mysten Blackjack</div>

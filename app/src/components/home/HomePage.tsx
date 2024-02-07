@@ -19,6 +19,7 @@ export const HomePage = () => {
     isLoading,
     handleCreateGame,
     isCreateGameLoading,
+    isInitialDealLoading,
     counterId,
     isCounterIdLoading,
     handleCreateCounter,
@@ -68,13 +69,21 @@ export const HomePage = () => {
 
   return (
     <div className="relative p-10 min-h-[60vh] text-center font-bold text-xl">
-      <Image
-        src="/cards-stack.svg"
-        alt="cards-stack"
-        width={227}
-        height={170}
-        className="mx-auto rotate-60 absolute right-10 top-0"
-      />
+      <div className="mx-auto absolute right-10 top-0">
+        <div className="relative">
+          <Image
+            src="/cards-stack.svg"
+            alt="cards-stack"
+            width={227}
+            height={170}
+          />
+          {(isLoading || isMoveLoading || isInitialDealLoading) && (
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 translate-x-30px translate-y-5px">
+              <Spinner />
+            </div>
+          )}
+        </div>
+      </div>
       <div className="space-y-20">
         <DealerCards
           cards={game.dealer_cards}
@@ -86,16 +95,11 @@ export const HomePage = () => {
           points={game.player_sum}
           won={game.status === 1}
         />
-        {(isLoading || isMoveLoading) && (
-          <div>
-            <Spinner />
-          </div>
-        )}
         {game.status === 0 && (
           <GameActions
             handleHit={handleHit}
             handleStand={handleStand}
-            isMoveLoading={isMoveLoading}
+            isMoveLoading={isMoveLoading || isInitialDealLoading}
           />
         )}
         {game.status !== 0 && (

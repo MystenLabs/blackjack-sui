@@ -17,7 +17,8 @@ export const useBlackjackGame = () => {
     handleCreateCounter,
     isLoading: isCounterIdLoading,
   } = usePlayerCounter();
-  const { handleCreateGame, isCreateGameLoading } = useCreateBlackjackGame();
+  const { handleCreateGameAndDeal, isCreateGameLoading, isInitialDealLoading } =
+    useCreateBlackjackGame();
   const { handleHitOrStand, isMoveLoading } = useMakeMoveInBlackjackGame();
 
   useEffect(() => {
@@ -53,7 +54,7 @@ export const useBlackjackGame = () => {
   };
 
   const handleCreateGameAndRefresh = async () => {
-    handleCreateGame(counterId).then((resp) => {
+    handleCreateGameAndDeal(counterId, reFetchGame).then((resp) => {
       if (!resp) {
         return;
       }
@@ -77,6 +78,7 @@ export const useBlackjackGame = () => {
     isCounterIdLoading,
     handleCreateCounter,
     isCreateGameLoading,
+    isInitialDealLoading,
     canCreateGame: !isLoading && !isCounterIdLoading && !game?.id.id,
     handleCreateGame: handleCreateGameAndRefresh,
     isMoveLoading,
