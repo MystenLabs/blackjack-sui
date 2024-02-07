@@ -2,7 +2,12 @@ import { SuiClient, SuiObjectChangeCreated } from "@mysten/sui.js/client";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { getKeypair } from "../keypair/getKeyPair";
 import { getBLSPublicKey } from "../bls/getBLSPublicKey";
-import { PACKAGE_ADDRESS, HOUSE_ADMIN_CAP, ADMIN_SECRET_KEY } from "../../config";
+import {
+  PACKAGE_ADDRESS,
+  HOUSE_ADMIN_CAP,
+  ADMIN_SECRET_KEY,
+} from "../../config";
+import { MIST_PER_SUI } from "@mysten/sui.js/utils";
 
 interface InitializeHouseBalanceProps {
   suiClient: SuiClient;
@@ -11,10 +16,12 @@ interface InitializeHouseBalanceProps {
 export const initializeHouseData = async ({
   suiClient,
 }: InitializeHouseBalanceProps): Promise<string | undefined> => {
-  console.log("Initializing HouseData...")
+  console.log("Initializing HouseData...");
   const tx = new TransactionBlock();
 
-  const houseCoin = tx.splitCoins(tx.gas, [tx.pure(10000000000)]);
+  const houseCoin = tx.splitCoins(tx.gas, [
+    tx.pure(1000 * Number(MIST_PER_SUI)),
+  ]);
   let adminBLSPublicKey = getBLSPublicKey(ADMIN_SECRET_KEY!);
 
   tx.moveCall({

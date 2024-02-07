@@ -14,7 +14,7 @@ export const CardsHand = ({ cards, points, won, lost }: CardsHandProps) => {
     );
   }
   return (
-    <div className={`relative ${(won || points === 21) && "border-[5px] rounded-xl border-[#58BB80]"}`}>
+    <div className={`relative ${(won || points === 21) && "border-[8px] rounded-xl border-[#58BB80]"}`}>
       <div className="flex m-[-2px]">
         {cards.map((card, index) => {
           const kind =
@@ -81,7 +81,7 @@ export const CardsHand = ({ cards, points, won, lost }: CardsHandProps) => {
           <Image src="/result/win-chip.svg" width={96} height={28} alt="win" />
         </div>
       )}
-      {points < 21 && lost && (
+      {points < 21 && !won && (
         <div className="absolute bottom-[7px] left-[7px]">
           <Image
             src="/result/lose-chip.svg"
