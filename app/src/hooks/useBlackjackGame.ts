@@ -16,6 +16,7 @@ export const useBlackjackGame = () => {
     counterId,
     handleCreateCounter,
     isLoading: isCounterIdLoading,
+    isCreateLoading: isCreateCounterLoading,
   } = usePlayerCounter();
   const { handleCreateGameAndDeal, isCreateGameLoading, isInitialDealLoading } =
     useCreateBlackjackGame();
@@ -73,9 +74,10 @@ export const useBlackjackGame = () => {
 
   return {
     game,
-    isLoading: isLoading,
+    isLoading,
     counterId,
     isCounterIdLoading,
+    isCreateCounterLoading,
     handleCreateCounter,
     isCreateGameLoading,
     isInitialDealLoading,

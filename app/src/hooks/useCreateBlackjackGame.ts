@@ -81,6 +81,7 @@ export const useCreateBlackjackGame = () => {
           reFetchGame(objectId, resp.effects?.transactionDigest!);
           setIsCreateGameLoading(false);
           setIsInitialDealLoading(true);
+          toast.success("Game created!");
           return makeInitialDealRequest({
             gameId: objectId,
             txDigest: resp.effects?.transactionDigest!,

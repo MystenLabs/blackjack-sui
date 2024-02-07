@@ -10,6 +10,7 @@ import { StartGame } from "./StartGame";
 import { DealerCards } from "./DealerCards";
 import { PlayerCards } from "./PlayerCards";
 import { GameActions } from "./GameActions";
+import { CreateCounter } from "./CreateCounter";
 import Image from "next/image";
 
 export const HomePage = () => {
@@ -22,6 +23,7 @@ export const HomePage = () => {
     isInitialDealLoading,
     counterId,
     isCounterIdLoading,
+    isCreateCounterLoading,
     handleCreateCounter,
     handleHit,
     handleStand,
@@ -38,16 +40,11 @@ export const HomePage = () => {
 
   if (!counterId) {
     return (
-      <div className="w-full flex flex-col items-center p-10">
-        <LoadingButton
-          onClick={handleCreateCounter}
-          isLoading={isLoading}
-          disabled={!!counterId}
-          className="w-[300px]"
-        >
-          Get your counter object!
-        </LoadingButton>
-      </div>
+      <CreateCounter
+        handleCreateCounter={handleCreateCounter}
+        isLoading={isCreateCounterLoading}
+        counterId={counterId}
+      />
     );
   }
 

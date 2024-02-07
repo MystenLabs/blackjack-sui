@@ -1,6 +1,5 @@
 import Image from "next/image";
 import React from "react";
-import { Button } from "../ui/button";
 import { LoadingButton } from "../general/LoadingButton";
 
 interface StartGameProps {
