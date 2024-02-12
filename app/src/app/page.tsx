@@ -49,20 +49,16 @@ const HomePage = () => {
     );
   }
 
-  if (!game && isLoading) {
-    return <Spinner />;
-  }
-
   if (!game) {
-    if (!isLoading) {
-      return (
-        <StartGame
-          handleCreateGame={handleCreateGame}
-          isLoading={isCreateGameLoading}
-        />
-      );
+    if (isLoading) {
+      return <Spinner />;
     }
-    return <Spinner />;
+    return (
+      <StartGame
+        handleCreateGame={handleCreateGame}
+        isLoading={isCreateGameLoading}
+      />
+    );
   }
 
   return (
