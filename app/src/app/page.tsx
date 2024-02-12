@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useBlackjackGame } from "@/hooks/useBlackjackGame";
-import { LoadingButton } from "../components/general/LoadingButton";
 import { Spinner } from "../components/general/Spinner";
 import { useWalletKit } from "@mysten/wallet-kit";
 import { SignInBanner } from "../components/home/SignInBanner";
@@ -12,6 +11,8 @@ import { PlayerCards } from "../components/home/PlayerCards";
 import { GameActions } from "../components/home/GameActions";
 import { CreateCounter } from "../components/home/CreateCounter";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { BlackjackBanner } from "@/components/home/BlackjackBanner";
 
 const HomePage = () => {
   const { currentAccount } = useWalletKit();
@@ -28,7 +29,18 @@ const HomePage = () => {
     handleHit,
     handleStand,
     isMoveLoading,
+    handleRestart,
   } = useBlackjackGame();
+
+  const [showingBlackjackBanner, setShowingBlackjackBanner] = useState(false);
+  const handleShowBlackjackBanner = () => setShowingBlackjackBanner(true);
+  const handleHideBlackjackBanner = () => setShowingBlackjackBanner(false);
+
+  useEffect(() => {
+    if (game?.player_sum === 21 && game?.status === 1) {
+      handleShowBlackjackBanner();
+    }
+  }, [game?.player_sum, game?.status]);
 
   if (!currentAccount?.address) {
     return <SignInBanner />;
@@ -48,24 +60,26 @@ const HomePage = () => {
     );
   }
 
-  if (!game && isLoading) {
-    return <Spinner />;
+  if (!game) {
+    if (isLoading) {
+      return <Spinner />;
+    }
+    return (
+      <StartGame
+        handleCreateGame={handleCreateGame}
+        isLoading={isCreateGameLoading}
+      />
+    );
   }
 
-  if (!game) {
-    if (!isLoading) {
-      return (
-        <StartGame
-          handleCreateGame={handleCreateGame}
-          isLoading={isCreateGameLoading}
-        />
-      );
-    }
-    return <Spinner />;
+  if (showingBlackjackBanner) {
+    return (
+      <BlackjackBanner game={game} handleHide={handleHideBlackjackBanner} />
+    );
   }
 
   return (
-    <div className="relative p-10 min-h-[60vh] text-center font-bold text-xl">
+    <div className="relative min-h-[60vh] text-center font-bold text-xl">
       <div className="mx-auto absolute right-10 top-0">
         <div className="relative">
           <Image
@@ -81,7 +95,7 @@ const HomePage = () => {
           )}
         </div>
       </div>
-      <div className="space-y-20">
+      <div className="relative space-y-[65px]">
         <DealerCards
           cards={game.dealer_cards}
           points={game.dealer_sum}
@@ -103,14 +117,12 @@ const HomePage = () => {
         )}
         {game.status !== 0 && (
           <div>
-            <LoadingButton
-              onClick={handleCreateGame}
-              isLoading={isCreateGameLoading}
+            <Button
+              onClick={handleRestart}
               className="rounded-full !py-[21px] px-[24px]"
-              spinnerClassName="text-white !w-5 !h-5 mr-2"
             >
               New game
-            </LoadingButton>
+            </Button>
           </div>
         )}
       </div>

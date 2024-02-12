@@ -7,13 +7,22 @@ interface PlayerCardsProps {
   points: number;
   won?: boolean;
   lost?: boolean;
+  showIcon?: boolean;
 }
 
-export const PlayerCards = ({ cards, points, won, lost }: PlayerCardsProps) => {
+export const PlayerCards = ({
+  cards,
+  points,
+  won,
+  lost,
+  showIcon = true,
+}: PlayerCardsProps) => {
   return (
     <div className="flex flex-col space-y-[20px] items-center">
       <CardsHand won={won} lost={lost} cards={cards} points={points} />
-      <Image src="/player.svg" width={40} height={40} alt="player" />
+      {showIcon && (
+        <Image src="/player.svg" width={40} height={40} alt="player" />
+      )}
     </div>
   );
 };

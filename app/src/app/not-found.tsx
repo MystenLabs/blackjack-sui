@@ -1,4 +1,3 @@
-import { Paper } from "@/components/general/Paper";
 import React from "react";
 
 const NotFoundPage = () => {
