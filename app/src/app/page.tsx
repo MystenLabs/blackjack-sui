@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useBlackjackGame } from "@/hooks/useBlackjackGame";
 import { Spinner } from "../components/general/Spinner";
 import { useWalletKit } from "@mysten/wallet-kit";
@@ -12,6 +12,7 @@ import { GameActions } from "../components/home/GameActions";
 import { CreateCounter } from "../components/home/CreateCounter";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { BlackjackBanner } from "@/components/home/BlackjackBanner";
 
 const HomePage = () => {
   const { currentAccount } = useWalletKit();
@@ -30,6 +31,16 @@ const HomePage = () => {
     isMoveLoading,
     handleRestart,
   } = useBlackjackGame();
+
+  const [showingBlackjackBanner, setShowingBlackjackBanner] = useState(false);
+  const handleShowBlackjackBanner = () => setShowingBlackjackBanner(true);
+  const handleHideBlackjackBanner = () => setShowingBlackjackBanner(false);
+
+  useEffect(() => {
+    if (game?.player_sum === 21 && game?.status === 1) {
+      handleShowBlackjackBanner();
+    }
+  }, [game?.player_sum, game?.status]);
 
   if (!currentAccount?.address) {
     return <SignInBanner />;
@@ -61,6 +72,12 @@ const HomePage = () => {
     );
   }
 
+  if (showingBlackjackBanner) {
+    return (
+      <BlackjackBanner game={game} handleHide={handleHideBlackjackBanner} />
+    );
+  }
+
   return (
     <div className="relative min-h-[60vh] text-center font-bold text-xl">
       <div className="mx-auto absolute right-10 top-0">
@@ -78,7 +95,7 @@ const HomePage = () => {
           )}
         </div>
       </div>
-      <div className="space-y-[65px]">
+      <div className="relative space-y-[65px]">
         <DealerCards
           cards={game.dealer_cards}
           points={game.dealer_sum}

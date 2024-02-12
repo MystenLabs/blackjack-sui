@@ -89,10 +89,13 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       translate: {
-        '30px': '-25px',
-        '5px': '-5px',
+        "30px": "-25px",
+        "5px": "-5px",
       },
     },
   },
   plugins: [require("tailwindcss-animate")],
+  experimental: {
+    backdropFilter: true,
+  },
 };
