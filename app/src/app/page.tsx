@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useBlackjackGame } from "@/hooks/useBlackjackGame";
-import { LoadingButton } from "../components/general/LoadingButton";
 import { Spinner } from "../components/general/Spinner";
 import { useWalletKit } from "@mysten/wallet-kit";
 import { SignInBanner } from "../components/home/SignInBanner";
@@ -67,7 +66,7 @@ const HomePage = () => {
   }
 
   return (
-    <div className="relative p-10 min-h-[60vh] text-center font-bold text-xl">
+    <div className="relative min-h-[60vh] text-center font-bold text-xl">
       <div className="mx-auto absolute right-10 top-0">
         <div className="relative">
           <Image
@@ -83,7 +82,7 @@ const HomePage = () => {
           )}
         </div>
       </div>
-      <div className="space-y-20">
+      <div className="space-y-[65px]">
         <DealerCards
           cards={game.dealer_cards}
           points={game.dealer_sum}
