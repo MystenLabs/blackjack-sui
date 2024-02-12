@@ -50,7 +50,7 @@ export const CollectMouseRandomness = ({
         onClick={() => handleStartGame(bytesToHex(Uint8Array.from(randomness)))}
         isLoading={isLoading}
       >
-        Let's Play!
+        Let&apos;s Play!
       </LoadingButton>
     </div>
   );
