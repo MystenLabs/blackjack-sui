@@ -3,7 +3,6 @@ import { useSui } from "./useSui";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { SuiObjectChangeCreated } from "@mysten/sui.js/client";
 import { useWalletKit } from "@mysten/wallet-kit";
-import { getUserRandomnessAsHexString } from "@/helpers/getUserRandomnessAsHexString";
 import toast from "react-hot-toast";
 import axios from "axios";
 
@@ -21,6 +20,7 @@ export const useCreateBlackjackGame = () => {
   const handleCreateGameAndDeal = useCallback(
     async (
       counterId: string | null,
+      randomBytesAsHexString: string,
       reFetchGame: (gameId: string, txDigest?: string) => Promise<void>,
     ): Promise<HandleCreateGameSuccessResponse | null> => {
       if (!counterId) {
@@ -31,7 +31,6 @@ export const useCreateBlackjackGame = () => {
       setIsCreateGameLoading(true);
       const tx = new TransactionBlock();
       const betAmountCoin = tx.splitCoins(tx.gas, [tx.pure("200000000")]);
-      const randomBytesAsHexString = getUserRandomnessAsHexString();
       tx.moveCall({
         target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::place_bet_and_create_game`,
         arguments: [

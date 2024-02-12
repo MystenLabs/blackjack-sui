@@ -22,9 +22,13 @@ export const useBlackjackGame = () => {
     useCreateBlackjackGame();
   const { handleHitOrStand, isMoveLoading } = useMakeMoveInBlackjackGame();
 
-  useEffect(() => {
+  const handleRestart = () => {
     setGame(null);
     setIsLoading(false);
+  }
+
+  useEffect(() => {
+    handleRestart();
   }, [currentAccount?.address]);
 
   // Receives the txDigest of the transaction that updated the game
@@ -54,8 +58,8 @@ export const useBlackjackGame = () => {
       });
   };
 
-  const handleCreateGameAndRefresh = async () => {
-    handleCreateGameAndDeal(counterId, reFetchGame).then((resp) => {
+  const handleCreateGameAndRefresh = async (userRandomness: string) => {
+    handleCreateGameAndDeal(counterId, userRandomness, reFetchGame).then((resp) => {
       if (!resp) {
         return;
       }
@@ -86,5 +90,6 @@ export const useBlackjackGame = () => {
     isMoveLoading,
     handleHit: () => handleMakeMoveAndRefresh("hit"),
     handleStand: () => handleMakeMoveAndRefresh("stand"),
+    handleRestart,
   };
 };

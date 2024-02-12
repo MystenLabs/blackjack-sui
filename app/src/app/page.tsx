@@ -12,6 +12,7 @@ import { PlayerCards } from "../components/home/PlayerCards";
 import { GameActions } from "../components/home/GameActions";
 import { CreateCounter } from "../components/home/CreateCounter";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
 
 const HomePage = () => {
   const { currentAccount } = useWalletKit();
@@ -28,6 +29,7 @@ const HomePage = () => {
     handleHit,
     handleStand,
     isMoveLoading,
+    handleRestart,
   } = useBlackjackGame();
 
   if (!currentAccount?.address) {
@@ -103,14 +105,12 @@ const HomePage = () => {
         )}
         {game.status !== 0 && (
           <div>
-            <LoadingButton
-              onClick={handleCreateGame}
-              isLoading={isCreateGameLoading}
+            <Button
+              onClick={handleRestart}
               className="rounded-full !py-[21px] px-[24px]"
-              spinnerClassName="text-white !w-5 !h-5 mr-2"
             >
               New game
-            </LoadingButton>
+            </Button>
           </div>
         )}
       </div>
