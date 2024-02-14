@@ -695,37 +695,4 @@ module blackjack::single_player_blackjack {
     ) {
         tie_post_handling(game, house_data, ctx);
     }
-
-    #[test_only]
-    public fun get_house_data_for_testing(ctx: &mut TxContext, initBal: Balance<SUI>): HouseData {
-        let demoKey = vector[];
-        vector::push_back(&mut demoKey, 10);
-        vector::push_back(&mut demoKey, 11);
-        vector::push_back(&mut demoKey, 12);
-        vector::push_back(&mut demoKey, 13);
-        vector::push_back(&mut demoKey, 14);
-        vector::push_back(&mut demoKey, 15);
-
-        let house_data = HouseData {
-            id: object::new(ctx),
-            balance: initBal,
-            house: tx_context::sender(ctx),
-            public_key: demoKey
-        };
-        house_data
-    }
-
-    #[test_only]
-    public fun destroy_for_testing(houseData: HouseData) {
-        let HouseData
-        {
-            id,
-            balance : b,
-            house : _,
-            public_key : _,
-        } = houseData;
-
-        object::delete(id);
-        balance::destroy_for_testing(b);
-    }
 }
