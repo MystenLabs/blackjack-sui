@@ -18,7 +18,11 @@ export const PlayerCards = ({
   showIcon = true,
 }: PlayerCardsProps) => {
   return (
-    <div className="flex flex-col space-y-[20px] items-center">
+    <div
+      className={`flex flex-col ${
+        won ? "space-y-0" : "space-y-[20px]"
+      } items-center`}
+    >
       <CardsHand won={won} lost={lost} cards={cards} points={points} />
       {showIcon && (
         <Image src="/player.svg" width={40} height={40} alt="player" />
