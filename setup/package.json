@@ -14,6 +14,8 @@
     "house-hit": "env-cmd -f .env ts-node src/scripts/05-HouseRespondToHitRequest",
     "house-stand": "env-cmd -f .env ts-node src/scripts/07-HouseRespondToStandRequest",
     "get-game": "env-cmd -f .env ts-node src/scripts/08-GetGameObject",
+    "house-top-up": "env-cmd -f .env ts-node src/scripts/09-TopUpHouse",
+    "house-withdraw": "env-cmd -f .env ts-node src/scripts/10-WithDrawHouse",
     "start-socket": "env-cmd -f .env ts-node src/scripts/99-RunWebsocketListenerFlow",
     "scenario-hit-stand": "env-cmd -f .env ts-node src/scenarioHitAndStand",
     "scenario-stand": "env-cmd -f .env ts-node src/scenarioStand",

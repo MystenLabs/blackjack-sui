@@ -8,7 +8,7 @@ module blackjack::single_player_blackjack_tests {
     use std::debug;
     use std::string::utf8;
     use sui::object::{ID};
-    use sui::coin;
+    use sui::coin::{Coin, Self};
     use sui::sui::SUI;
     use sui::object;
     use sui::transfer;
@@ -20,7 +20,7 @@ module blackjack::single_player_blackjack_tests {
     const ADMIN: address = @0x65391674eb4210940ea98ae451237d9335920297e7c8abaeb7e05b221ee36917;
     const PLAYER: address = @0xfff196b9e146b115301408f624903fc488f42d357a7fa6fc70f5751e3d0570fc;
     const INITIAL_HOUSE_BALANCE: u64 = 5000000000;
-    const PLAYER_BET: u64 = 300000000;
+    const PLAYER_BET: u64 = 200000000;
     const HOUSE_BET: u64 =  200000000;
     
     const HOUSE_PUBLIC_KEY: vector<u8> = vector<u8> [
@@ -103,6 +103,61 @@ module blackjack::single_player_blackjack_tests {
     }
 
     #[test]
+    fun test_top_up_house_data() {
+        let scenario_val = test_scenario::begin(ADMIN);
+        let scenario = &mut scenario_val;
+
+        initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
+
+        test_scenario::next_tx(scenario, ADMIN);
+        {
+            let coin = coin::mint_for_testing<SUI>(50000, test_scenario::ctx(scenario));
+            transfer::public_transfer(coin, ADMIN);
+        };
+
+        test_scenario::next_tx(scenario, ADMIN);
+        {
+            let house_data = test_scenario::take_shared<HouseData>(scenario);
+            let fund_coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
+            bj::top_up(&mut house_data, fund_coin, test_scenario::ctx(scenario));
+            test_scenario::return_shared(house_data);
+        };
+
+        test_scenario::next_tx(scenario, ADMIN);
+        {
+            let house_data = test_scenario::take_shared<HouseData>(scenario);
+            assert!(bj::balance(&house_data) == INITIAL_HOUSE_BALANCE + 50000, 1);
+            test_scenario::return_shared(house_data);
+        };
+
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    fun test_withdraw_from_house_data() {
+        let scenario_val = test_scenario::begin(ADMIN);
+        let scenario = &mut scenario_val;
+
+        initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
+
+        test_scenario::next_tx(scenario, ADMIN);
+        {
+            let house_data = test_scenario::take_shared<HouseData>(scenario);
+            bj::withdraw(&mut house_data, test_scenario::ctx(scenario));
+            test_scenario::return_shared(house_data);
+        };
+
+        test_scenario::next_tx(scenario, ADMIN);
+        {
+            let house_data = test_scenario::take_shared<HouseData>(scenario);
+            assert!(bj::balance(&house_data) == 0, 1);
+            test_scenario::return_shared(house_data);
+        };
+
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
     #[expected_failure(abort_code = bj::EInsufficientBalance)]
     fun test_initialize_house_data_with_insifficient_balance() {
         let scenario_val = test_scenario::begin(ADMIN);
@@ -150,13 +205,13 @@ module blackjack::single_player_blackjack_tests {
     }
 
     #[test]
-    #[expected_failure(abort_code = bj::EInsufficientBalance)]
+    #[expected_failure(abort_code = bj::EInvalidPlayerBetAmount)]
     fun test_place_bet_and_create_game_insufficient_balance() {
         let scenario_val = test_scenario::begin(ADMIN);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
-        initialize_game_for_test(scenario, PLAYER, PLAYER_BET - 200000000);
+        initialize_game_for_test(scenario, PLAYER, PLAYER_BET - 1);
 
         test_scenario::end(scenario_val);
     }

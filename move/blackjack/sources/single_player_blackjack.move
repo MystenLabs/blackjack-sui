@@ -36,6 +36,8 @@ module blackjack::single_player_blackjack {
     const EInvalidGameOfStandRequest: u64 = 17;
     const EInvalidSumOfHitRequest: u64 = 18;
     const EInvalidSumOfStandRequest: u64 = 19;
+    const EInvalidPlayerBetAmount: u64 = 20;
+    const ECallerNotHouse: u64 = 21;
 
     // Structs
 
@@ -130,6 +132,24 @@ module blackjack::single_player_blackjack {
         transfer::share_object(house_data);
     }
 
+    /// Function used to top up the house balance. Can be called by anyone.
+    /// House can have multiple accounts so giving the treasury balance is not limited.
+    /// @param house_data: The HouseData object
+    /// @param coin: The coin object that will be used to top up the house balance. The entire coin is consumed
+    public entry fun top_up(house_data: &mut HouseData, coin: Coin<SUI>, _: &mut TxContext) {        
+        let balance = coin::into_balance(coin);
+        balance::join(&mut house_data.balance, balance);
+    }
+
+    /// House can withdraw the entire balance of the house object
+    /// @param house_data: The HouseData object
+    public entry fun withdraw(house_data: &mut HouseData, ctx: &mut TxContext) {
+        // only the house address can withdraw funds
+        assert!(tx_context::sender(ctx) == house_data.house, ECallerNotHouse);
+        let total_balance = balance::value(&house_data.balance);
+        let coin = coin::take(&mut house_data.balance, total_balance, ctx);
+        transfer::public_transfer(coin, house_data.house);
+    }
 
     /// Function used to create a new game. The player must provide a random vector of bytes.
     /// Stake is taken from the player's coin and added to the game's stake. The house's stake is also added to the game's stake.
@@ -148,7 +168,7 @@ module blackjack::single_player_blackjack {
         assert!(balance(house_data) >= STAKE, EInsufficientHouseBalance);
 
         // get the user coin and convert it into a balance
-        assert!(coin::value(&user_bet) >= STAKE, EInsufficientBalance);
+        assert!(coin::value(&user_bet) == STAKE, EInvalidPlayerBetAmount);
         let stake = coin::into_balance(user_bet);
 
         // get the house balance
