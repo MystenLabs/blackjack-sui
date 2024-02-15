@@ -7,7 +7,7 @@ import { Button } from "../ui/button";
 export const SignInBanner = () => {
   return (
     <div className="flex flex-col items-center space-y-[20px]">
-      <div className="bg-white flex flex-col p-[60px] max-w-[480px] mx-auto rounded-[24px] items-center space-y-[80px]">
+      <div className="bg-white flex flex-col p-[60px] max-w-[480px] mx-auto rounded-[24px] items-center space-y-[60px]">
         <Image
           src="/mysten-logo-red.svg"
           alt="Mysten Labs"
@@ -26,16 +26,8 @@ export const SignInBanner = () => {
               the Sui blockchain. Good luck at the tables!
             </div>
           </div>
-          <div>
-            <ConnectButton />
-          </div>
+          <ConnectButton />
         </div>
-        <Button
-          size="sm"
-          className="bg-inherit hover:bg-gray-300 text-black rounded-[6px] !text-xs border-[1px] border-gray-300"
-        >
-          More options
-        </Button>
       </div>
       <div className="flex flex-col items-center text-white text-[12px]">
         <div className="text-center">Learn more about Mysten Labs at</div>
