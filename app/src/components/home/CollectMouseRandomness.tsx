@@ -18,7 +18,7 @@ export const CollectMouseRandomness = ({
 
   if (!gathered) {
     return (
-      <div className="bg-white flex flex-col p-[50px] max-w-[480px] mx-auto rounded-[24px] items-center space-y-[50px]">
+      <div className="bg-white flex flex-col p-[50px] max-w-[480px] mx-auto rounded-[24px] items-center space-y-[32px]">
         <Image
           src="/randomness-cards.svg"
           alt="Randomness"
@@ -26,13 +26,15 @@ export const CollectMouseRandomness = ({
           height={190}
         />
         <Spinner />
-        <div className="text-[25px] font-semibold">
-          <div>Generating randomness</div>
-          <div>Keep moving your cursor</div>
-        </div>
-        <div className="text-center text-opacity-90 text-[14px] text-[#4F4F4F]">
-          Your cursor movement shuffles the cards for a randomized, secure game
-          play.
+        <div className="flex flex-col items-center space-y-[10px]">
+          <div className="text-[25px] font-semibold text-center">
+            <div>Generating randomness</div>
+            <div>Keep moving your cursor</div>
+          </div>
+          <div className="text-center text-opacity-90 text-[14px] text-[#4F4F4F]">
+            Your cursor movement shuffles the cards for a randomized, secure
+            game play.
+          </div>
         </div>
       </div>
     );
