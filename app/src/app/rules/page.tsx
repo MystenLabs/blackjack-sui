@@ -15,14 +15,15 @@ const RulesPage = () => {
           player and one to itself.
         </div>
         <div>
-          The player has the options to 'Hit' or 'Stand.' Selecting 'Stand'
-          triggers the dealer to draw cards until the total reaches 17 or
-          higher. After the dealer stops, typically at a sum of 17 or more, the
-          smart contract steps in to compare the totals and declare the winner.
+          The player has the options to &apos;Hit&apos; or &apos;Stand&apos;.
+          Selecting &apos;Stand&apos; triggers the dealer to draw cards until
+          the total reaches 17 or higher. After the dealer stops, typically at a
+          sum of 17 or more, the smart contract steps in to compare the totals
+          and declare the winner.
         </div>
         <div>
-          On the other hand, choosing 'Hit' prompts the dealer to draw an
-          additional card for the player.
+          On the other hand, choosing &apos;Hit&apos; prompts the dealer to draw
+          an additional card for the player.
         </div>
         <div>
           Note that more complex Blackjack rules, such as splitting, are
