@@ -10,7 +10,7 @@ interface CardsHandProps {
 export const CardsHand = ({ cards, points, won, lost }: CardsHandProps) => {
   if (cards.length === 0) {
     return (
-      <Image src="/empty-hand.svg" width={120} height={166} alt="empty hand" />
+      <Image src="/general/empty-hand.svg" width={120} height={166} alt="empty hand" />
     );
   }
   return (

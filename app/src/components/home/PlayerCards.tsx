@@ -25,7 +25,7 @@ export const PlayerCards = ({
     >
       <CardsHand won={won} lost={lost} cards={cards} points={points} />
       {showIcon && (
-        <Image src="/player.svg" width={40} height={40} alt="player" />
+        <Image src="/general/player.svg" width={40} height={40} alt="player" />
       )}
     </div>
   );

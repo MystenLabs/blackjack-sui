@@ -13,7 +13,7 @@ export const BlackjackBanner = ({ game, handleHide }: BlackjackBannerProps) => {
       <div
         className="absolute top-0 left-0 h-screen w-screen flex flex-col justify-center z-10 backdrop-blur-sm text-center"
         style={{
-          backgroundImage: "url('/confetti.svg')",
+          backgroundImage: "url('/general/confetti.svg')",
           backgroundSize: "cover",
           backgroundPositionX: "center",
           backgroundPositionY: "top",

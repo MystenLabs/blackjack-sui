@@ -25,7 +25,7 @@ export const StartGame = ({ handleCreateGame, isLoading }: StartGameProps) => {
     <div className="bg-white flex flex-col p-[50px] max-w-[480px] mx-auto rounded-[24px] items-center space-y-[50px]">
       <div className="text-[25px] font-semibold">Ready for a New Game?</div>
       <Image
-        src="/new-game-cards.svg"
+        src="/general/new-game-cards.svg"
         alt="New Game"
         width={170}
         height={190}
@@ -43,7 +43,7 @@ export const StartGame = ({ handleCreateGame, isLoading }: StartGameProps) => {
         >
           <div>Game Rules</div>
           <Image
-            src="/arrow-top-right.svg"
+            src="/general/arrow-top-right.svg"
             alt="Game Rules"
             width={8}
             height={8}

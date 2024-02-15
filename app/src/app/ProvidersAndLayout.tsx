@@ -15,7 +15,7 @@ export const ProvidersAndLayout = ({ children }: ChildrenProps) => {
       <main
         className={`min-h-screen w-screen`}
         style={{
-          backgroundImage: "url('/background.svg')",
+          backgroundImage: "url('/general/background.svg')",
           backgroundSize: "cover",
           backgroundPositionX: "center",
           backgroundPositionY: "top",

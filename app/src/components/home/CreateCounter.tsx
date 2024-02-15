@@ -17,7 +17,7 @@ export const CreateCounter = ({
     <div className="bg-white flex flex-col p-[50px] max-w-[480px] mx-auto rounded-[24px] items-center space-y-[50px]">
       <div className="text-[25px] font-semibold">First time here?</div>
       <Image
-        src="/new-game-cards.svg"
+        src="/general/new-game-cards.svg"
         alt="New Game"
         width={170}
         height={190}

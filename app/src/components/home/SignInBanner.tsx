@@ -9,7 +9,7 @@ export const SignInBanner = () => {
     <div className="flex flex-col items-center space-y-[20px]">
       <div className="bg-white flex flex-col p-[60px] max-w-[480px] mx-auto rounded-[24px] items-center space-y-[60px]">
         <Image
-          src="/mysten-logo-red.svg"
+          src="/general/mysten-logo-red.svg"
           alt="Mysten Labs"
           width={160}
           height={20}

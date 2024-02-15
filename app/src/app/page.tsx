@@ -83,7 +83,7 @@ const HomePage = () => {
       <div className="mx-auto absolute right-10 top-0">
         <div className="relative">
           <Image
-            src="/cards-stack.svg"
+            src="/general/cards-stack.svg"
             alt="cards-stack"
             width={227}
             height={170}

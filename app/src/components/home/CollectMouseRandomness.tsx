@@ -20,7 +20,7 @@ export const CollectMouseRandomness = ({
     return (
       <div className="bg-white flex flex-col p-[50px] max-w-[480px] mx-auto rounded-[24px] items-center space-y-[32px]">
         <Image
-          src="/randomness-cards.svg"
+          src="/general/randomness-cards.svg"
           alt="Randomness"
           width={170}
           height={190}
