@@ -32,7 +32,7 @@ switch_res=$(sui client switch --address ${ADMIN_ADDRESS})
 
 switch_env=$(sui client switch --env $1)
 
-publish_res=$(sui client publish --skip-fetch-latest-git-deps --skip-dependency-verification --gas-budget 2000000000 --json ${MOVE_PACKAGE_PATH})
+publish_res=$(sui client publish --skip-fetch-latest-git-deps --gas-budget 2000000000 --json ${MOVE_PACKAGE_PATH})
 
 echo ${publish_res} >.publish.res.json
 
@@ -68,12 +68,5 @@ NEXT_PUBLIC_SUI_NETWORK=$NETWORK
 NEXT_PUBLIC_PACKAGE_ADDRESS=$PACKAGE_ID
 NEXT_PUBLIC_ADMIN_ADDRESS=$ADMIN_ADDRESS
 VITE_API_ENV
-
-cat >../backend/.env<<-BACKEND_ENV
-PORT=8080
-DEBUG_LEVEL=info
-SUI_NETWORK=$NETWORK
-PACKAGE_ADDRESS=$PACKAGE_ID
-BACKEND_ENV
 
 echo "Contract Deployment finished!"

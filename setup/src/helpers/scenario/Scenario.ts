@@ -39,7 +39,6 @@ export class Scenario {
           throw new Error("House data initialization failed");
         }
         fs.appendFileSync("./.env", `HOUSE_DATA_ID=${houseDataId}\n`);
-        fs.appendFileSync("../backend/.env", `HOUSE_DATA_ID=${houseDataId}\n`);
         fs.appendFileSync(
           "../app/.env",
           `NEXT_PUBLIC_HOUSE_DATA_ID=${houseDataId}\n`

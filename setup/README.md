@@ -24,13 +24,15 @@ DO NOT ADD THE ADMIN SECRET KEY IN ANY PLACE INSIDE THE CODE BASE!
 
 ## Quickstart
 
+- cd into the setup/ directory: `cd setup/`
 - install the npm dependencies with: `npm i`
 - initialize your `environmental variables` based on the previous section of the README.md file
 
 - Two ways to run the intergration tests:
   - Run a whole e2e scenario with a single script:
     1. Publish the contracts with: `./publish.sh testnet`
-    2. Run a custom scenario with: `npm run scenario -- request-hit house-hit request-stand house-stand`
+    2. Initialize the house data with: `npm run init-house` (admin account needs to have at least 10 SUI + gas, to top-up the initial house funds)
+    3. Run a custom scenario with: `npm run scenario -- request-hit house-hit request-stand house-stand`
   - Run the e2e scenario in multiple steps:
     1. publish the contracts with: `./publish.sh testnet`
     2. Run these scripts consecutively to prepare and run a custom game:

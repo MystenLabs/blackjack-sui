@@ -20,7 +20,7 @@ export const initializeHouseData = async ({
   const tx = new TransactionBlock();
 
   const houseCoin = tx.splitCoins(tx.gas, [
-    tx.pure(1000 * Number(MIST_PER_SUI)),
+    tx.pure(10 * Number(MIST_PER_SUI)),
   ]);
   let adminBLSPublicKey = getBLSPublicKey(ADMIN_SECRET_KEY!);
 

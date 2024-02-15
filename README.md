@@ -24,6 +24,18 @@ The count always increases after use, ensuring a unique input for every game.<br
 A player is required to create a Counter NFT before playing their first game.<br/>
 The UI can seemlessly create the Counter NFT for the user by including the counter creation along with the game creation function in the same PTB.
 
+## Quickstart
+
+1. cd into the setup/ directory: `cd setup/`
+2. install the npm dependencies with: `npm i`
+3. initialize your `environmental variables` based on the `Environment variables` section of the `setup/README.md` file
+4. Run the following:
+  1. Publish the contracts with: `./publish.sh testnet`
+  2. Initialize the house data with: `npm run init-house` (admin account needs to have at least 10 SUI + gas, to top-up the initial house funds)
+5. cd back into the app/ directory: `cd ../app/`
+6. install the pnpm dependencies with `pnpm i`
+7. start the development server with `pnpm run dev`
+
 ## Gameplay
 
 - This is a 1-1 version of the game, where the player plays against the dealer (machine).
