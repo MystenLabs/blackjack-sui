@@ -46,7 +46,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [PoC Template
   - [Shadcn](https://ui.shadcn.com/)
 - Sui integration:
   - [Mysten Sui js](https://www.npmjs.com/package/@mysten/sui.js)
-  - [Mysten wallet kit](https://www.npmjs.com/package/@mysten/wallet-kit)
+  - [Mysten Enoki](https://www.npmjs.com/package/@mysten/enoki)
 - Forms:
   - [React hook form](https://react-hook-form.com/)
   - [Zod](https://zod.dev/)

@@ -5,10 +5,10 @@ import { usePlayerCounter } from "./usePlayerCounter";
 import { getGameObject } from "@/utils/getGameObject";
 import { useCreateBlackjackGame } from "./useCreateBlackjackGame";
 import { useMakeMoveInBlackjackGame } from "./useMakeMoveInBlackjackGame";
-import { useWalletKit } from "@mysten/wallet-kit";
+import { useZkLogin } from "@mysten/enoki/react";
 
 export const useBlackjackGame = () => {
-  const { currentAccount } = useWalletKit();
+  const { address } = useZkLogin();
   const { suiClient } = useSui();
   const [game, setGame] = useState<GameOnChain | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,11 +25,11 @@ export const useBlackjackGame = () => {
   const handleRestart = () => {
     setGame(null);
     setIsLoading(false);
-  }
+  };
 
   useEffect(() => {
     handleRestart();
-  }, [currentAccount?.address]);
+  }, [address]);
 
   // Receives the txDigest of the transaction that updated the game
   // Waits for this transaction block, and then re-fetches the game object
@@ -59,13 +59,15 @@ export const useBlackjackGame = () => {
   };
 
   const handleCreateGameAndRefresh = async (userRandomness: string) => {
-    handleCreateGameAndDeal(counterId, userRandomness, reFetchGame).then((resp) => {
-      if (!resp) {
-        return;
+    handleCreateGameAndDeal(counterId, userRandomness, reFetchGame).then(
+      (resp) => {
+        if (!resp) {
+          return;
+        }
+        const { gameId, txDigest } = resp;
+        reFetchGame(gameId, txDigest);
       }
-      const { gameId, txDigest } = resp;
-      reFetchGame(gameId, txDigest);
-    });
+    );
   };
 
   const handleMakeMoveAndRefresh = (move: "hit" | "stand") => {

@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { useBlackjackGame } from "@/hooks/useBlackjackGame";
 import { Spinner } from "../components/general/Spinner";
-import { useWalletKit } from "@mysten/wallet-kit";
 import { SignInBanner } from "../components/home/SignInBanner";
 import { StartGame } from "../components/home/StartGame";
 import { DealerCards } from "../components/home/DealerCards";
@@ -13,9 +12,10 @@ import { CreateCounter } from "../components/home/CreateCounter";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { BlackjackBanner } from "@/components/home/BlackjackBanner";
+import { useZkLogin } from "@mysten/enoki/react";
 
 const HomePage = () => {
-  const { currentAccount } = useWalletKit();
+  const { address } = useZkLogin();
   const {
     game,
     isLoading,
@@ -42,7 +42,7 @@ const HomePage = () => {
     }
   }, [game?.player_sum, game?.status]);
 
-  if (!currentAccount?.address) {
+  if (!address) {
     return <SignInBanner />;
   }
 

@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
-import { useWalletKit } from "@mysten/wallet-kit";
 import { useSui } from "./useSui";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { SuiObjectChangeCreated } from "@mysten/sui.js/client";
 import toast from "react-hot-toast";
 import { getCounterId } from "@/utils/getCounterId";
+import { useEnokiFlow, useZkLogin } from "@mysten/enoki/react";
 
 export const usePlayerCounter = () => {
-  const { currentAccount, signTransactionBlock } = useWalletKit();
+  const { address } = useZkLogin();
+  const enokiFlow = useEnokiFlow();
   const { suiClient, executeSignedTransactionBlock } = useSui();
   const [counterId, setCounterId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateLoading, setIsCreateLoading] = useState(false);
 
-  const handleCreateCounter = async (): Promise<string | undefined> => {
+  const handleCreateCounter = async () => {
     setIsCreateLoading(true);
     const tx = new TransactionBlock();
     tx.moveCall({
@@ -22,27 +23,17 @@ export const usePlayerCounter = () => {
     });
     tx.setGasBudget(1000000000);
 
-    let signedTx: any = null;
-    try {
-      signedTx = await signTransactionBlock({
-        transactionBlock: tx as any,
-      });
-    } catch (err) {
-      console.error(err);
-      toast.error("Could not sign transaction block");
-      setIsCreateLoading(false);
-      setCounterId(null);
-      return;
-    }
-
-    executeSignedTransactionBlock({
-      signedTx,
-      requestType: "WaitForLocalExecution",
-      options: {
-        showObjectChanges: true,
-        showEffects: true,
-      },
-    })
+    const keypair = await enokiFlow.getKeypair();
+    return suiClient
+      .signAndExecuteTransactionBlock({
+        transactionBlock: tx,
+        signer: keypair as any,
+        requestType: "WaitForLocalExecution",
+        options: {
+          showObjectChanges: true,
+          showEffects: true,
+        },
+      })
       .then((resp) => {
         const status = resp?.effects?.status.status;
         if (status !== "success") {
@@ -70,10 +61,10 @@ export const usePlayerCounter = () => {
   };
 
   useEffect(() => {
-    if (!currentAccount) return;
+    if (!address) return;
     setIsLoading(true);
     getCounterId({
-      address: currentAccount!.address,
+      address,
       suiClient,
     })
       .then((resp) => {
@@ -89,7 +80,7 @@ export const usePlayerCounter = () => {
         console.log(err);
         setCounterId(null);
       });
-  }, [currentAccount?.address]);
+  }, [address]);
 
   return {
     counterId,

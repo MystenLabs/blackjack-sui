@@ -1,11 +1,11 @@
 import { useSui } from "./useSui";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { SuiObjectChangeCreated } from "@mysten/sui.js/client";
-import { useWalletKit } from "@mysten/wallet-kit";
 import { useCallback, useState } from "react";
 import { GameOnChain } from "@/types/GameOnChain";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { useEnokiFlow } from "@mysten/enoki/react";
 
 interface HandleHitOrStandProps {
   move: "hit" | "stand";
@@ -26,9 +26,9 @@ interface OnRequestMoveSuccessProps {
 }
 
 export const useMakeMoveInBlackjackGame = () => {
-  const { executeSignedTransactionBlock } = useSui();
-  const { signTransactionBlock } = useWalletKit();
+  const { suiClient } = useSui();
   const [isMoveLoading, setIsMoveLoading] = useState(false);
+  const enokiFlow = useEnokiFlow();
 
   const handleHitOrStand = useCallback(
     async ({
@@ -54,27 +54,18 @@ export const useMakeMoveInBlackjackGame = () => {
         tx.pure(process.env.NEXT_PUBLIC_ADMIN_ADDRESS!)
       );
 
-      let signedTx: any = null;
-      try {
-        signedTx = await signTransactionBlock({
-          transactionBlock: tx as any,
-        });
-      } catch (err) {
-        console.error(err);
-        toast.error("Could not sign transaction block");
-        setIsMoveLoading(false);
-        return null;
-      }
-
-      return executeSignedTransactionBlock({
-        signedTx,
-        requestType: "WaitForLocalExecution",
-        options: {
-          showObjectChanges: true,
-          showEffects: true,
-          showEvents: true,
-        },
-      })
+      const keypair = await enokiFlow.getKeypair();
+      return suiClient
+        .signAndExecuteTransactionBlock({
+          transactionBlock: tx,
+          signer: keypair as any,
+          requestType: "WaitForLocalExecution",
+          options: {
+            showObjectChanges: true,
+            showEffects: true,
+            showEvents: true,
+          },
+        })
         .then((resp) => {
           const status = resp?.effects?.status.status;
           if (status !== "success") {
