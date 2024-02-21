@@ -4,8 +4,7 @@ import {
   useZkLogin,
   useZkLoginSession,
 } from "@mysten/enoki/react";
-import { Button } from "@/components/ui/button";
-import { CopyIcon, DotsVerticalIcon } from "@radix-ui/react-icons";
+import { CopyIcon } from "@radix-ui/react-icons";
 import toast from "react-hot-toast";
 import {
   DropdownMenu,
@@ -20,6 +19,9 @@ import { formatAddress } from "@mysten/sui.js/utils";
 import { LogOut } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import Image from "next/image";
+import Link from "next/link";
+import { getSuiExplorerLink } from "@/helpers/getSuiExplorerLink";
+import { formatString } from "@/helpers/formatString";
 
 export const UserProfileMenu = () => {
   const { address } = useZkLogin();
@@ -59,26 +61,27 @@ export const UserProfileMenu = () => {
             {decodedJWT?.given_name} {decodedJWT?.family_name}
           </div>
           <div className="text-black text-opacity-60 text-xs">
-            {decodedJWT?.email}
+            {decodedJWT?.email ? formatString(decodedJWT?.email, 25) : ""}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem className="flex items-center justify-between w-full">
-            <div>{formatAddress(address)}</div>
-            <button onClick={handleCopyAddress}>
-              <CopyIcon className="w-4 h-4 text-black" />
-            </button>
+          <DropdownMenuItem>
+            <Link
+              className="flex items-center justify-between w-full"
+              href={getSuiExplorerLink({ type: "address", objectId: address })}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <div>{formatAddress(address)}</div>
+              <button onClick={handleCopyAddress}>
+                <CopyIcon className="w-4 h-4 text-black" />
+              </button>
+            </Link>
           </DropdownMenuItem>
-          {/* <DropdownMenuItem className="flex items-center justify-between w-full">
-            <div>{formatAmount(BigNumber(balance))} SUI</div>
-            <LoadingButton onClick={handleRequestSui} isLoading={isLoading}>
-              Request SUI
-            </LoadingButton>
-          </DropdownMenuItem> */}
         </DropdownMenuGroup>
         <DropdownMenuItem
-          onClick={enokiFlow.logout}
+          onClick={() => enokiFlow.logout()}
           className="flex items-center justify-between w-full"
         >
           <div>Log out</div>
