@@ -1,6 +1,7 @@
 import React from "react";
 import { PlayerCards } from "./PlayerCards";
 import { GameOnChain } from "@/types/GameOnChain";
+import Link from "next/link";
 
 interface BlackjackBannerProps {
   game: GameOnChain;
@@ -34,6 +35,12 @@ export const BlackjackBanner = ({ game, handleHide }: BlackjackBannerProps) => {
         <div className="text-white text-[18px] text-opacity-80">
           Congratulations, You Won!
         </div>
+        <Link
+          href="/new"
+          className="w-[200px] mx-auto mt-[35px] text-sm rounded-full px-4 py-3 bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          New game
+        </Link>
       </div>
     </>
   );
