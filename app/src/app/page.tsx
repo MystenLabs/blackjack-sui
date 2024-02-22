@@ -45,7 +45,11 @@ const HomePage = () => {
   }, [game?.status]);
 
   useEffect(() => {
-    if (game?.player_sum === 21 && game?.status === 1) {
+    if (
+      game?.player_sum === 21 &&
+      game?.player_cards?.length === 2 &&
+      game?.status === 1
+    ) {
       handleShowBlackjackBanner();
     }
   }, [game?.player_sum, game?.status]);
