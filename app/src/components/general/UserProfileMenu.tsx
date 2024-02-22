@@ -36,7 +36,8 @@ export const UserProfileMenu = () => {
 
   console.log({ decodedJWT });
 
-  const handleCopyAddress = () => {
+  const handleCopyAddress = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
     navigator.clipboard.writeText(address!);
     toast.success("Address copied to clipboard");
   };
@@ -66,18 +67,18 @@ export const UserProfileMenu = () => {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem className="flex items-center justify-between w-full">
             <Link
-              className="flex items-center justify-between w-full"
+              className="flex-1"
               href={getSuiExplorerLink({ type: "address", objectId: address })}
               target="_blank"
               rel="noopener noreferrer"
             >
               <div>{formatAddress(address)}</div>
-              <button onClick={handleCopyAddress}>
-                <CopyIcon className="w-4 h-4 text-black" />
-              </button>
             </Link>
+            <button onClick={handleCopyAddress}>
+              <CopyIcon className="w-4 h-4 text-black" />
+            </button>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuItem

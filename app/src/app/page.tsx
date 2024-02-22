@@ -4,20 +4,21 @@ import React, { useEffect, useState } from "react";
 import { useBlackjackGame } from "@/hooks/useBlackjackGame";
 import { Spinner } from "../components/general/Spinner";
 import { SignInBanner } from "../components/home/SignInBanner";
-import { StartGame } from "../components/home/StartGame";
 import { DealerCards } from "../components/home/DealerCards";
 import { PlayerCards } from "../components/home/PlayerCards";
 import { GameActions } from "../components/home/GameActions";
-import { CreateCounter } from "../components/home/CreateCounter";
 import Image from "next/image";
 import { BlackjackBanner } from "@/components/home/BlackjackBanner";
 import { useZkLogin } from "@mysten/enoki/react";
 import { useBalance } from "@/contexts/BalanceContext";
 import { SuiExplorerLink } from "@/components/general/SuiExplorerLink";
+import BigNumber from "bignumber.js";
+import { SetupGame } from "@/components/home/SetupGame";
+import Link from "next/link";
 
 const HomePage = () => {
   const { address } = useZkLogin();
-  const { handleRefreshBalance } = useBalance();
+  const { balance, handleRefreshBalance } = useBalance();
   const {
     game,
     isLoading,
@@ -31,7 +32,6 @@ const HomePage = () => {
     handleHit,
     handleStand,
     isMoveLoading,
-    handleRestart,
   } = useBlackjackGame();
 
   const [showingBlackjackBanner, setShowingBlackjackBanner] = useState(false);
@@ -62,24 +62,17 @@ const HomePage = () => {
     return <Spinner />;
   }
 
-  if (!counterId) {
+  if (balance.isLessThan(BigNumber(0.5)) || !counterId || !game) {
     return (
-      <CreateCounter
-        handleCreateCounter={handleCreateCounter}
-        isLoading={isCreateCounterLoading}
+      <SetupGame
+        balance={balance}
         counterId={counterId}
-      />
-    );
-  }
-
-  if (!game) {
-    if (isLoading) {
-      return <Spinner />;
-    }
-    return (
-      <StartGame
+        handleCreateCounter={handleCreateCounter}
+        isCreateCounterLoading={isCreateCounterLoading}
+        game={game}
+        isLoading={isLoading}
         handleCreateGame={handleCreateGame}
-        isLoading={isCreateGameLoading}
+        isCreateGameLoading={isCreateGameLoading}
       />
     );
   }
@@ -107,7 +100,7 @@ const HomePage = () => {
           )}
         </div>
       </div>
-      <div className="relative space-y-[65px]">
+      <div className="relative space-y-[55px]">
         <DealerCards
           cards={game.dealer_cards}
           points={game.dealer_sum}
@@ -128,21 +121,29 @@ const HomePage = () => {
           />
         )}
         {game.status !== 0 && (
-          <div className="flex flex-col items-center space-y-[10px]">
-            <div className="text-gray-100">The game is finished!</div>
-            {game.status === 3 && (
-              <div className="text-gray-300">It&apos;s a tie!</div>
-            )}
-            <div className="flex space-x-1 items-center">
-              <div className="text-gray-100 text-sm">
-                Object on Sui Explorer:
+          <div className="flex flex-col items-center space-y-[20px]">
+            <div className="flex flex-col items-center space-y-[5px]">
+              <div className="text-gray-100">The game is finished!</div>
+              {game.status === 3 && (
+                <div className="text-gray-300">It&apos;s a tie!</div>
+              )}
+              <div className="flex space-x-1 items-center">
+                <div className="text-gray-100 text-sm">
+                  Object on Sui Explorer:
+                </div>
+                <SuiExplorerLink
+                  objectId={game.id.id}
+                  type="object"
+                  className="!text-gray-300 text-sm"
+                />
               </div>
-              <SuiExplorerLink
-                objectId={game.id.id}
-                type="object"
-                className="text-gray-300 text-sm"
-              />
             </div>
+            <Link
+              href="/new"
+              className="w-[200px] text-sm rounded-full px-4 py-3 bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              New game
+            </Link>
           </div>
         )}
       </div>
