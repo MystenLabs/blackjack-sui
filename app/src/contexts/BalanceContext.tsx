@@ -12,16 +12,19 @@ export const useBalance = () => {
 
 interface BalanceContextProps {
   balance: BigNumber;
+  isLoading: boolean;
   handleRefreshBalance: () => void;
 }
 
 export const BalanceContext = createContext<BalanceContextProps>({
   balance: BigNumber(0),
+  isLoading: true,
   handleRefreshBalance: () => {},
 });
 
 export const BalanceProvider = ({ children }: ChildrenProps) => {
   const [balance, setBalance] = useState(BigNumber(0));
+  const [isLoading, setIsLoading] = useState(false);
   const { suiClient } = useSui();
   const { address } = useZkLogin();
 
@@ -32,11 +35,13 @@ export const BalanceProvider = ({ children }: ChildrenProps) => {
   const handleRefreshBalance = async () => {
     if (!address) return;
     console.log(`Refreshing balance for ${address}...`);
+    setIsLoading(true);
     await suiClient
       .getBalance({
         owner: address!,
       })
       .then((resp) => {
+        setIsLoading(false);
         setBalance(
           BigNumber(resp.totalBalance).dividedBy(
             BigNumber(Number(MIST_PER_SUI))
@@ -45,12 +50,15 @@ export const BalanceProvider = ({ children }: ChildrenProps) => {
       })
       .catch((err) => {
         console.error(err);
+        setIsLoading(false);
         setBalance(BigNumber(0));
       });
   };
 
   return (
-    <BalanceContext.Provider value={{ balance, handleRefreshBalance }}>
+    <BalanceContext.Provider
+      value={{ balance, handleRefreshBalance, isLoading }}
+    >
       {children}
     </BalanceContext.Provider>
   );

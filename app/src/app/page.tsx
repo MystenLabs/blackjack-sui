@@ -14,9 +14,12 @@ import { BlackjackBanner } from "@/components/home/BlackjackBanner";
 import { useZkLogin } from "@mysten/enoki/react";
 import { useBalance } from "@/contexts/BalanceContext";
 import { SuiExplorerLink } from "@/components/general/SuiExplorerLink";
+import { RequestSUI } from "@/components/home/RequestSUI";
+import BigNumber from "bignumber.js";
 
 const HomePage = () => {
   const { address } = useZkLogin();
+  const { balance } = useBalance();
   const { handleRefreshBalance } = useBalance();
   const {
     game,
@@ -31,7 +34,6 @@ const HomePage = () => {
     handleHit,
     handleStand,
     isMoveLoading,
-    handleRestart,
   } = useBlackjackGame();
 
   const [showingBlackjackBanner, setShowingBlackjackBanner] = useState(false);
@@ -60,6 +62,10 @@ const HomePage = () => {
 
   if (isCounterIdLoading) {
     return <Spinner />;
+  }
+
+  if (balance.isLessThan(BigNumber(0.5))) {
+    return <RequestSUI />;
   }
 
   if (!counterId) {

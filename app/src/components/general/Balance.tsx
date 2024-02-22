@@ -24,7 +24,7 @@ export const Balance = () => {
         className="flex space-x-0 md:space-x-3 items-center border-[1px] border-custom-border rounded-[36px] px-[10px] bg-[inherit] hover:bg-[#12BF77]"
         spinnerClassName="w-5 h-5"
       >
-        <div className="hidden md:block">Request</div>
+        <div className="hidden md:block">Top up</div>
         <Image src="/general/plus.svg" alt="plus" width={20} height={20} />
       </LoadingButton>
     </div>
