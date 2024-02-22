@@ -13,9 +13,11 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { BlackjackBanner } from "@/components/home/BlackjackBanner";
 import { useZkLogin } from "@mysten/enoki/react";
+import { useBalance } from "@/contexts/BalanceContext";
 
 const HomePage = () => {
   const { address } = useZkLogin();
+  const { handleRefreshBalance } = useBalance();
   const {
     game,
     isLoading,
@@ -35,6 +37,12 @@ const HomePage = () => {
   const [showingBlackjackBanner, setShowingBlackjackBanner] = useState(false);
   const handleShowBlackjackBanner = () => setShowingBlackjackBanner(true);
   const handleHideBlackjackBanner = () => setShowingBlackjackBanner(false);
+
+  useEffect(() => {
+    setTimeout(() => {
+      handleRefreshBalance();
+    }, 2000);
+  }, [game?.status]);
 
   useEffect(() => {
     if (game?.player_sum === 21 && game?.status === 1) {

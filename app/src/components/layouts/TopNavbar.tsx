@@ -2,12 +2,10 @@ import React from "react";
 import Link from "next/link";
 import { useZkLogin } from "@mysten/enoki/react";
 import { UserProfileMenu } from "../general/UserProfileMenu";
-import { useRequestSui } from "@/hooks/useRequestSui";
 import { Balance } from "../general/Balance";
 
 export const TopNavbar = () => {
   const { address } = useZkLogin();
-  const { balance, isLoading, handleRequestSui } = useRequestSui();
 
   return (
     <div className="sticky top-0 flex w-full h-full bg-inherit p-5 space-x-2 md:space-x-4 justify-between items-center z-10">
