@@ -107,3 +107,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+#RFS-Label {
+  color: #4f4f4f;
+}
