@@ -130,6 +130,9 @@ const HomePage = () => {
         {game.status !== 0 && (
           <div className="flex flex-col items-center space-y-[10px]">
             <div className="text-gray-100">The game is finished!</div>
+            {game.status === 3 && (
+              <div className="text-gray-300">It&apos;s a tie!</div>
+            )}
             <div className="flex space-x-1 items-center">
               <div className="text-gray-100 text-sm">
                 Object on Sui Explorer:
