@@ -22,7 +22,7 @@ export const RequestSUI = () => {
       <LoadingButton
         onClick={handleRequestSui}
         isLoading={isLoading}
-        className="!px-[14px] !py-[14px] rounded-full flex items-center space-x-2"
+        className="!px-[14px] !py-[14px] h-14 md:h-9 rounded-full flex items-center space-x-2"
         spinnerClassName="text-white !w-5 !h-5 mr-2"
       >
         <Image src="/general/plus.svg" alt="plus" width={20} height={20} />
