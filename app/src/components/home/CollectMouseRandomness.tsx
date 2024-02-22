@@ -42,7 +42,7 @@ export const CollectMouseRandomness = ({
 
   return (
     <div className="bg-white flex flex-col p-[50px] max-w-[480px] mx-auto rounded-[24px] items-center space-y-[50px]">
-      <div className="text-[25px] font-semibold">The card is now shuffled!</div>
+      <div className="text-[25px] font-semibold">The cards are now shuffled!</div>
       <div className="text-center text-opacity-90 text-[14px] text-[#4F4F4F]">
         [{randomness.join(", ")}]
       </div>
