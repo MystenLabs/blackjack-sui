@@ -22,7 +22,7 @@ const stepStyle = {
 export const SetupGameStepper = ({ step }: SetupGameStepperProps) => {
   console.log("step", step);
   return (
-    <div className="bg-white flex flex-col max-w-[480px] w-full mx-auto rounded-[24px] items-center space-y-1">
+    <div className="bg-white flex flex-col w-full rounded-[24px] items-center space-y-1">
       <Stepper
         steps={[
           { label: "Top Up" },
