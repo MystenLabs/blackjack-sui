@@ -3,12 +3,6 @@ import { LoadingButton } from "./LoadingButton";
 import { useRequestSui } from "@/hooks/useRequestSui";
 import { formatSUIAmount } from "@/helpers/formatSUIAmount";
 import Image from "next/image";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useBalance } from "@/contexts/BalanceContext";
 
 export const Balance = () => {
@@ -16,26 +10,23 @@ export const Balance = () => {
   const { balance } = useBalance();
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <LoadingButton
-            onClick={handleRequestSui}
-            isLoading={isLoading}
-            className="flex space-x-2 items-center border-[1px] border-custom-border rounded-[36px] px-[10px] bg-[inherit] hover:bg-[#12BF77]"
-            spinnerClassName="w-5 h-5"
-          >
-            <Image src="/general/sui.svg" alt="plus" width={10} height={10} />
-            <div className="text-white text-opacity-90 text-sm">
-              {formatSUIAmount(balance)} SUI
-            </div>
-            <Image src="/general/plus.svg" alt="plus" width={20} height={20} />
-          </LoadingButton>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Request SUI</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <div className="flex space-x-2 items-center">
+      <div className="flex space-x-1 items-center h-10 border-[1px] border-custom-border rounded-[36px] px-[10px] bg-[inherit]">
+        <Image src="/general/sui.svg" alt="plus" width={10} height={10} />
+        <div className="flex space-x-1 text-white text-opacity-90 text-sm">
+          <span>{formatSUIAmount(balance)} </span>
+          <span className="hidden md:block">SUI</span>
+        </div>
+      </div>
+      <LoadingButton
+        onClick={handleRequestSui}
+        isLoading={isLoading}
+        className="flex space-x-0 md:space-x-3 items-center border-[1px] border-custom-border rounded-[36px] px-[10px] bg-[inherit] hover:bg-[#12BF77]"
+        spinnerClassName="w-5 h-5"
+      >
+        <div className="hidden md:block">Request</div>
+        <Image src="/general/plus.svg" alt="plus" width={20} height={20} />
+      </LoadingButton>
+    </div>
   );
 };
