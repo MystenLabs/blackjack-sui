@@ -1,39 +1,20 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useSui } from "./useSui";
-import { MIST_PER_SUI } from "@mysten/sui.js/utils";
 import { useZkLogin, useZkLoginSession } from "@mysten/enoki/react";
-import BigNumber from "bignumber.js";
+import { useBalance } from "@/contexts/BalanceContext";
 
 export const useRequestSui = () => {
   const { suiClient } = useSui();
   const [isLoading, setIsLoading] = useState(false);
-  const [balance, setBalance] = useState(BigNumber(0));
+  const { handleRefreshBalance } = useBalance();
   const { address } = useZkLogin();
   const zkLoginSession = useZkLoginSession();
 
   useEffect(() => {
     if (address) handleRefreshBalance();
   }, [address]);
-
-  const handleRefreshBalance = async () => {
-    await suiClient
-      .getBalance({
-        owner: address!,
-      })
-      .then((resp) => {
-        setBalance(
-          BigNumber(resp.totalBalance).dividedBy(
-            BigNumber(Number(MIST_PER_SUI))
-          )
-        );
-      })
-      .catch((err) => {
-        console.error(err);
-        setBalance(BigNumber(0));
-      });
-  };
 
   const handleRequestSui = useCallback(async () => {
     setIsLoading(true);
@@ -69,7 +50,6 @@ export const useRequestSui = () => {
 
   return {
     isLoading,
-    balance,
     handleRequestSui,
   };
 };

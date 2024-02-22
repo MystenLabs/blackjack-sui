@@ -9,9 +9,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useBalance } from "@/contexts/BalanceContext";
 
 export const Balance = () => {
-  const { balance, isLoading, handleRequestSui } = useRequestSui();
+  const { isLoading, handleRequestSui } = useRequestSui();
+  const { balance } = useBalance();
 
   return (
     <TooltipProvider>
