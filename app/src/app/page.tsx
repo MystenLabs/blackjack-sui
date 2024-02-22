@@ -10,10 +10,10 @@ import { PlayerCards } from "../components/home/PlayerCards";
 import { GameActions } from "../components/home/GameActions";
 import { CreateCounter } from "../components/home/CreateCounter";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import { BlackjackBanner } from "@/components/home/BlackjackBanner";
 import { useZkLogin } from "@mysten/enoki/react";
 import { useBalance } from "@/contexts/BalanceContext";
+import { SuiExplorerLink } from "@/components/general/SuiExplorerLink";
 
 const HomePage = () => {
   const { address } = useZkLogin();
@@ -45,7 +45,11 @@ const HomePage = () => {
   }, [game?.status]);
 
   useEffect(() => {
-    if (game?.player_sum === 21 && game?.status === 1) {
+    if (
+      game?.player_sum === 21 &&
+      game?.player_cards?.length === 2 &&
+      game?.status === 1
+    ) {
       handleShowBlackjackBanner();
     }
   }, [game?.player_sum, game?.status]);
@@ -124,13 +128,21 @@ const HomePage = () => {
           />
         )}
         {game.status !== 0 && (
-          <div>
-            <Button
-              onClick={handleRestart}
-              className="rounded-full !py-[21px] px-[24px]"
-            >
-              New game
-            </Button>
+          <div className="flex flex-col items-center space-y-[10px]">
+            <div className="text-gray-100">The game is finished!</div>
+            {game.status === 3 && (
+              <div className="text-gray-300">It&apos;s a tie!</div>
+            )}
+            <div className="flex space-x-1 items-center">
+              <div className="text-gray-100 text-sm">
+                Object on Sui Explorer:
+              </div>
+              <SuiExplorerLink
+                objectId={game.id.id}
+                type="object"
+                className="text-gray-300 text-sm"
+              />
+            </div>
           </div>
         )}
       </div>

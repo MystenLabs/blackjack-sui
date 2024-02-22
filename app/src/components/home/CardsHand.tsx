@@ -8,6 +8,8 @@ interface CardsHandProps {
   lost?: boolean;
 }
 export const CardsHand = ({ cards, points, won, lost }: CardsHandProps) => {
+  const isBlackjack = cards.length === 2 && points === 21;
+
   if (cards.length === 0) {
     return (
       <Image src="/general/empty-hand.svg" width={120} height={166} alt="empty hand" />
@@ -56,7 +58,7 @@ export const CardsHand = ({ cards, points, won, lost }: CardsHandProps) => {
       >
         {points}
       </div>
-      {points === 21 && (
+      {isBlackjack && (
         <div className="absolute bottom-[7px] left-[7px]">
           <Image
             src="/result/blackjack-chip.svg"
@@ -76,7 +78,7 @@ export const CardsHand = ({ cards, points, won, lost }: CardsHandProps) => {
           />
         </div>
       )}
-      {points < 21 && won && (
+      {!isBlackjack && won && (
         <div className="absolute bottom-[7px] left-[7px]">
           <Image src="/result/win-chip.svg" width={96} height={28} alt="win" />
         </div>
