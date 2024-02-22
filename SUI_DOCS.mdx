@@ -16,9 +16,9 @@ You can also find the [full repository for this example here](https://github.com
 
 ## Gameplay
 
-In this single-player version of blackjack, the player competes against a dealer, which is automated by the system. The dealer is equipped with a public BLS key that plays a central role in the game's mechanics. The dealer's actions are triggered by HTTP requests to serverless functions. Players generate randomness for the game by interacting with their mouse on the screen, after which they place their bet to start the game. Upon initiating the game, a request is made to the dealer's back-end, which processes it by signing and subsequently dealing two cards to the player and one to itself.
+In this single-player version of blackjack, the player competes against a dealer, which is automated by the system. The dealer is equipped with a public BLS key that plays a central role in the game's mechanics. The dealer's actions are triggered by HTTP requests to serverless functions. Players generate randomness for the game by interacting with their mouse on the screen, after which they place their bet to start the game. Upon initiating the game, a request is made to the dealer's back-end, which processes it by signing and subsequently dealing two cards to the player and one to themselves.
 
-The player has the options to 'Hit' or 'Stand.' Selecting 'Stand' triggers the dealer to draw cards until the total reaches 17 or higher. After the dealer stops, typically at a sum of 17 or more, the smart contract steps in to compare the totals and declare the winner. On the other hand, choosing 'Hit' prompts the dealer to draw an additional card for the player.
+The player has the options to 'Hit' or 'Stand.' Selecting 'Stand' triggers the dealer to draw cards until the total reaches 17 or higher. After the dealer stops, the smart contract steps in to compare the totals and declare the winner. On the other hand, choosing 'Hit' prompts the dealer to draw an additional card for the player.
 
 Note that more complex Blackjack rules, such as splitting, are considered out of scope for this example, and are therefore not implemented.
 
@@ -45,7 +45,7 @@ For testing purposes, the module provides special functions like `get_house_admi
 
 ### Counter module
 
-The next module, [`counter_nft.move`](https://github.com/MystenLabs/blackjack-sui/blob/main/move/blackjack/sources/counter_nft.move), introduces the Counter NFT, a key component in the game's mechanics. It serves as the [Verifiable Random Function (VRF)](../cryptography/ecvrf.mdx) input, ensuring uniqueness in each game. The Counter NFT's value increases after each use, maintaining its distinctiveness for every new game. For first-time players, the creation of a Counter NFT is mandatory. To enhance user experience, the user interface can automate this process by integrating the Counter NFT's creation with the game initiation in a single transaction block. This seamless integration simplifies the process for the player, allowing them to focus on the gameplay. This counter serves the same purpose as the one in the [Coin Flip example](./coin-flip.mdx).
+The next module, [`counter_nft.move`](https://github.com/MystenLabs/blackjack-sui/blob/main/move/blackjack/sources/counter_nft.move), introduces the Counter NFT, a key component in the game's mechanics. It serves as the [Verifiable Random Function (VRF)](../cryptography/ecvrf.mdx) input, ensuring uniqueness in each game. The Counter NFT's value increases after each use, maintaining its distinctiveness for every new request. For first-time players, the creation of a Counter NFT is mandatory. To enhance user experience, the user interface can automate this process by integrating the Counter NFT's creation with the game initiation in a single transaction block. This seamless integration simplifies the process for the player, allowing them to focus on the gameplay. This counter serves the same purpose as the one in the [Coin Flip example](./coin-flip.mdx).
 
 ## Back-end
 
@@ -73,7 +73,7 @@ The back-end code is splitted in the following sub directories:
 
 ### Need of usage of waitForTransactionBlock
 
-An interesting aspect of developing a Dapp on Sui, that is coupled to using a full node with/without a load balancer, and requires attention by the developer, is the occurence of write-after-write cases.
+An interesting aspect of developing a Dapp on Sui, that is coupled to using a full node with/without a load balancer, and requires attention by the developer, is the occurence of read-after-write and write-after-write cases.
 
 #### Initial Deal Transaction
 
