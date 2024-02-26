@@ -69,7 +69,7 @@ export const SetupGame = ({
   };
 
   return (
-    <div className="flex flex-col space-y-1">
+    <div className="flex flex-col space-y-1 max-w-[480px] w-full mx-auto">
       <SetupGameStepper step={step} />
       {renderStep()}
     </div>

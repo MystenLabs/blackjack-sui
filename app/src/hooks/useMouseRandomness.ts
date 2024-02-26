@@ -5,10 +5,20 @@ export const useMouseRandomness = () => {
   const [gathered, setGathered] = useState(false);
 
   useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
+    const handleMoveEvent = (event: MouseEvent | TouchEvent) => {
       const target = event.target as HTMLElement;
-      const localX = event.clientX - target.getBoundingClientRect().left;
-      const localY = event.clientY - target.getBoundingClientRect().top;
+      const rect = target.getBoundingClientRect();
+      let x = 0;
+      let y = 0;
+      if (event instanceof MouseEvent) {
+        x = event.clientX;
+        y = event.clientY;
+      } else if (event.touches) {
+        x = event.touches[0].clientX;
+        y = event.touches[0].clientY;
+      }
+      const localX = x - rect.left;
+      const localY = y - rect.top;
       if (randomness.length < 32) {
         const sum = localX * localY * 1223;
         const randomVal = Math.floor(Math.random() * sum) % 256;
@@ -18,10 +28,16 @@ export const useMouseRandomness = () => {
         ]);
       } else {
         setGathered(true);
+        document.removeEventListener("mousemove", handleMoveEvent);
+        document.removeEventListener("touchmove", handleMoveEvent);
       }
     };
-    document.addEventListener("mousemove", handleMouseMove);
-    return () => document.removeEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mousemove", handleMoveEvent);
+    document.addEventListener("touchmove", handleMoveEvent, { passive: true });
+    return () => {
+      document.removeEventListener("mousemove", handleMoveEvent);
+      document.removeEventListener("touchmove", handleMoveEvent);
+    };
   }, [randomness]);
 
   return { randomness, gathered };

@@ -14,7 +14,7 @@ export const CreateCounter = ({
   counterId,
 }: CreateCounterProps) => {
   return (
-    <div className="bg-white flex flex-col p-[50px] max-w-[480px] mx-auto rounded-[24px] items-center space-y-[50px]">
+    <div className="bg-white flex flex-col p-[50px] w-full rounded-[24px] items-center space-y-[50px]">
       <div className="text-[25px] font-semibold">First time here?</div>
       <Image
         src="/general/new-game-cards.svg"
