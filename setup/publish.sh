@@ -9,7 +9,6 @@ for i in jq curl sui; do
 done
 
 NETWORK=http://localhost:9000
-BACKEND_API=http://localhost:3000
 FAUCET=https://localhost:9000/gas
 
 MOVE_PACKAGE_PATH=../move/blackjack
@@ -18,12 +17,10 @@ if [ $# -ne 0 ]; then
   if [ $1 = "testnet" ]; then
     NETWORK="https://rpc.testnet.sui.io:443"
     FAUCET="https://faucet.testnet.sui.io/gas"
-    BACKEND_API="https://api-testnet.suifrens.sui.io"
   fi
   if [ $1 = "devnet" ]; then
     NETWORK="https://rpc.devnet.sui.io:443"
     FAUCET="https://faucet.devnet.sui.io/gas"
-    BACKEND_API="https://api-devnet.suifrens.sui.io"
   fi
 fi
 
@@ -61,7 +58,6 @@ fi
 
 cat >.env<<-API_ENV
 SUI_NETWORK=$NETWORK
-BACKEND_API=$BACKEND_API
 PACKAGE_ADDRESS=$PACKAGE_ID
 ADMIN_ADDRESS=$ADMIN_ADDRESS
 HOUSE_ADMIN_CAP=$HOUSE_ADMIN_CAP
@@ -70,15 +66,7 @@ API_ENV
 cat >../app/.env$suffix<<-VITE_API_ENV
 NEXT_PUBLIC_SUI_NETWORK=$NETWORK
 NEXT_PUBLIC_PACKAGE_ADDRESS=$PACKAGE_ID
+NEXT_PUBLIC_ADMIN_ADDRESS=$ADMIN_ADDRESS
 VITE_API_ENV
-
-# commented out as the POC template does not have an api directory
-
-# cat >../api/.env$suffix<<-BACKEND_API_ENV
-# SUI_NETWORK=$NETWORK
-# BACKEND_API=$BACKEND_API
-# PACKAGE_ADDRESS=$PACKAGE_ID
-# ADMIN_ADDRESS=$ADMIN_ADDRESS
-# BACKEND_API_ENV
 
 echo "Contract Deployment finished!"

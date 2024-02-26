@@ -1,7 +1,7 @@
 module blackjack::single_player_blackjack {
 
+    // Imports
     use std::vector;
-
     use sui::bls12381::bls12381_min_pk_verify;
     use sui::tx_context::{Self, TxContext};
     use sui::balance::{Self, Balance};
@@ -12,13 +12,10 @@ module blackjack::single_player_blackjack {
     use sui::sui::SUI;
     use sui::transfer;
     use sui::address;
-
-
     use blackjack::counter_nft::{Self,Counter};
 
 
-    // Consts
-    const EPOCHS_CANCEL_AFTER: u64 = 7;
+    // Constants
     const STAKE: u64 = 200000000;
 
     // Game statuses
@@ -30,20 +27,21 @@ module blackjack::single_player_blackjack {
 
     // Errors
     const EInvalidBlsSig: u64 = 10;
-    const ECallerNotHouse: u64 = 12;
-    const ECanNotCancel: u64 = 13;
-    const EInvalidGuess: u64 = 14;
-    const EInsufficientBalance: u64 = 15;
-    const EGameHasAlreadyBeenCanceled: u64 = 16;
-    const EInsufficientHouseBalance: u64 = 17;
-    const ECoinBalanceNotEnough: u64 = 18;
-    const EGameHasFinished: u64 = 19;
-    const EUnauthorizedPlayer: u64 = 20;
-    const EDealAlreadyHappened: u64 = 21;
-
+    const EInsufficientBalance: u64 = 11;
+    const EInsufficientHouseBalance: u64 = 12;
+    const EGameHasFinished: u64 = 13;
+    const EUnauthorizedPlayer: u64 = 14;
+    const EDealAlreadyHappened: u64 = 15;
+    const EInvalidGameOfHitRequest: u64 = 16;
+    const EInvalidGameOfStandRequest: u64 = 17;
+    const EInvalidSumOfHitRequest: u64 = 18;
+    const EInvalidSumOfStandRequest: u64 = 19;
+    const EInvalidPlayerBetAmount: u64 = 20;
+    const ECallerNotHouse: u64 = 21;
 
     // Structs
 
+    // Events
     struct GameCreatedEvent has copy, drop {
         game_id: ID,
     }
@@ -55,20 +53,10 @@ module blackjack::single_player_blackjack {
         message: vector<u8>,
     }
 
-    struct HitRequested has copy, drop {
-        game_id: ID,
-        current_player_hand_sum: u8
-    }
-
-    struct HitDone has copy, drop {
+    struct HitDoneEvent has copy, drop {
         game_id: ID,
         current_player_hand_sum: u8,
         player_cards: vector<u8>
-    }
-
-    struct StandRequested has copy, drop {
-        game_id: ID,
-        final_player_hand_sum: u8
     }
 
     struct HouseAdminCap has key {
@@ -96,6 +84,19 @@ module blackjack::single_player_blackjack {
         counter: u8,
     }
 
+    struct HitRequest has key, store {
+        id: UID,
+        game_id: ID,
+        current_player_sum: u8,
+    }
+
+    struct StandRequest has key, store {
+        id: UID,
+        game_id: ID,
+        current_player_sum: u8,
+    }
+
+    // Functions
     fun init(ctx: &mut TxContext) {
         let house_cap = HouseAdminCap {
             id: object::new(ctx)
@@ -110,10 +111,12 @@ module blackjack::single_player_blackjack {
     /// @param house_cap: The HouseCap object
     /// @param coin: The coin object that will be used to initialize the house balance. Acts as a treasury
     /// @param public_key: The public key of the house
-    public entry fun initialize_house_data(house_cap: HouseAdminCap,
-                                           coin: Coin<SUI>,
-                                           public_key: vector<u8>,
-                                           ctx: &mut TxContext) {
+    public entry fun initialize_house_data(
+        house_cap: HouseAdminCap,
+        coin: Coin<SUI>,
+        public_key: vector<u8>,
+        ctx: &mut TxContext
+    ) {
         assert!(coin::value(&coin) > 0, EInsufficientBalance);
 
         let house_data = HouseData {
@@ -129,6 +132,24 @@ module blackjack::single_player_blackjack {
         transfer::share_object(house_data);
     }
 
+    /// Function used to top up the house balance. Can be called by anyone.
+    /// House can have multiple accounts so giving the treasury balance is not limited.
+    /// @param house_data: The HouseData object
+    /// @param coin: The coin object that will be used to top up the house balance. The entire coin is consumed
+    public entry fun top_up(house_data: &mut HouseData, coin: Coin<SUI>, _: &mut TxContext) {        
+        let balance = coin::into_balance(coin);
+        balance::join(&mut house_data.balance, balance);
+    }
+
+    /// House can withdraw the entire balance of the house object
+    /// @param house_data: The HouseData object
+    public entry fun withdraw(house_data: &mut HouseData, ctx: &mut TxContext) {
+        // only the house address can withdraw funds
+        assert!(tx_context::sender(ctx) == house_data.house, ECallerNotHouse);
+        let total_balance = balance::value(&house_data.balance);
+        let coin = coin::take(&mut house_data.balance, total_balance, ctx);
+        transfer::public_transfer(coin, house_data.house);
+    }
 
     /// Function used to create a new game. The player must provide a random vector of bytes.
     /// Stake is taken from the player's coin and added to the game's stake. The house's stake is also added to the game's stake.
@@ -136,16 +157,18 @@ module blackjack::single_player_blackjack {
     /// @param user_counter: A user counter object that serves as additional source of randomness.
     /// @param user_bet: The coin object that will be used to take the player's stake
     /// @param house_data: The HouseData object
-    public entry fun place_bet_and_create_game(user_randomness: vector<u8>,
-                                               user_counter: &mut Counter,
-                                               user_bet: Coin<SUI>,
-                                               house_data: &mut HouseData,
-                                               ctx: &mut TxContext) {
+    public entry fun place_bet_and_create_game(
+        user_randomness: vector<u8>,
+        user_counter: &mut Counter,
+        user_bet: Coin<SUI>,
+        house_data: &mut HouseData,
+        ctx: &mut TxContext
+    ) {
         // Ensure that the house has enough balance to play for this game
         assert!(balance(house_data) >= STAKE, EInsufficientHouseBalance);
 
         // get the user coin and convert it into a balance
-        assert!(coin::value(&user_bet) >= STAKE, EInsufficientBalance);
+        assert!(coin::value(&user_bet) == STAKE, EInvalidPlayerBetAmount);
         let stake = coin::into_balance(user_bet);
 
         // get the house balance
@@ -157,7 +180,7 @@ module blackjack::single_player_blackjack {
 
         let new_game = Game {
             id: object::new(ctx),
-            user_randomness : initial_randomness,
+            user_randomness: initial_randomness,
             total_stake: stake,
             player: tx_context::sender(ctx),
             player_cards: vector[],
@@ -181,13 +204,14 @@ module blackjack::single_player_blackjack {
     /// @param game: The Game object
     /// @param bls_sig: The bls signature of the game id and the player's randomn bytes and the counter appended together
     /// @param house_data: The HouseData object
-    public fun first_deal(game: &mut Game,
-                          bls_sig: vector<u8>,
-                          house_data: &mut HouseData,
-                          ctx: &mut TxContext
+    public fun first_deal(
+        game: &mut Game,
+        bls_sig: vector<u8>,
+        house_data: &mut HouseData,
+        ctx: &mut TxContext
     ) {
         let messageVector = game.user_randomness;
-        vector::append(&mut messageVector, game_counter(game));
+        vector::append(&mut messageVector, game_counter_vector(game));
 
         // Step 1: Check the bls signature, if its invalid, house loses
         let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
@@ -203,20 +227,20 @@ module blackjack::single_player_blackjack {
         let (card1, hashed_sign2) = get_next_random_card(&hashed_sign1);
         vector::push_back(&mut game.player_cards, card1);
 
-        let (card2,hashed_sign3) = get_next_random_card(&hashed_sign2);
+        let (card2, hashed_sign3) = get_next_random_card(&hashed_sign2);
         vector::push_back(&mut game.player_cards, card2);
 
         game.player_sum = get_card_sum(&game.player_cards);
 
         //Deal cards to dealer
-        let (card3,_) = get_next_random_card(&hashed_sign3);
+        let (card3, _) = get_next_random_card(&hashed_sign3);
         vector::push_back(&mut game.dealer_cards, card3);
         game.dealer_sum = get_card_sum(&game.dealer_cards);
 
 
         if (game.player_sum == 21) {
             player_won_post_handling(game, b"BlackJack!!!", ctx);
-        }else {
+        } else {
             game.counter = game.counter + 1;
         }
     }
@@ -228,36 +252,41 @@ module blackjack::single_player_blackjack {
     ///
     /// Function checks if the latest draw has caused the player to bust and deals with proper handling after that.
     ///
-    public fun hit(game: &mut Game,
-                   bls_sig: vector<u8>,
-                   house_data: &mut HouseData,
-                   ctx: &mut TxContext) {
+    public fun hit(
+        game: &mut Game,
+        bls_sig: vector<u8>,
+        house_data: &mut HouseData,
+        hit_request: HitRequest,
+        ctx: &mut TxContext
+    ) {
 
+        // Verify the BLS signature by admin
         let messageVector = game.user_randomness;
-        vector::append(&mut messageVector, game_counter(game));
-
-        // Step 1: Check the bls signature, if its invalid, house loses
+        vector::append(&mut messageVector, game_counter_vector(game));
         let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
         assert!(is_sig_valid, EInvalidBlsSig);
 
         assert!(game.status == IN_PROGRESS, EGameHasFinished);
 
+        // Verify the HitRequest against the Game object and burn it
+        let HitRequest { id, game_id, current_player_sum } = hit_request;
+        assert!(game_id == object::id(game), EInvalidGameOfHitRequest);
+        assert!(current_player_sum == game.player_sum, EInvalidSumOfHitRequest);
+        object::delete(id);
+
         //Hash the signature before using it
         let hashed_sign = blake2b256(&bls_sig);
-
         let (card, _) = get_next_random_card(&hashed_sign);
         vector::push_back(&mut game.player_cards, card);
         game.player_sum = get_card_sum(&game.player_cards);
-
-        event::emit(HitDone {
+        event::emit(HitDoneEvent {
             game_id: object::uid_to_inner(&game.id),
             current_player_hand_sum: game.player_sum,
             player_cards: game.player_cards
         });
-
         if (game.player_sum > 21) {
             house_won_post_handling(game, house_data, ctx);
-        }else{
+        } else{
             game.counter = game.counter + 1;
         }
     }
@@ -270,32 +299,36 @@ module blackjack::single_player_blackjack {
     ///
     /// Dealer should keep drawing cards until the sum of the cards is greater than 17.
     ///
-    public fun stand(game: &mut Game,
-                     bls_sig: vector<u8>,
-                     house_data: &mut HouseData,
-                     ctx: &mut TxContext) {
+    public fun stand(
+        game: &mut Game,
+        bls_sig: vector<u8>,
+        house_data: &mut HouseData,
+        stand_request: StandRequest,
+        ctx: &mut TxContext
+    ) {
+        // Verify the BLS signature by admin
         let messageVector = game.user_randomness;
-        vector::append(&mut messageVector, game_counter(game));
-
-        // Step 1: Check the bls signature, if its invalid, house loses
+        vector::append(&mut messageVector, game_counter_vector(game));
         let is_sig_valid = bls12381_min_pk_verify(&bls_sig, &house_data.public_key, &messageVector);
         assert!(is_sig_valid, EInvalidBlsSig);
 
         assert!(game.status == IN_PROGRESS, EGameHasFinished);
 
+        // Verify the StandRequest against the Game object and burn it
+        let StandRequest { id, game_id, current_player_sum } = stand_request;
+        assert!(game_id == object::id(game), EInvalidGameOfStandRequest);
+        assert!(current_player_sum == game.player_sum, EInvalidSumOfStandRequest);
+        object::delete(id);
+
         //Hash the signature before using it
         let hashed_sign = blake2b256(&bls_sig);
-
         while (game.dealer_sum < 17) {
             let (card, last_hashed_sign) = get_next_random_card(&hashed_sign);
-
             //update the last_hash so we get a different card next time
             hashed_sign = last_hashed_sign;
-
             vector::push_back(&mut game.dealer_cards, card);
             game.dealer_sum = get_card_sum(&game.dealer_cards);
         };
-
         if (game.dealer_sum > 21) {
             player_won_post_handling(game, b"Dealer Busted!", ctx);
         }
@@ -318,26 +351,30 @@ module blackjack::single_player_blackjack {
 
     /// Function to be called by user who wants to ask for a hit.
     /// @param game: The Game object
-    public fun do_hit(game: &mut Game, current_hand_sum: u8, ctx: &mut TxContext) {
+    public fun do_hit(game: &mut Game, current_player_sum: u8, ctx: &mut TxContext): HitRequest {
         assert!(game.status == IN_PROGRESS, EGameHasFinished);
         assert!(tx_context::sender(ctx) == game.player, EUnauthorizedPlayer);
+        assert!(current_player_sum == game.player_sum, EInvalidSumOfHitRequest);
 
-        event::emit(HitRequested {
-            game_id: object::uid_to_inner(&game.id),
-            current_player_hand_sum: current_hand_sum
-        });
+        HitRequest {
+            id: object::new(ctx),
+            game_id: object::id(game),
+            current_player_sum: game.player_sum,
+        }
     }
 
     /// Function to be called by user who wants to stand.
     /// @param game: The Game object
-    public fun do_stand(game: &mut Game, player_hand_sum: u8, ctx: &mut TxContext) {
+    public fun do_stand(game: &mut Game, current_player_sum: u8, ctx: &mut TxContext): StandRequest {
         assert!(game.status == IN_PROGRESS, EGameHasFinished);
         assert!(tx_context::sender(ctx) == game.player, EUnauthorizedPlayer);
+        assert!(current_player_sum == game.player_sum, EInvalidSumOfStandRequest);
 
-        event::emit(StandRequested {
-            game_id: object::uid_to_inner(&game.id),
-            final_player_hand_sum: player_hand_sum
-        });
+        StandRequest {
+            id: object::new(ctx),
+            game_id: object::id(game),
+            current_player_sum: game.player_sum,
+        }
     }
 
 
@@ -525,20 +562,19 @@ module blackjack::single_player_blackjack {
         sum
     }
 
+    // --------------- Accessors ---------------
 
-    /// Returns the game counter
+    /// Returns a vector containing the game counter
     /// @param game: A Game object
-    public fun game_counter(game: &Game): vector<u8> {
+    public fun game_counter_vector(game: &Game): vector<u8> {
         let simple_vec = vector[];
         vector::push_back(&mut simple_vec, game.counter);
         simple_vec
     }
 
-    // --------------- Accessors ---------------
-
     /// Returns the player's randomn bytes input
     /// @param game: A Game object
-    public fun player_randomness(game: &Game): vector<u8> {
+    public fun user_randomness(game: &Game): vector<u8> {
         game.user_randomness
     }
 
@@ -560,54 +596,103 @@ module blackjack::single_player_blackjack {
         house_data.public_key
     }
 
-
-    //For Testing
-
-    #[test_only]
-    public fun set_init_hash_for_testing(game: &mut Game, initHash: vector<u8>) {
-        //Hash the signature before using it
-        game.latest_hash = blake2b256(&initHash);
+    /// Game accessors
+    public fun player(game: &Game): address {
+        game.player
     }
 
+    public fun player_cards(game: &Game): vector<u8> {
+        game.player_cards
+    }
+
+    public fun player_sum(game: &Game): u8 {
+        game.player_sum
+    }
+
+    public fun dealer_cards(game: &Game): vector<u8> {
+        game.dealer_cards
+    }
+
+    public fun dealer_sum(game: &Game): u8 {
+        game.dealer_sum
+    }
+
+    public fun status(game: &Game): u8 {
+        game.status
+    }
+
+    public fun total_stake(game: &Game): u64 {
+        balance::value(&game.total_stake)
+    }
+
+    // HitRequest accessors
+    public fun hit_request_game_id(hit_request: &HitRequest): ID {
+        hit_request.game_id
+    }
+
+    public fun hit_request_current_player_sum(hit_request: &HitRequest): u8 {
+        hit_request.current_player_sum
+    }
+
+    // StandRequest accessors
+    public fun stand_request_game_id(stand_request: &StandRequest): ID {
+        stand_request.game_id
+    }
+
+    public fun stand_request_current_player_sum(stand_request: &StandRequest): u8 {
+        stand_request.current_player_sum
+    }
+
+    // For Testing
     #[test_only]
-    public fun get_house_admin_cap_for_testing(ctx: &mut TxContext): HouseAdminCap {
+    public fun get_and_transfer_house_admin_cap_for_testing(ctx: &mut TxContext) {
         let house_cap = HouseAdminCap {
             id: object::new(ctx)
         };
-
-        house_cap
+        transfer::transfer(house_cap, tx_context::sender(ctx));
     }
 
     #[test_only]
-    public fun get_house_data_for_testing(ctx: &mut TxContext, initBal: Balance<SUI>): HouseData {
-        let demoKey = vector[];
-        vector::push_back(&mut demoKey, 10);
-        vector::push_back(&mut demoKey, 11);
-        vector::push_back(&mut demoKey, 12);
-        vector::push_back(&mut demoKey, 13);
-        vector::push_back(&mut demoKey, 14);
-        vector::push_back(&mut demoKey, 15);
-
-        let house_data = HouseData {
-            id: object::new(ctx),
-            balance: initBal,
-            house: tx_context::sender(ctx),
-            public_key: demoKey
-        };
-        house_data
+    public fun set_game_randomness_for_testing(
+        new_randomness: vector<u8>,
+        game: &mut Game,
+        _ctx: &mut TxContext
+    ) {
+        game.user_randomness = new_randomness;
     }
 
     #[test_only]
-    public fun destroy_for_testing(houseData: HouseData) {
-        let HouseData
-        {
-            id,
-            balance : b,
-            house : _,
-            public_key : _,
-        } = houseData;
+    public fun draw_player_card_for_testing(
+        game: &mut Game,
+        card: u8,
+    ) {
+        vector::push_back(&mut game.player_cards, card);
+        game.player_sum = get_card_sum(&game.player_cards);
+    }
 
-        object::delete(id);
-        balance::destroy_for_testing(b);
+    #[test_only]
+    public fun player_won_post_handling_for_test(
+        game: &mut Game,
+        ctx: &mut TxContext
+    ) {
+        player_won_post_handling(game, b"Player won!", ctx);
+    }
+
+    #[test_only]
+    public fun house_won_post_handling_for_test(
+        game: &mut Game,
+        house_data: &mut HouseData,
+        ctx: &mut TxContext
+    ) {
+        house_won_post_handling(game, house_data, ctx);
+    }
+
+    #[test_only]
+    public fun tie_post_handling_for_test(
+        game: &mut Game,
+        house_data: &mut HouseData,
+        ctx: &mut TxContext
+    ) {
+        tie_post_handling(game, house_data, ctx);
     }
 }
