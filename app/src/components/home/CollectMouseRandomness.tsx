@@ -30,7 +30,7 @@ export const CollectMouseRandomness = ({
           <div className="text-[25px] font-semibold text-center space-y-[5px]">
             <div>Generating randomness</div>
             <div className="text-[20px]">
-              Keep moving your cursor / dragging your finger accross the screen
+              Keep moving your cursor / dragging your finger across the screen
             </div>
           </div>
           <div className="text-center text-opacity-90 text-[14px] text-[#4F4F4F]">
