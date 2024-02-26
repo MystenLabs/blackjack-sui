@@ -24,7 +24,7 @@ export const CreateCounter = ({
       />
       <div className={`text-sm text-center text-[#4F4F4F]`}>
         You need a counter NFT before playing, so that we can keep track of your
-        games, and generate the required randomness for suffling the deck before
+        games, and generate the required randomness for shuffling the deck before
         each game.
       </div>
       <LoadingButton
