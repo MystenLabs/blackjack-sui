@@ -9,7 +9,7 @@ import { useEnokiFlow, useZkLogin } from "@mysten/enoki/react";
 export const usePlayerCounter = () => {
   const { address } = useZkLogin();
   const enokiFlow = useEnokiFlow();
-  const { suiClient, executeSignedTransactionBlock } = useSui();
+  const { suiClient } = useSui();
   const [counterId, setCounterId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateLoading, setIsCreateLoading] = useState(false);
