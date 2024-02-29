@@ -5,7 +5,6 @@ import { useCallback, useState } from "react";
 import { GameOnChain } from "@/types/GameOnChain";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { useEnokiFlow } from "@mysten/enoki/react";
 
 interface HandleHitOrStandProps {
   move: "hit" | "stand";
@@ -26,9 +25,8 @@ interface OnRequestMoveSuccessProps {
 }
 
 export const useMakeMoveInBlackjackGame = () => {
-  const { suiClient } = useSui();
+  const { enokiSponsorExecute } = useSui();
   const [isMoveLoading, setIsMoveLoading] = useState(false);
-  const enokiFlow = useEnokiFlow();
 
   const handleHitOrStand = useCallback(
     async ({
@@ -53,19 +51,15 @@ export const useMakeMoveInBlackjackGame = () => {
         [request],
         tx.pure(process.env.NEXT_PUBLIC_ADMIN_ADDRESS!)
       );
-
-      const keypair = await enokiFlow.getKeypair();
-      return suiClient
-        .signAndExecuteTransactionBlock({
-          transactionBlock: tx,
-          signer: keypair as any,
-          requestType: "WaitForLocalExecution",
-          options: {
-            showObjectChanges: true,
-            showEffects: true,
-            showEvents: true,
-          },
-        })
+      tx.setGasBudget(10000000000);
+      return enokiSponsorExecute({
+        transactionBlock: tx,
+        options: {
+          showObjectChanges: true,
+          showEffects: true,
+          showEvents: true,
+        },
+      })
         .then((resp) => {
           const status = resp?.effects?.status.status;
           if (status !== "success") {
