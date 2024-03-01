@@ -21,7 +21,9 @@ export const useSui = () => {
   }: EnokiSponsorExecuteProps) => {
     return enokiFlow
       .sponsorAndExecuteTransactionBlock({
-        network: "testnet",
+        network: process.env.NEXT_PUBLIC_SUI_NETWORK?.includes("testnet")
+          ? "testnet"
+          : "mainnet",
         client: suiClient as any,
         transactionBlock: transactionBlock as any,
       })

@@ -4,12 +4,11 @@ import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { SuiObjectChangeCreated } from "@mysten/sui.js/client";
 import toast from "react-hot-toast";
 import { getCounterId } from "@/utils/getCounterId";
-import { useEnokiFlow, useZkLogin } from "@mysten/enoki/react";
+import { useZkLogin } from "@mysten/enoki/react";
 
 export const usePlayerCounter = () => {
   const { address } = useZkLogin();
-  const enokiFlow = useEnokiFlow();
-  const { suiClient, executeSignedTransactionBlock } = useSui();
+  const { suiClient, enokiSponsorExecute } = useSui();
   const [counterId, setCounterId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateLoading, setIsCreateLoading] = useState(false);
@@ -23,17 +22,13 @@ export const usePlayerCounter = () => {
     });
     tx.setGasBudget(1000000000);
 
-    const keypair = await enokiFlow.getKeypair();
-    return suiClient
-      .signAndExecuteTransactionBlock({
-        transactionBlock: tx,
-        signer: keypair as any,
-        requestType: "WaitForLocalExecution",
-        options: {
-          showObjectChanges: true,
-          showEffects: true,
-        },
-      })
+    return enokiSponsorExecute({
+      transactionBlock: tx,
+      options: {
+        showObjectChanges: true,
+        showEffects: true,
+      },
+    })
       .then((resp) => {
         const status = resp?.effects?.status.status;
         if (status !== "success") {
