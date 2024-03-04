@@ -50,6 +50,7 @@ export const useCreateBlackjackGame = () => {
         .then((resp) => {
           const status = resp?.effects?.status.status;
           if (status !== "success") {
+            console.log(resp.effects);
             throw new Error("Game not created");
           }
           const createdObjects = resp.objectChanges?.filter(
@@ -75,6 +76,7 @@ export const useCreateBlackjackGame = () => {
         .catch((err) => {
           console.log(err);
           setIsCreateGameLoading(false);
+          toast.error("Game creation failed");
           return null;
         });
     },
