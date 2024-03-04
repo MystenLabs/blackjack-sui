@@ -5,6 +5,7 @@ import { bytesToHex } from "@noble/hashes/utils";
 import { bls12_381 } from "@noble/curves/bls12-381";
 import { getBLSSecreyKey } from "../helpers/getBLSSecretKey";
 import { getGameObject } from "../helpers/getGameObject";
+import { sponsorAndSignTransaction } from "../utils/sponsorAndSignTransaction";
 
 interface DoInitialDealProps {
   suiClient: SuiClient;
@@ -50,10 +51,19 @@ export const doInitialDeal = async ({
       ],
     });
 
+    const { signedTransaction, sponsoredTransaction } =
+      await sponsorAndSignTransaction({
+        tx,
+        suiClient,
+      });
+
     return suiClient
-      .signAndExecuteTransactionBlock({
-        signer: adminKeypair,
-        transactionBlock: tx,
+      .executeTransactionBlock({
+        transactionBlock: signedTransaction.bytes,
+        signature: [
+          signedTransaction.signature,
+          sponsoredTransaction.signature,
+        ],
         requestType: "WaitForLocalExecution",
         options: {
           showObjectChanges: true,
