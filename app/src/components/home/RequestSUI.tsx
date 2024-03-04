@@ -17,7 +17,7 @@ export const RequestSUI = () => {
       />
       <div className={`text-sm text-center text-[#4F4F4F]`}>
         Looks like your Testnet SUI balance is less than 1 SUI. <br />
-        You need some testnet SUI to play the game.
+        You need some Testnet SUI to play the game.
       </div>
       <LoadingButton
         onClick={handleRequestSui}
