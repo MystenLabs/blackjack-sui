@@ -50,6 +50,7 @@ export const usePlayerCounter = () => {
       })
       .catch((err) => {
         console.log(err);
+        toast.error("Minting Counter NFT failed");
         setIsCreateLoading(false);
         setCounterId(null);
       });
