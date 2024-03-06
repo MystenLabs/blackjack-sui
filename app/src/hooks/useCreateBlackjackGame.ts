@@ -4,6 +4,7 @@ import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { SuiObjectChangeCreated } from "@mysten/sui.js/client";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { useEnokiFlow } from "@mysten/enoki/react";
 
 interface HandleCreateGameSuccessResponse {
   gameId: string;
@@ -11,7 +12,8 @@ interface HandleCreateGameSuccessResponse {
 }
 
 export const useCreateBlackjackGame = () => {
-  const { enokiSponsorExecute } = useSui();
+  const { suiClient } = useSui();
+  const enokiFlow = useEnokiFlow();
   const [isCreateGameLoading, setIsCreateGameLoading] = useState(false);
   const [isInitialDealLoading, setIsInitialDealLoading] = useState(false);
 
@@ -40,8 +42,11 @@ export const useCreateBlackjackGame = () => {
       });
       tx.setGasBudget(1000000000);
       console.log("Executing transaction...");
-      return enokiSponsorExecute({
+      const signer = await enokiFlow.getKeypair();
+      return suiClient.signAndExecuteTransactionBlock({
         transactionBlock: tx,
+        signer: signer as any,
+        requestType: "WaitForLocalExecution",
         options: {
           showObjectChanges: true,
           showEffects: true,
