@@ -40,21 +40,22 @@ export const useCreateBlackjackGame = () => {
           tx.object(process.env.NEXT_PUBLIC_HOUSE_DATA_ID!),
         ],
       });
-      const keypair = await enokiFlow.getKeypair();
+      tx.setGasBudget(1000000000);
       console.log("Executing transaction...");
-      return suiClient
-        .signAndExecuteTransactionBlock({
-          transactionBlock: tx,
-          signer: keypair as any,
-          requestType: "WaitForLocalExecution",
-          options: {
-            showObjectChanges: true,
-            showEffects: true,
-          },
-        })
+      const signer = await enokiFlow.getKeypair();
+      return suiClient.signAndExecuteTransactionBlock({
+        transactionBlock: tx,
+        signer: signer as any,
+        requestType: "WaitForLocalExecution",
+        options: {
+          showObjectChanges: true,
+          showEffects: true,
+        },
+      })
         .then((resp) => {
           const status = resp?.effects?.status.status;
           if (status !== "success") {
+            console.log(resp.effects);
             throw new Error("Game not created");
           }
           const createdObjects = resp.objectChanges?.filter(
@@ -80,6 +81,7 @@ export const useCreateBlackjackGame = () => {
         .catch((err) => {
           console.log(err);
           setIsCreateGameLoading(false);
+          toast.error("Game creation failed");
           return null;
         });
     },

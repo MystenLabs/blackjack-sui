@@ -1,35 +1,39 @@
 import {
-  ExecuteTransactionRequestType,
   SuiClient,
   SuiTransactionBlockResponseOptions,
 } from "@mysten/sui.js/client";
+import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { useEnokiFlow } from "@mysten/enoki/react";
 
-interface ExecuteSignedTransactionBlockProps {
-  signedTx: {
-    signature: string | string[];
-    transactionBlockBytes: Uint8Array | string;
-  };
-  requestType: ExecuteTransactionRequestType;
+interface EnokiSponsorExecuteProps {
+  transactionBlock: TransactionBlock;
   options?: SuiTransactionBlockResponseOptions;
 }
 
 export const useSui = () => {
   const FULL_NODE = process.env.NEXT_PUBLIC_SUI_NETWORK!;
-
   const suiClient = new SuiClient({ url: FULL_NODE });
+  const enokiFlow = useEnokiFlow();
 
-  const executeSignedTransactionBlock = async ({
-    signedTx,
-    requestType,
+  const enokiSponsorExecute = async ({
+    transactionBlock,
     options,
-  }: ExecuteSignedTransactionBlockProps) => {
-    return suiClient.executeTransactionBlock({
-      transactionBlock: signedTx.transactionBlockBytes,
-      signature: signedTx.signature,
-      requestType,
-      ...(options && { options }),
-    });
+  }: EnokiSponsorExecuteProps) => {
+    return enokiFlow
+      .sponsorAndExecuteTransactionBlock({
+        network: process.env.NEXT_PUBLIC_SUI_NETWORK?.includes("testnet")
+          ? "testnet"
+          : "mainnet",
+        client: suiClient as any,
+        transactionBlock: transactionBlock as any,
+      })
+      .then((resp) => {
+        return suiClient.getTransactionBlock({
+          digest: resp.digest,
+          options,
+        });
+      });
   };
 
-  return { executeSignedTransactionBlock, suiClient };
+  return { enokiSponsorExecute, suiClient };
 };
