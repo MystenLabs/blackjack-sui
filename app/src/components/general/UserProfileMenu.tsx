@@ -45,17 +45,19 @@ export const UserProfileMenu = () => {
   if (!address) return null;
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button>
-          <Image
-            src={decodedJWT?.picture}
-            alt="profile"
-            width={40}
-            height={40}
-            className="rounded-full pr-0"
-          />
-        </button>
-      </DropdownMenuTrigger>
+      {!!decodedJWT?.picture && (
+        <DropdownMenuTrigger asChild>
+          <button>
+            <Image
+              src={decodedJWT?.picture}
+              alt="profile"
+              width={40}
+              height={40}
+              className="rounded-full pr-0"
+            />
+          </button>
+        </DropdownMenuTrigger>
+      )}
       <DropdownMenuContent className="w-56">
         <DropdownMenuLabel>
           <div>
