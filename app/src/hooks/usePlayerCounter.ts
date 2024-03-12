@@ -20,7 +20,6 @@ export const usePlayerCounter = () => {
       target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::counter_nft::mint_and_transfer`,
       arguments: [],
     });
-    tx.setGasBudget(1000000000);
 
     return enokiSponsorExecute({
       transactionBlock: tx,

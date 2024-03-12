@@ -51,7 +51,6 @@ export const useMakeMoveInBlackjackGame = () => {
         [request],
         tx.pure(process.env.NEXT_PUBLIC_ADMIN_ADDRESS!)
       );
-      tx.setGasBudget(10000000000);
       return enokiSponsorExecute({
         transactionBlock: tx,
         options: {

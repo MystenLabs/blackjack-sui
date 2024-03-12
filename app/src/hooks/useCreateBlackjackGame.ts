@@ -40,7 +40,6 @@ export const useCreateBlackjackGame = () => {
           tx.object(process.env.NEXT_PUBLIC_HOUSE_DATA_ID!),
         ],
       });
-      tx.setGasBudget(1000000000);
       console.log("Executing transaction...");
       const signer = await enokiFlow.getKeypair();
       return suiClient.signAndExecuteTransactionBlock({
