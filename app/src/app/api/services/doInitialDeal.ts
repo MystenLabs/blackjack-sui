@@ -33,7 +33,6 @@ export const doInitialDeal = async ({
       messageToSign,
       getBLSSecreyKey(process.env.ADMIN_SECRET_KEY!)
     );
-    tx.setGasBudget(10000000000);
 
     console.log({
       package: process.env.NEXT_PUBLIC_PACKAGE_ADDRESS,

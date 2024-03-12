@@ -40,7 +40,6 @@ export const houseHitOrStand = async ({
       getBLSSecreyKey(process.env.ADMIN_SECRET_KEY!)
     );
 
-    tx.setGasBudget(10000000000);
     tx.moveCall({
       target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::${move}`,
       arguments: [
