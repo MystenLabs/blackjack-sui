@@ -9,8 +9,8 @@ dependencies:
     specifier: ^3.3.1
     version: 3.3.1(react-hook-form@7.46.2)
   '@mysten/enoki':
-    specifier: ^0.1.3
-    version: 0.1.3(@types/react@18.2.14)(react@18.2.0)
+    specifier: 0.0.0-experimental-20240407101448
+    version: 0.0.0-experimental-20240407101448(@types/react@18.2.14)(react@18.2.0)(typescript@5.1.6)
   '@mysten/sui.js':
     specifier: ^0.41.2
     version: 0.41.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10)
@@ -151,8 +151,8 @@ devDependencies:
 
 packages:
 
-  /@0no-co/graphql.web@1.0.4(graphql@16.8.1):
-    resolution: {integrity: sha512-W3ezhHGfO0MS1PtGloaTpg0PbaT8aZSmmaerL7idtU5F7oCI+uu25k+MsMS31BVFlp4aMkHSrNRxiD72IlK8TA==}
+  /@0no-co/graphql.web@1.0.6(graphql@16.8.1):
+    resolution: {integrity: sha512-KZ7TnwMcQJcFgzjoY623AVxtlDQonkqp3rSz0wb15/jHPyU1v5gynUibEpuutDeoyGJ5Tp+FwxjGyDGDwq3vIw==}
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0
     peerDependenciesMeta:
@@ -1420,6 +1420,27 @@ packages:
     resolution: {integrity: sha512-qprfWkn82Iw821mcKofJ5Pk9wgioHicxcQMxx+5zt5GSKoqdWvgG5AxVmpmUUjzTLPVSH5auBrhI93Deayn/DA==}
     dev: false
 
+  /@gql.tada/cli-utils@0.3.3(typescript@5.1.6):
+    resolution: {integrity: sha512-Typugq2JpCevTsQRHiWiCExagbP3XGfr/U/I0eguGtvIvKFLG+giqIPV5vvjq+B65SOU0EAgQTK7D9SL9tRc5g==}
+    peerDependencies:
+      typescript: ^5.0.0
+    dependencies:
+      '@gql.tada/internal': 0.1.3(graphql@16.8.1)(typescript@5.1.6)
+      graphql: 16.8.1
+      typescript: 5.1.6
+    dev: false
+
+  /@gql.tada/internal@0.1.3(graphql@16.8.1)(typescript@5.1.6):
+    resolution: {integrity: sha512-wIvykBId7O0gaizmSl5n5AhbQsgJVLTUsFBm3RsfQ9dVfpmT+Fhy2yHX+yNgiVECg2EimXMhs4ltcE4EuZ2WOA==}
+    peerDependencies:
+      graphql: ^16.8.1
+      typescript: ^5.0.0
+    dependencies:
+      '@0no-co/graphql.web': 1.0.6(graphql@16.8.1)
+      graphql: 16.8.1
+      typescript: 5.1.6
+    dev: false
+
   /@graphql-typed-document-node/core@3.2.0(graphql@16.8.1):
     resolution: {integrity: sha512-mB9oAsNCm9aM3/SOv4YtBMqZbYj10R7dkq8byBqxGY/ncFwhf2oQzMV+LCRlWoDSEBJ3COiR1yeDvMtsoOsuFQ==}
     peerDependencies:
@@ -1506,8 +1527,8 @@ packages:
       bs58: 5.0.0
     dev: false
 
-  /@mysten/enoki@0.1.3(@types/react@18.2.14)(react@18.2.0):
-    resolution: {integrity: sha512-CGrRKXjIDi3TnyZIBgvftm50u5b2ES1bqcPSXm35/VAlOoabeGk5P/wp1dEGq/VZZK+XCDv5PiXIPBQtQyO6bg==}
+  /@mysten/enoki@0.0.0-experimental-20240407101448(@types/react@18.2.14)(react@18.2.0)(typescript@5.1.6):
+    resolution: {integrity: sha512-mGOZE+rWsSco0OjsX86yH9MzgwRmouKR4nNZXyWrxzeKJoHPuyiDDR1jmfPmeRRaQmKaDDrr56j3dlDNO/c28w==}
     peerDependencies:
       '@types/react': '>=17.0.0'
       react: '>=17.0.0'
@@ -1517,13 +1538,15 @@ packages:
       react:
         optional: true
     dependencies:
-      '@mysten/sui.js': 0.50.1
-      '@mysten/zklogin': 0.4.3
+      '@mysten/sui.js': 0.51.2(typescript@5.1.6)
+      '@mysten/zklogin': 0.5.2(typescript@5.1.6)
       '@nanostores/react': 0.7.2(nanostores@0.9.5)(react@18.2.0)
       '@types/react': 18.2.14
-      jose: 4.15.4
+      jose: 5.2.4
       nanostores: 0.9.5
       react: 18.2.0
+    transitivePeerDependencies:
+      - typescript
     dev: false
 
   /@mysten/sui.js@0.41.2(bufferutil@4.0.7)(encoding@0.1.13)(utf-8-validate@5.0.10):
@@ -1566,8 +1589,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@mysten/sui.js@0.50.1:
-    resolution: {integrity: sha512-AY0wb4n6PMTRsDGygzrrTHUK/m5KwKZ4aQcN9cayiwsq2iIhfjGo7uuqMA7Y5UiqvLCoF+z7Ig14Q5qejQ/S/w==}
+  /@mysten/sui.js@0.51.2(typescript@5.1.6):
+    resolution: {integrity: sha512-RRG/VHhVvkQlWqodFZagRxVDo3SbXh4e3xTBplhPNNyybugbWj/V+wGrNv5/KtxfVxHBw6jTCoB798ijqPBq7g==}
     engines: {node: '>=16'}
     dependencies:
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.8.1)
@@ -1578,20 +1601,24 @@ packages:
       '@scure/bip39': 1.2.1
       '@suchipi/femver': 1.0.0
       bech32: 2.0.0
-      gql.tada: 1.2.1(graphql@16.8.1)
+      gql.tada: 1.4.3(graphql@16.8.1)(typescript@5.1.6)
       graphql: 16.8.1
       superstruct: 1.0.3
       tweetnacl: 1.0.3
+    transitivePeerDependencies:
+      - typescript
     dev: false
 
-  /@mysten/zklogin@0.4.3:
-    resolution: {integrity: sha512-R/BdqhTSypRq9SEtLEe0HbDI+ot3ryoMEkpbdvrsMu9nvyy4HLxwTCoM6Sw9IUnCyuS7xnWemsQCM0kWfDiVNw==}
+  /@mysten/zklogin@0.5.2(typescript@5.1.6):
+    resolution: {integrity: sha512-bMOwBloa4DoYWh80fHPD7wGVUmXfBBQvzwfjBJ+nCsHvUwA9YNEo6rO+U0eULX7OQ003wBmRvdrkDaSnsPHI3Q==}
     dependencies:
       '@mysten/bcs': 0.11.1
-      '@mysten/sui.js': 0.50.1
+      '@mysten/sui.js': 0.51.2(typescript@5.1.6)
       '@noble/hashes': 1.3.3
-      jose: 4.15.4
+      jose: 5.2.4
       poseidon-lite: 0.2.0
+    transitivePeerDependencies:
+      - typescript
     dev: false
 
   /@nanostores/react@0.7.2(nanostores@0.9.5)(react@18.2.0):
@@ -4314,10 +4341,16 @@ packages:
       get-intrinsic: 1.2.1
     dev: false
 
-  /gql.tada@1.2.1(graphql@16.8.1):
-    resolution: {integrity: sha512-Nx8x3g9WLT23eu9aL/4TTFDBwm7CBGVd4F2Jp2H5oOjDpuWv12i1mTLKReQwn2V1ZP+jG8V0ATXzFQZt1pxSgw==}
+  /gql.tada@1.4.3(graphql@16.8.1)(typescript@5.1.6):
+    resolution: {integrity: sha512-ZnDQxHSU1cqqndtbHa3+wwsnur9PMuU1Ma6KcEdGnu0xLIe1lYchlPkXJIZxU3CDimJzceN6WRytx36Kp8z4Dg==}
+    hasBin: true
+    peerDependencies:
+      typescript: ^5.0.0
     dependencies:
-      '@0no-co/graphql.web': 1.0.4(graphql@16.8.1)
+      '@0no-co/graphql.web': 1.0.6(graphql@16.8.1)
+      '@gql.tada/cli-utils': 0.3.3(typescript@5.1.6)
+      '@gql.tada/internal': 0.1.3(graphql@16.8.1)(typescript@5.1.6)
+      typescript: 5.1.6
     transitivePeerDependencies:
       - graphql
     dev: false
@@ -4710,8 +4743,8 @@ packages:
     resolution: {integrity: sha512-3TV69ZbrvV6U5DfQimop50jE9Dl6J8O1ja1dvBbMba/sZ3YBEQqJ2VZRoQPVnhlzjNtU1vaXRZVrVjU4qtm8yA==}
     hasBin: true
 
-  /jose@4.15.4:
-    resolution: {integrity: sha512-W+oqK4H+r5sITxfxpSU+MMdr/YSWGvgZMQDIsNoBDGGy4i7GBPTtvFKibQzW06n3U3TqHjhvBJsirShsEJ6eeQ==}
+  /jose@5.2.4:
+    resolution: {integrity: sha512-6ScbIk2WWCeXkmzF6bRPmEuaqy1m8SbsRFMa/FLrSCkGIhj8OLVG/IH+XHVmNMx/KUo8cVWEE6oKR4dJ+S0Rkg==}
     dev: false
 
   /jquery@3.7.1:
