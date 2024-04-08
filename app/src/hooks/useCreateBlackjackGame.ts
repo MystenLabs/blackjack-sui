@@ -41,7 +41,7 @@ export const useCreateBlackjackGame = () => {
         ],
       });
       console.log("Executing transaction...");
-      const signer = await enokiFlow.getKeypair();
+      const signer = await enokiFlow.getKeypair({network: "testnet"});
       return suiClient.signAndExecuteTransactionBlock({
         transactionBlock: tx,
         signer: signer as any,
