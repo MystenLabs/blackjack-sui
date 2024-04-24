@@ -65,7 +65,7 @@ module blackjack::single_player_blackjack_tests {
 
     #[test]
     fun test_bls_signature_for_first_deal() {
-        let messageVector = GAME_RANDOMNESS;
+        let mut messageVector = GAME_RANDOMNESS;
         vector::append(&mut messageVector, vector<u8> [0]);
         let bls_sig = BLS_SIG_0;
         let house_public_key = HOUSE_PUBLIC_KEY;
@@ -79,7 +79,7 @@ module blackjack::single_player_blackjack_tests {
 
     #[test]
     fun test_initialize_house_data() {
-        let scenario_val = test_scenario::begin(ADMIN);
+        let mut scenario_val = test_scenario::begin(ADMIN);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
@@ -104,7 +104,7 @@ module blackjack::single_player_blackjack_tests {
 
     #[test]
     fun test_top_up_house_data() {
-        let scenario_val = test_scenario::begin(ADMIN);
+        let mut scenario_val = test_scenario::begin(ADMIN);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
@@ -117,7 +117,7 @@ module blackjack::single_player_blackjack_tests {
 
         test_scenario::next_tx(scenario, ADMIN);
         {
-            let house_data = test_scenario::take_shared<HouseData>(scenario);
+            let mut house_data = test_scenario::take_shared<HouseData>(scenario);
             let fund_coin = test_scenario::take_from_sender<Coin<SUI>>(scenario);
             bj::top_up(&mut house_data, fund_coin, test_scenario::ctx(scenario));
             test_scenario::return_shared(house_data);
@@ -135,14 +135,14 @@ module blackjack::single_player_blackjack_tests {
 
     #[test]
     fun test_withdraw_from_house_data() {
-        let scenario_val = test_scenario::begin(ADMIN);
+        let mut scenario_val = test_scenario::begin(ADMIN);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
 
         test_scenario::next_tx(scenario, ADMIN);
         {
-            let house_data = test_scenario::take_shared<HouseData>(scenario);
+            let mut house_data = test_scenario::take_shared<HouseData>(scenario);
             bj::withdraw(&mut house_data, test_scenario::ctx(scenario));
             test_scenario::return_shared(house_data);
         };
@@ -160,7 +160,7 @@ module blackjack::single_player_blackjack_tests {
     #[test]
     #[expected_failure(abort_code = bj::EInsufficientBalance)]
     fun test_initialize_house_data_with_insifficient_balance() {
-        let scenario_val = test_scenario::begin(ADMIN);
+        let mut scenario_val = test_scenario::begin(ADMIN);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, 0);
@@ -170,7 +170,7 @@ module blackjack::single_player_blackjack_tests {
 
     #[test]
     fun test_place_bet_and_create_game() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
@@ -195,7 +195,7 @@ module blackjack::single_player_blackjack_tests {
     #[test]
     #[expected_failure(abort_code = bj::EInsufficientHouseBalance)]
     fun test_place_bet_and_create_game_insufficient_house_balance() {
-        let scenario_val = test_scenario::begin(ADMIN);
+        let mut scenario_val = test_scenario::begin(ADMIN);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, HOUSE_BET - 1);
@@ -207,7 +207,7 @@ module blackjack::single_player_blackjack_tests {
     #[test]
     #[expected_failure(abort_code = bj::EInvalidPlayerBetAmount)]
     fun test_place_bet_and_create_game_insufficient_balance() {
-        let scenario_val = test_scenario::begin(ADMIN);
+        let mut scenario_val = test_scenario::begin(ADMIN);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
@@ -218,7 +218,7 @@ module blackjack::single_player_blackjack_tests {
 
     #[test]
     fun test_first_deal() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
@@ -241,7 +241,7 @@ module blackjack::single_player_blackjack_tests {
      #[test]
      #[expected_failure(abort_code = bj::EInvalidBlsSig)]
     fun test_first_deal_with_invalid_bls_sig() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
@@ -254,7 +254,7 @@ module blackjack::single_player_blackjack_tests {
     #[test]
     #[expected_failure(abort_code = bj::EDealAlreadyHappened)]
     public fun test_first_deal_twice() {
-        let scenario_val = test_scenario::begin(ADMIN);
+        let mut scenario_val = test_scenario::begin(ADMIN);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
@@ -267,17 +267,17 @@ module blackjack::single_player_blackjack_tests {
 
     #[test]
     fun test_hit() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
         do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
 
-        let _player_sum_before: u8 = 0;
-        let _player_cards_before: vector<u8> = vector<u8>[];
-        let _dealer_sum_before: u8 = 0;
-        let _dealer_cards_before: vector<u8> = vector<u8>[];
+        let mut _player_sum_before: u8 = 0;
+        let mut _player_cards_before: vector<u8> = vector<u8>[];
+        let mut _dealer_sum_before: u8 = 0;
+        let mut _dealer_cards_before: vector<u8> = vector<u8>[];
 
         test_scenario::next_tx(scenario, PLAYER);
         {
@@ -314,17 +314,17 @@ module blackjack::single_player_blackjack_tests {
 
     #[test]
     fun test_stand() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
         do_first_deal_for_test(scenario, ADMIN, BLS_SIG_0, false);
 
-        let _player_sum_before: u8 = 0;
-        let _player_cards_before: vector<u8> = vector<u8>[];
-        let _dealer_sum_before: u8 = 0;
-        let _dealer_cards_before: vector<u8> = vector<u8>[];
+        let mut _player_sum_before: u8 = 0;
+        let mut _player_cards_before: vector<u8> = vector<u8>[];
+        let mut _dealer_sum_before: u8 = 0;
+        let mut _dealer_cards_before: vector<u8> = vector<u8>[];
 
         test_scenario::next_tx(scenario, PLAYER);
         {
@@ -361,7 +361,7 @@ module blackjack::single_player_blackjack_tests {
 
     #[test]
     fun test_do_hit() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, PLAYER, INITIAL_HOUSE_BALANCE);
@@ -387,7 +387,7 @@ module blackjack::single_player_blackjack_tests {
     #[test]
     #[expected_failure(abort_code = bj::EGameHasFinished)]
     fun test_do_hit_in_finished_game() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
@@ -402,7 +402,7 @@ module blackjack::single_player_blackjack_tests {
     #[test]
     #[expected_failure(abort_code = bj::EUnauthorizedPlayer)]
     fun test_do_hit_unauthorized() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
         let player2 = @0xBBBB;
 
@@ -417,7 +417,7 @@ module blackjack::single_player_blackjack_tests {
     #[test]
     #[expected_failure(abort_code = bj::EInvalidSumOfHitRequest)]
     fun test_do_hit_with_invalid_player_sum() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
@@ -426,7 +426,7 @@ module blackjack::single_player_blackjack_tests {
         
         test_scenario::next_tx(scenario, PLAYER);
         {
-            let game = test_scenario::take_shared<Game>(scenario);
+            let mut game = test_scenario::take_shared<Game>(scenario);
             let current_player_sum = bj::player_sum(&game);
             let hit_request = bj::do_hit(
                 &mut game,
@@ -445,7 +445,7 @@ module blackjack::single_player_blackjack_tests {
 
     #[test]
     fun test_to_stand() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, PLAYER, INITIAL_HOUSE_BALANCE);
@@ -471,7 +471,7 @@ module blackjack::single_player_blackjack_tests {
     #[test]
     #[expected_failure(abort_code = bj::EGameHasFinished)]
     fun test_do_stand_in_finished_game() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
@@ -485,7 +485,7 @@ module blackjack::single_player_blackjack_tests {
     #[test]
     #[expected_failure(abort_code = bj::EUnauthorizedPlayer)]
     fun test_do_stand_unauthorized() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
         let player2 = @0xBBBB;
 
@@ -500,7 +500,7 @@ module blackjack::single_player_blackjack_tests {
     #[test]
     #[expected_failure(abort_code = bj::EInvalidSumOfStandRequest)]
     fun test_do_stand_with_invalid_player_sum() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
@@ -509,7 +509,7 @@ module blackjack::single_player_blackjack_tests {
         
         test_scenario::next_tx(scenario, PLAYER);
         {
-            let game = test_scenario::take_shared<Game>(scenario);
+            let mut game = test_scenario::take_shared<Game>(scenario);
             let current_player_sum = bj::player_sum(&game);
             let stand_request = bj::do_stand(
                 &mut game,
@@ -528,7 +528,7 @@ module blackjack::single_player_blackjack_tests {
 
     #[test]
     fun test_player_won_post_handling() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
@@ -550,7 +550,7 @@ module blackjack::single_player_blackjack_tests {
 
     #[test]
     fun test_house_won_post_handling() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
@@ -572,7 +572,7 @@ module blackjack::single_player_blackjack_tests {
 
     #[test]
     fun test_tie_post_handling() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
         initialize_game_for_test(scenario, PLAYER, PLAYER_BET);
@@ -596,7 +596,7 @@ module blackjack::single_player_blackjack_tests {
     // Test a whole flow where the user exceeds total sum of 21.
     #[test]
     fun test_player_exceeds_21() {
-        let scenario_val = test_scenario::begin(PLAYER);
+        let mut scenario_val = test_scenario::begin(PLAYER);
         let scenario = &mut scenario_val;
 
         initialize_house_data_for_test(scenario, ADMIN, INITIAL_HOUSE_BALANCE);
@@ -656,9 +656,9 @@ module blackjack::single_player_blackjack_tests {
 
         test_scenario::next_tx(scenario, player);
         {
-            let counter = test_scenario::take_from_sender<Counter>(scenario);
+            let mut counter = test_scenario::take_from_sender<Counter>(scenario);
             let coin = coin::mint_for_testing<SUI>(balance, test_scenario::ctx(scenario));
-            let house_data = test_scenario::take_shared<HouseData>(scenario);
+            let mut house_data = test_scenario::take_shared<HouseData>(scenario);
             bj::place_bet_and_create_game(
                 // Just a placeholder for the user_randomness.
                 // Will be replaced with a hard-coded value in the testing flow
@@ -675,7 +675,7 @@ module blackjack::single_player_blackjack_tests {
 
         test_scenario::next_tx(scenario, player);
         {
-            let game = test_scenario::take_shared<Game>(scenario);
+            let mut game = test_scenario::take_shared<Game>(scenario);
             bj::set_game_randomness_for_testing(
                 GAME_RANDOMNESS,
                 &mut game,
@@ -693,8 +693,8 @@ module blackjack::single_player_blackjack_tests {
     ) {
         test_scenario::next_tx(scenario, admin);
         {
-            let game = test_scenario::take_shared<Game>(scenario);
-            let house_data = test_scenario::take_shared<HouseData>(scenario);
+            let mut game = test_scenario::take_shared<Game>(scenario);
+            let mut house_data = test_scenario::take_shared<HouseData>(scenario);
             bj::first_deal(
                 &mut game,
                 bls_sig,
@@ -723,7 +723,7 @@ module blackjack::single_player_blackjack_tests {
     ) {
         test_scenario::next_tx(scenario, player);
         {
-            let game = test_scenario::take_shared<Game>(scenario);
+            let mut game = test_scenario::take_shared<Game>(scenario);
             let current_player_sum = bj::player_sum(&game);
             let hit_request = bj::do_hit(
                 &mut game,
@@ -745,7 +745,7 @@ module blackjack::single_player_blackjack_tests {
     ) {
         let effects = test_scenario::next_tx(scenario, player);
         {
-            let game = test_scenario::take_shared<Game>(scenario);
+            let mut game = test_scenario::take_shared<Game>(scenario);
             let current_player_sum = bj::player_sum(&game);
             let stand_request = bj::do_stand(
                 &mut game,
@@ -768,8 +768,8 @@ module blackjack::single_player_blackjack_tests {
     ) {
         test_scenario::next_tx(scenario, admin);
         {
-            let game = test_scenario::take_shared<Game>(scenario);
-            let house_data = test_scenario::take_shared<HouseData>(scenario);
+            let mut game = test_scenario::take_shared<Game>(scenario);
+            let mut house_data = test_scenario::take_shared<HouseData>(scenario);
             let hit_request = test_scenario::take_from_sender<HitRequest>(scenario);
             bj::hit(
                 &mut game,
@@ -790,8 +790,8 @@ module blackjack::single_player_blackjack_tests {
     ) {
         test_scenario::next_tx(scenario, admin);
         {
-            let game = test_scenario::take_shared<Game>(scenario);
-            let house_data = test_scenario::take_shared<HouseData>(scenario);
+            let mut game = test_scenario::take_shared<Game>(scenario);
+            let mut house_data = test_scenario::take_shared<HouseData>(scenario);
             let stand_request = test_scenario::take_from_sender<StandRequest>(scenario);
             bj::stand(
                 &mut game,
@@ -812,7 +812,7 @@ module blackjack::single_player_blackjack_tests {
     ) {
         test_scenario::next_tx(scenario, player);
         {
-            let game = test_scenario::take_shared<Game>(scenario);
+            let mut game = test_scenario::take_shared<Game>(scenario);
             let card = 6; // calculated value for card is 7
             bj::draw_player_card_for_testing(
                 &mut game,
@@ -838,7 +838,7 @@ module blackjack::single_player_blackjack_tests {
     ) {
         test_scenario::next_tx(scenario, admin);
         {
-            let game = test_scenario::take_shared<Game>(scenario);
+            let mut game = test_scenario::take_shared<Game>(scenario);
             bj::player_won_post_handling_for_test(
                 &mut game,
                 test_scenario::ctx(scenario),
@@ -853,8 +853,8 @@ module blackjack::single_player_blackjack_tests {
     ) {
         test_scenario::next_tx(scenario, admin);
         {
-            let game = test_scenario::take_shared<Game>(scenario);
-            let house_data = test_scenario::take_shared<HouseData>(scenario);
+            let mut game = test_scenario::take_shared<Game>(scenario);
+            let mut house_data = test_scenario::take_shared<HouseData>(scenario);
             bj::house_won_post_handling_for_test(
                 &mut game,
                 &mut house_data,
@@ -871,8 +871,8 @@ module blackjack::single_player_blackjack_tests {
     ) {
         test_scenario::next_tx(scenario, admin);
         {
-            let game = test_scenario::take_shared<Game>(scenario);
-            let house_data = test_scenario::take_shared<HouseData>(scenario);
+            let mut game = test_scenario::take_shared<Game>(scenario);
+            let mut house_data = test_scenario::take_shared<HouseData>(scenario);
             bj::tie_post_handling_for_test(
                 &mut game,
                 &mut house_data,

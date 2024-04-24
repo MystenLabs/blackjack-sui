@@ -11,7 +11,7 @@ module blackjack::counter_tests {
     fun test_mint_and_transfer() {
         let user = @0xAAAA;
 
-        let scenario_val = test_scenario::begin(user);
+        let mut scenario_val = test_scenario::begin(user);
         let scenario = &mut scenario_val;
 
         test_scenario::next_tx(scenario, user);
@@ -33,7 +33,7 @@ module blackjack::counter_tests {
     fun test_increment() {
         let user = @0xAAAA;
 
-        let scenario_val = test_scenario::begin(user);
+        let mut scenario_val = test_scenario::begin(user);
         let scenario = &mut scenario_val;
 
         test_scenario::next_tx(scenario, user);
@@ -43,7 +43,7 @@ module blackjack::counter_tests {
 
         test_scenario::next_tx(scenario, user);
         {
-            let counter = test_scenario::take_from_sender<Counter>(scenario);
+            let mut counter = test_scenario::take_from_sender<Counter>(scenario);
             assert!(counter_nft::count(&counter) == 0, 1);
             counter_nft::increment_and_get(&mut counter);
             test_scenario::return_to_sender(scenario, counter);
