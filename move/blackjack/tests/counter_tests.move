@@ -11,51 +11,49 @@ module blackjack::counter_tests {
     fun test_mint_and_transfer() {
         let user = @0xAAAA;
 
-        let mut scenario_val = test_scenario::begin(user);
-        let scenario = &mut scenario_val;
+        let mut scenario = test_scenario::begin(user);
 
-        test_scenario::next_tx(scenario, user);
+        scenario.next_tx(user);
         {
-            counter_nft::mint_and_transfer(test_scenario::ctx(scenario));
+            counter_nft::mint_and_transfer(scenario.ctx());
         };
 
-        test_scenario::next_tx(scenario, user);
+        scenario.next_tx(user);
         {
-            let counter = test_scenario::take_from_sender<Counter>(scenario);
-            assert!(counter_nft::count(&counter) == 0, 1);
-            test_scenario::return_to_sender(scenario, counter);
+            let counter = scenario.take_from_sender<Counter>();
+            assert!(counter.count() == 0, 1);
+            scenario.return_to_sender(counter);
         };
 
-        test_scenario::end(scenario_val);
+        scenario.end();
     }
 
     #[test]
     fun test_increment() {
         let user = @0xAAAA;
 
-        let mut scenario_val = test_scenario::begin(user);
-        let scenario = &mut scenario_val;
+        let mut scenario = test_scenario::begin(user);
 
-        test_scenario::next_tx(scenario, user);
+        scenario.next_tx(user);
         {
-            counter_nft::mint_and_transfer(test_scenario::ctx(scenario));
+            counter_nft::mint_and_transfer(scenario.ctx());
         };
 
-        test_scenario::next_tx(scenario, user);
+        scenario.next_tx(user);
         {
-            let mut counter = test_scenario::take_from_sender<Counter>(scenario);
-            assert!(counter_nft::count(&counter) == 0, 1);
-            counter_nft::increment_and_get(&mut counter);
-            test_scenario::return_to_sender(scenario, counter);
+            let mut counter = scenario.take_from_sender<Counter>();
+            assert!(counter.count() == 0, 1);
+            counter.increment_and_get();
+            scenario.return_to_sender(counter);
         };
 
-        test_scenario::next_tx(scenario, user);
+        scenario.next_tx(user);
         {
-            let counter = test_scenario::take_from_sender<Counter>(scenario);
-            assert!(counter_nft::count(&counter) == 1, 1);
-            test_scenario::return_to_sender(scenario, counter);
+            let counter = scenario.take_from_sender<Counter>();
+            assert!(counter.count() == 1, 1);
+            scenario.return_to_sender(counter);
         };
 
-        test_scenario::end(scenario_val);
+        scenario.end();
     }
 }
