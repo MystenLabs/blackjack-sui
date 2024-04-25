@@ -5,7 +5,6 @@
 module blackjack::single_player_blackjack_tests {
 
     use std::debug;
-    use std::string::utf8;
     use sui::coin::{Coin, Self};
     use sui::sui::SUI;
     use sui::test_scenario::{Self, Scenario};
@@ -683,7 +682,7 @@ module blackjack::single_player_blackjack_tests {
             scenario.next_tx(admin);
             {
                 let game = scenario.take_shared<Game>();
-                debug::print(&utf8(b"player points after first deal:"));
+                debug::print(&b"player points after first deal:".to_string());
                 debug::print(&game.player_sum());
                 test_scenario::return_shared(game);
             };
@@ -804,7 +803,7 @@ module blackjack::single_player_blackjack_tests {
             scenario.next_tx(player);
             {
                 let game = scenario.take_shared<Game>();
-                debug::print(&utf8(b"player points after drawing seven:"));
+                debug::print(&b"player points after drawing seven:".to_string());
                 debug::print(&game.player_sum());
                 test_scenario::return_shared(game);
             };
