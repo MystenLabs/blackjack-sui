@@ -6,14 +6,10 @@
 /// The counter NFT is non transferable, i.e. it can only be ever owned by one account.
 module blackjack::counter_nft {
     // Imports
-    use std::vector;
-    use sui::object::{Self, UID};
-    use sui::tx_context::{Self, TxContext};
-    use sui::transfer::{Self};
     use sui::bcs::{Self};
 
     // Structs
-    struct Counter has key {
+    public struct Counter has key {
         id: UID,
         count: u64,
     }
@@ -26,7 +22,7 @@ module blackjack::counter_nft {
             count: 0
         };
 
-        transfer::transfer(counter, tx_context::sender(ctx));
+        transfer::transfer(counter, ctx.sender());
     }
 
     /// Internal function to increment the counter by 1.
@@ -36,10 +32,10 @@ module blackjack::counter_nft {
 
     /// Calculates the Counter NFT ID + count. Then it increases the count by 1 and returns the appended bytes.
     public fun increment_and_get(self: &mut Counter): vector<u8> {
-        let vrf_input = object::id_bytes(self);
+        let mut vrf_input = object::id_bytes(self);
         let count_to_bytes = bcs::to_bytes(&count(self));
-        vector::append(&mut vrf_input, count_to_bytes);
-        increment(self);
+        vrf_input.append(count_to_bytes);
+        self.increment();
         vrf_input
     }
 
