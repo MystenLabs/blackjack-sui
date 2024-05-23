@@ -118,5 +118,5 @@ Another approach is to use the custom `Scenario` class (as defined in `setup/src
 ```shell
 sui client switch --env testnet
 cd setup
-./publish testnet
+./publish.sh testnet
 ```
