@@ -9,8 +9,8 @@ export const TopNavbar = () => {
 
   return (
     <>
-      <div className="sticky top-0 w-full flex justify-evenly items-center bg-white">
-        <span className="text-black">[Mysten Blackjack] is provided for testnet purposes only and do not involve real money or the opportunity to win real money.</span>
+      <div className="sticky top-0 w-full flex justify-evenly items-center bg-white py-1 px-5">
+        <span className="text-opacity-90 text-[14px] text-[#4F4F4F]">[Mysten Blackjack] is provided for testnet purposes only and do not involve real money or the opportunity to win real money.</span>
       </div>
       <div className="grid grid-cols-6 mx-5 my-1">
         <div className="col-span-3 flex space-x-3 items-center">
