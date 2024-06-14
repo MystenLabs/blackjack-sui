@@ -1,7 +1,8 @@
 import React from "react";
-import { Info } from "lucide-react";
+import Image from "next/image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 
 export const InfoIcon = () => {
   return (
@@ -9,9 +10,15 @@ export const InfoIcon = () => {
       <div className="absolute bottom-0 left-0 p-8">
         <Dialog>
           <DialogTrigger asChild>
-            <button>
-              <Info className="w-12 h-12 stroke-gray-700"/>
-            </button>
+            <Button
+              className="w-[40px] h-[40px] relative bg-white hover:bg-gray-100 h-rounded-[10px] border-[1px] border-[#CCCCCC]"
+            >
+              <Image className="text-red-100"
+                     src="/general/info.svg"
+                     alt="Info"
+                     fill={true}
+              />
+            </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px] h-1/2">
             <DialogHeader>
