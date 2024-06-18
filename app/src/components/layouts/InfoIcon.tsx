@@ -11,10 +11,9 @@ export const InfoIcon = () => {
         <Dialog>
           <DialogTrigger asChild>
             <Button
-              className="w-[40px] h-[40px] relative bg-white hover:bg-gray-100 h-rounded-[10px] border-[1px] border-[#CCCCCC]"
+              className="w-[40px] h-[40px] relative bg-white hover:bg-gray-100 h-rounded-[10px] border-[1px] border-[#CCCCCC] opacity-80"
             >
-              <Image className="text-red-100"
-                     src="/general/info.svg"
+              <Image src="/general/info.svg"
                      alt="Info"
                      fill={true}
               />
