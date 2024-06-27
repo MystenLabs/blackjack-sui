@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 export const InfoIcon = () => {
   return (
     <>
-      <div className="absolute bottom-0 left-0 p-8">
+      <div className="absolute bottom-0 left-0 p-5">
         <Dialog>
           <DialogTrigger asChild>
             <Button
