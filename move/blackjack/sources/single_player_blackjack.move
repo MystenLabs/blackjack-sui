@@ -280,7 +280,7 @@ module blackjack::single_player_blackjack {
             current_player_hand_sum: game.player_sum,
             player_cards: game.player_cards
         });
-        //on twenty-one, user must stand
+        //on twenty-one, player must stand
         if (game.player_sum == 21) {
             let player_sum = game.player_sum();
             let stand_request = game.do_stand(player_sum, ctx);
@@ -289,9 +289,10 @@ module blackjack::single_player_blackjack {
                 stand_request,
                 ctx);
         }
-        if (game.player_sum > 21) {
+        //player bust
+        else if (game.player_sum > 21) {
             game.house_won_post_handling(house_data, ctx);
-        } else{
+        } else {
             game.counter = game.counter + 1;
         }
     }
@@ -337,7 +338,7 @@ module blackjack::single_player_blackjack {
         if (game.dealer_sum > 21) {
             game.player_won_post_handling(b"Dealer Busted!", ctx);
         }
-        //case dealer got blackjack and user got twenty-one
+        //case dealer got blackjack and player got twenty-one
         //dealer wins
         else if (game.dealer_sum == 21
                  && game.player_sum == 21
@@ -355,7 +356,7 @@ module blackjack::single_player_blackjack {
             }
             else {
                 // Tie
-                //captures case where both dealer and user got twenty-one
+                //captures case where both dealer and player got twenty-one
                 game.tie_post_handling(house_data, ctx);
             }
         }
@@ -675,12 +676,34 @@ module blackjack::single_player_blackjack {
     }
 
     #[test_only]
-    public fun draw_player_card_for_testing(
+    public fun draw_card_for_testing(
         game: &mut Game,
-        card: u8,
+        is_dealer: bool,
+        card_idx: u8,
     ) {
-        game.player_cards.push_back(card);
-        game.player_sum = get_card_sum(&game.player_cards);
+        if (!is_dealer) {
+            game.player_cards.push_back(card_idx);
+            game.player_sum = get_card_sum(&game.player_cards);
+        } else {
+            game.dealer_cards.push_back(card_idx);
+            game.dealer_sum = get_card_sum(&game.dealer_cards);
+        };
+    }
+
+    #[test_only]
+    public fun pop_card_for_testing(
+        game: &mut Game,
+        is_dealer: bool
+    ) {
+        if (!is_dealer) {
+            assert!(!game.player_cards.is_empty(), 0);
+            game.player_cards.pop_back();
+            game.player_sum = get_card_sum(&game.player_cards);
+        } else {
+            assert!(!game.dealer_cards.is_empty(), 0);
+            game.dealer_cards.pop_back();
+            game.dealer_sum = get_card_sum(&game.dealer_cards);
+        };
     }
 
     #[test_only]
