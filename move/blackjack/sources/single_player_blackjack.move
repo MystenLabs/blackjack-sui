@@ -280,6 +280,15 @@ module blackjack::single_player_blackjack {
             current_player_hand_sum: game.player_sum,
             player_cards: game.player_cards
         });
+        //on twenty-one, user must stand
+        if (game.player_sum == 21) {
+            let player_sum = game.player_sum();
+            let stand_request = game.do_stand(player_sum, ctx);
+            game.stand(bls_sig,
+                house_data,
+                stand_request,
+                ctx);
+        }
         if (game.player_sum > 21) {
             game.house_won_post_handling(house_data, ctx);
         } else{
@@ -328,6 +337,13 @@ module blackjack::single_player_blackjack {
         if (game.dealer_sum > 21) {
             game.player_won_post_handling(b"Dealer Busted!", ctx);
         }
+        //case dealer got blackjack and user got twenty-one
+        //dealer wins
+        else if (game.dealer_sum == 21
+                 && game.player_sum == 21
+                 && game.dealer_cards.length() == 2) {
+            game.house_won_post_handling(house_data, ctx);
+        }
         else {
             if (game.dealer_sum > game.player_sum) {
                 // House won
@@ -339,6 +355,7 @@ module blackjack::single_player_blackjack {
             }
             else {
                 // Tie
+                //captures case where both dealer and user got twenty-one
                 game.tie_post_handling(house_data, ctx);
             }
         }
