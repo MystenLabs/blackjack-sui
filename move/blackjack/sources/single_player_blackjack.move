@@ -34,6 +34,7 @@ module blackjack::single_player_blackjack {
     const EInvalidSumOfStandRequest: u64 = 19;
     const EInvalidPlayerBetAmount: u64 = 20;
     const ECallerNotHouse: u64 = 21;
+    const EInvalidTwentyOneSumOfHitRequest: u64 = 22;
 
     // Structs
 
@@ -280,17 +281,8 @@ module blackjack::single_player_blackjack {
             current_player_hand_sum: game.player_sum,
             player_cards: game.player_cards
         });
-        //on twenty-one, player must stand
-        if (game.player_sum == 21) {
-            let player_sum = game.player_sum();
-            let stand_request = game.do_stand(player_sum, ctx);
-            game.stand(bls_sig,
-                house_data,
-                stand_request,
-                ctx);
-        }
-        //player bust
-        else if (game.player_sum > 21) {
+        //on twenty-one, hit option to be disabled via UI
+        if (game.player_sum > 21) {
             game.house_won_post_handling(house_data, ctx);
         } else {
             game.counter = game.counter + 1;
@@ -369,6 +361,7 @@ module blackjack::single_player_blackjack {
         assert!(game.status == IN_PROGRESS, EGameHasFinished);
         assert!(ctx.sender() == game.player, EUnauthorizedPlayer);
         assert!(current_player_sum == game.player_sum, EInvalidSumOfHitRequest);
+        assert!(current_player_sum != 21, EInvalidTwentyOneSumOfHitRequest);
 
         HitRequest {
             id: object::new(ctx),
