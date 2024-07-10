@@ -6,12 +6,14 @@ interface GameActionsProps {
   handleHit: () => void;
   handleStand: () => void;
   isMoveLoading: boolean;
+  playerSum: number;
 }
 
 export const GameActions = ({
   handleHit,
   handleStand,
   isMoveLoading,
+  playerSum,
 }: GameActionsProps) => {
   return (
     <div className="flex justify-center space-x-[15px] items-center py-5">
@@ -31,6 +33,7 @@ export const GameActions = ({
         <div className="text-[16px] font-semibold">Hit</div>
       </LoadingButton>
       <LoadingButton
+        disabled={playerSum === 21}
         onClick={handleStand}
         isLoading={isMoveLoading}
         showSpinner={false}

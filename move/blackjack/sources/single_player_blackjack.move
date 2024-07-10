@@ -351,6 +351,7 @@ module blackjack::single_player_blackjack {
         assert!(game.status == IN_PROGRESS, EGameHasFinished);
         assert!(ctx.sender() == game.player, EUnauthorizedPlayer);
         assert!(current_player_sum == game.player_sum, EInvalidSumOfHitRequest);
+        assert!(game.player_sum != 21, EPlayerCanOnlyStand);
 
         HitRequest {
             id: object::new(ctx),
