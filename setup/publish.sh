@@ -1,61 +1,93 @@
 #!/bin/bash
 
-# check dependencies are available.
-for i in jq curl sui; do
-  if ! command -V ${i} 2>/dev/null; then
-    echo "${i} is not installed"
-    exit 1
-  fi
+# A script to publish the smart contract under ../move/blackjack
+# On successful deployment, the script updates the env files setup/.env and app/.env
+# The env files are updated with env variables to represent the newly created objects
+
+# check this is being run from the right location
+if [[ "$PWD" != *"/setup" ]]; then
+    echo "Please run this from ./setup"
+    exit 0
+fi
+
+# check dependencies are available
+for dep in jq curl sui; do
+    if !command -V ${i} 2>/dev/null; then
+        echo "Please install lib ${dep}"
+        exit 1
+    fi
 done
 
-NETWORK=http://localhost:9000
-FAUCET=https://localhost:9000/gas
-
-MOVE_PACKAGE_PATH=../move/blackjack
-
-if [ $# -ne 0 ]; then
-  if [ $1 = "testnet" ]; then
-    NETWORK="https://rpc.testnet.sui.io:443"
-    FAUCET="https://faucet.testnet.sui.io/gas"
-  fi
-  if [ $1 = "devnet" ]; then
-    NETWORK="https://rpc.devnet.sui.io:443"
-    FAUCET="https://faucet.devnet.sui.io/gas"
-  fi
+# check for command line arg
+if [ $# -ne 1 ]; then
+    echo "Usage: ./publish.sh <testnet|devnet|local>"
+    exit 1
 fi
 
-echo "- Admin Address is: ${ADMIN_ADDRESS}"
-
-import_address=$(sui keytool import "$ADMIN_PHRASE" ed25519)
-
-switch_res=$(sui client switch --address ${ADMIN_ADDRESS})
-
-switch_env=$(sui client switch --env $1)
-
-publish_res=$(sui client publish --skip-fetch-latest-git-deps --gas-budget 2000000000 --json ${MOVE_PACKAGE_PATH})
-
-echo ${publish_res} >.publish.res.json
-
-# Check if the command succeeded (exit status 0)
-if [[ "$publish_res" =~ "error" ]]; then
-  # If yes, print the error message and exit the script
-  echo "Error during move contract publishing.  Details : $publish_res"
-  exit 1
+# check for admin address env var
+if [ -z "${ADMIN_ADDRESS}" ]; then
+    echo "Please setup env var ADMIN_ADDRESS with the client address to publish from"
+    echo "E.g. export ADMIN_ADDRESS=\$(sui client active-address)"
+    exit 1
 fi
 
-publishedObjs=$(echo "$publish_res" | jq -r '.objectChanges[] | select(.type == "published")')
+MOVE_PACKAGE_PATH="../move/blackjack"
+ENV=$1
+NETWORK=
+SUFFIX=
 
-PACKAGE_ID=$(echo "$publishedObjs" | jq -r '.packageId')
+# setup network
+case "$ENV" in
+"testnet")
+    NETWORK="https://fullnode.testnet.sui.io:443"
+    ;;
+"devnet")
+    NETWORK="https://fullnode.devnet.sui.io:443"
+    ;;
+"local")
+    ENV="local"
+    NETWORK="http://localhost:9000"
+    SUFFIX=".local"
+    ;;
+*)
+    echo "Unknown env $ENV"
+    exit 1 
+esac
 
-newObjs=$(echo "$publish_res" | jq -r '.objectChanges[] | select(.type == "created")')
+# Switch to client to publish
+echo "Switching to client: ${ADMIN_ADDRESS}"
+sui client switch --address ${ADMIN_ADDRESS}
 
-HOUSE_ADMIN_CAP=$(echo "$newObjs" | jq -r 'select (.objectType | contains("single_player_blackjack::HouseAdminCap")).objectId')
+# Switch to selected env
+echo "Switching to env: {$ENV}"
+sui client switch --env $ENV
 
-suffix=""
-if [ $# -eq 0 ]; then
-  suffix=".localnet"
+# Do actual puslish
+echo "Do actual publish"
+PUBLISH_RES=$(sui client publish --skip-fetch-latest-git-deps --json ${MOVE_PACKAGE_PATH})
+
+echo ${PUBLISH_RES} > .publish.res.json
+
+# Check if the command succeeded (exit status 0) and for success in text
+if [[ "$PUBLISH_RES" =~ "error" && "$PUBLISH_RES" != *"Success"* ]]; then
+    # If yes, print the error message and exit the script
+    echo "Error during move contract publishing. Details : $PUBLISH_RES"
+    exit 1
 fi
 
+# Publish success
+echo "Publish successful"
+echo "Creating new env variables"
+PUBLISHED_OBJS=$(echo "$PUBLISH_RES" | jq -r '.objectChanges[] | select(.type == "published")')
+PACKAGE_ID=$(echo "$PUBLISHED_OBJS" | jq -r '.packageId')
+CREATED_OBJS=$(echo "$PUBLISH_RES" | jq -r '.objectChanges[] | select(.type == "created")')
+HOUSE_ADMIN_CAP=$(echo "$CREATED_OBJS" | jq -r 'select (.objectType | contains("single_player_blackjack::HouseAdminCap")).objectId')
+
+echo "Publish new env var to setup/.env: "
+echo "SUI_NETWORK=$NETWORK"
+echo "PACKAGE_ADDRESS=$PACKAGE_ID"
+echo "ADMIN_ADDRESS=$ADMIN_ADDRESS"
+echo "HOUSE_ADMIN_CAP=$HOUSE_ADMIN_CAP"
 cat >.env<<-API_ENV
 SUI_NETWORK=$NETWORK
 PACKAGE_ADDRESS=$PACKAGE_ID
@@ -63,10 +95,14 @@ ADMIN_ADDRESS=$ADMIN_ADDRESS
 HOUSE_ADMIN_CAP=$HOUSE_ADMIN_CAP
 API_ENV
 
-cat >../app/.env$suffix<<-VITE_API_ENV
+echo "Publish new env var to app/.env"
+echo "NEXT_PUBLIC_SUI_NETWORK=$NETWORK"
+echo "NEXT_PUBLIC_PACKAGE_ADDRESS=$PACKAGE_ID"
+echo "NEXT_PUBLIC_ADMIN_ADDRESS=$ADMIN_ADDRESS"
+cat >../app/.env$SUFFIX<<-VITE_API_ENV
 NEXT_PUBLIC_SUI_NETWORK=$NETWORK
 NEXT_PUBLIC_PACKAGE_ADDRESS=$PACKAGE_ID
 NEXT_PUBLIC_ADMIN_ADDRESS=$ADMIN_ADDRESS
 VITE_API_ENV
 
-echo "Contract Deployment finished!"
+echo "Done - Proceed to run the setup scripts"
