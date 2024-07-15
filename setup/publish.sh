@@ -4,6 +4,9 @@
 # On successful deployment, the script updates the env files setup/.env and app/.env
 # The env files are updated with env variables to represent the newly created objects
 
+# dir of smart contract
+MOVE_PACKAGE_PATH="../move/blackjack"
+
 # check this is being run from the right location
 if [[ "$PWD" != *"/setup" ]]; then
     echo "Please run this from ./setup"
@@ -18,25 +21,66 @@ for dep in jq curl sui; do
     fi
 done
 
-# check for command line arg
-if [ $# -ne 1 ]; then
-    echo "Usage: ./publish.sh <testnet|devnet|local>"
+# process command line args
+ENV=
+DRY_RUN=false
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --env=*)
+        ENV="${1#*=}"
+        case ${ENV} in
+        "testnet") ;;
+        "devnet") ;;
+        "local") ;;
+        *) echo "unknown env {$ENV}"
+            exit 1
+        esac #end inner case
+        ;;
+    --dry-run)
+        DRY_RUN=true
+        ;;
+    *)
+        echo "Unknown arg $1"
+        exit 1
+    esac #end case
+    shift
+done
+
+if [ -z "${ENV}" ]; then
+    echo "Usage: ./publish.sh --env={testnet|devnet|local} [--dry-run]"
+    echo "Dry run will not publish contract"
     exit 1
 fi
 
 # check for admin address env var
 if [ -z "${ADMIN_ADDRESS}" ]; then
     echo "Please setup env var ADMIN_ADDRESS with the client address to publish from"
-    echo "E.g. export ADMIN_ADDRESS=\$(sui client active-address)"
+    echo "E.g. > export ADMIN_ADDRESS=\$(sui client active-address)"
     exit 1
 fi
 
-MOVE_PACKAGE_PATH="../move/blackjack"
-ENV=$1
+# check for admin secret key
+if [ -z "${ADMIN_SECRET_KEY}" ]; then
+    echo "Please setup env var ADMIN_SECRET_KEY with the secret key of the client address to publish from"
+    echo "E.g. find out position of active client address"
+    echo "> sui client addresses"
+    echo "heliotrope | 0xCAFE | "
+    echo "diamond    | 0xFACE | *"
+    echo "then get respective private key from sui keystore"
+    echo "> cat <PATH_TO_SUI_INSTALLATION>/.sui/sui_config/sui.keystore"
+    echo "[<priv key heliotrope>"
+    echo " <priv key diamond>"
+    echo "]"
+    echo "then export"
+    echo "> export ADMIN_SECRET_KEY=<priv key diamond>"
+    exit 1
+fi
+
+# setup network
 NETWORK=
 SUFFIX=
 
-# setup network
 case "$ENV" in
 "testnet")
     NETWORK="https://fullnode.testnet.sui.io:443"
@@ -61,6 +105,11 @@ sui client switch --address ${ADMIN_ADDRESS}
 # Switch to selected env
 echo "Switching to env: {$ENV}"
 sui client switch --env $ENV
+
+if [ ${DRY_RUN} == true ]; then
+    echo "Done - not publishing"
+    exit 0
+fi
 
 # Do actual puslish
 echo "Do actual publish"
@@ -87,11 +136,13 @@ echo "Publish new env var to setup/.env: "
 echo "SUI_NETWORK=$NETWORK"
 echo "PACKAGE_ADDRESS=$PACKAGE_ID"
 echo "ADMIN_ADDRESS=$ADMIN_ADDRESS"
+echo "ADMIN_SECRET_KEY=$ADMIN_SECRET_KEY"
 echo "HOUSE_ADMIN_CAP=$HOUSE_ADMIN_CAP"
 cat >.env<<-API_ENV
 SUI_NETWORK=$NETWORK
 PACKAGE_ADDRESS=$PACKAGE_ID
 ADMIN_ADDRESS=$ADMIN_ADDRESS
+ADMIN_SECRET_KEY=$ADMIN_SECRET_KEY
 HOUSE_ADMIN_CAP=$HOUSE_ADMIN_CAP
 API_ENV
 
