@@ -77,6 +77,23 @@ if [ -z "${ADMIN_SECRET_KEY}" ]; then
     exit 1
 fi
 
+# specific to blackjack contract only
+if [ -z "${BJ_PLAYER_SECRET_KEY}" ]; then
+    echo "Please setup env var BJ_PLAYER_SECRET_KEY with the secret key of the client address to play bj"
+    echo "E.g. find out position of bj player client address"
+    echo "> sui client addresses"
+    echo "heliotrope | 0xCAFE | *"
+    echo "diamond    | 0xFACE | "
+    echo "then get respective private key from sui keystore"
+    echo "> cat <PATH_TO_SUI_INSTALLATION>/.sui/sui_config/sui.keystore"
+    echo "[<priv key heliotrope>"
+    echo " <priv key diamond>"
+    echo "]"
+    echo "then export"
+    echo "> export BJ_PLAYER_SECRET_KEY=<priv key heliotrope>"
+    exit 1
+fi
+
 # setup network
 NETWORK=
 SUFFIX=
@@ -137,12 +154,14 @@ echo "SUI_NETWORK=$NETWORK"
 echo "PACKAGE_ADDRESS=$PACKAGE_ID"
 echo "ADMIN_ADDRESS=$ADMIN_ADDRESS"
 echo "ADMIN_SECRET_KEY=$ADMIN_SECRET_KEY"
+echo "BJ_PLAYER_SECRET_KEY=$BJ_PLAYER_SECRET_KEY"
 echo "HOUSE_ADMIN_CAP=$HOUSE_ADMIN_CAP"
 cat >.env<<-API_ENV
 SUI_NETWORK=$NETWORK
 PACKAGE_ADDRESS=$PACKAGE_ID
 ADMIN_ADDRESS=$ADMIN_ADDRESS
 ADMIN_SECRET_KEY=$ADMIN_SECRET_KEY
+BJ_PLAYER_SECRET_KEY=$BJ_PLAYER_SECRET_KEY
 HOUSE_ADMIN_CAP=$HOUSE_ADMIN_CAP
 API_ENV
 
