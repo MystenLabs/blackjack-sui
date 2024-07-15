@@ -106,7 +106,6 @@ case "$ENV" in
     NETWORK="https://fullnode.devnet.sui.io:443"
     ;;
 "local")
-    ENV="local"
     NETWORK="http://localhost:9000"
     SUFFIX=".local"
     ;;

@@ -61,7 +61,6 @@ export const houseHitOrStand = async ({
 
       console.log({ hitOrStandRequest });
 
-      tx.setGasBudget(10000000000);
       tx.moveCall({
         target: `${PACKAGE_ADDRESS}::single_player_blackjack::${move}`,
         arguments: [
