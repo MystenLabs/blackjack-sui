@@ -13,7 +13,7 @@ import {
   SuiObjectData,
   SuiObjectResponse,
   SuiParsedData,
-} from "@mysten/sui.js/client";
+} from "@mysten/sui/client";
 import { ADMIN_SECRET_KEY, PACKAGE_ADDRESS } from "../../config";
 import { getAddress } from "../keypair/getAddress";
 import { GameOnChain } from "../../types/GameOnChain";

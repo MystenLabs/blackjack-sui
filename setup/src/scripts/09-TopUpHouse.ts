@@ -1,4 +1,4 @@
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient } from "@mysten/sui/client";
 import { SUI_NETWORK, ADMIN_SECRET_KEY, HOUSE_DATA_ID } from "../config";
 import { topUpHouseData } from "../helpers/actions/topUpHouse";
 

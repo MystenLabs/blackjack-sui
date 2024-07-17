@@ -1,5 +1,5 @@
-import { SuiClient, SuiObjectChangeCreated } from "@mysten/sui.js/client";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { SuiClient, SuiObjectChangeCreated } from "@mysten/sui/client";
+import { Transaction } from "@mysten/sui/transactions";
 import { PACKAGE_ADDRESS } from "../../config";
 import { getKeypair } from "../keypair/getKeyPair";
 
@@ -14,7 +14,7 @@ export const createCounterObjectByPlayer = async ({
 }: CreateCounterObjectByPlayerProps): Promise<string | undefined> => {
   const playerKeypair = getKeypair(playerSecretKey);
 
-  const tx = new TransactionBlock();
+  const tx = new Transaction();
   tx.moveCall({
     target: `${PACKAGE_ADDRESS}::counter_nft::mint_and_transfer`,
     arguments: [],
@@ -22,9 +22,9 @@ export const createCounterObjectByPlayer = async ({
   tx.setGasBudget(1000000000);
 
   return suiClient
-    .signAndExecuteTransactionBlock({
+    .signAndExecuteTransaction({
       signer: playerKeypair,
-      transactionBlock: tx,
+      transaction: tx,
       requestType: "WaitForLocalExecution",
       options: {
         showObjectChanges: true,

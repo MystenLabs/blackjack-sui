@@ -1,4 +1,4 @@
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient } from "@mysten/sui/client";
 import { doPlayerHitOrStand } from "../helpers/actions/playerHitOrStandRequest";
 import { BJ_PLAYER_SECRET_KEY, GAME_ID, SUI_NETWORK } from "../config";
 

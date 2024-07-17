@@ -1,6 +1,6 @@
-import { SuiClient, SuiEvent } from "@mysten/sui.js/client";
-import { formatAddress } from "@mysten/sui.js/utils";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { SuiClient, SuiEvent } from "@mysten/sui/client";
+import { formatAddress } from "@mysten/sui/utils";
+import { Transaction } from "@mysten/sui/transactions";
 import { bytesToHex } from "@noble/curves/abstract/utils";
 import { bls12_381 } from "@noble/curves/bls12-381";
 import { getGameObject } from "../getObject/getGameObject";
@@ -38,7 +38,7 @@ export const houseHitOrStand = async ({
 
   await getGameObject({ suiClient, gameId })
     .then(async (resp) => {
-      const tx = new TransactionBlock();
+      const tx = new Transaction();
       const { counter, user_randomness } = resp;
       const counterHex = bytesToHex(Uint8Array.from([counter]));
       const randomnessHexString = bytesToHex(Uint8Array.from(user_randomness));
@@ -66,16 +66,16 @@ export const houseHitOrStand = async ({
         target: `${PACKAGE_ADDRESS}::single_player_blackjack::${move}`,
         arguments: [
           tx.object(gameId),
-          tx.pure(Array.from(signedHouseHash), "vector<u8>"),
+          tx.pure(signedHouseHash),
           tx.object(houseDataId),
           tx.object(hitOrStandRequest),
         ],
       });
 
       await suiClient
-        .signAndExecuteTransactionBlock({
+        .signAndExecuteTransaction({
           signer: adminKeypair,
-          transactionBlock: tx,
+          transaction: tx,
           requestType: "WaitForLocalExecution",
           options: {
             showObjectChanges: true,

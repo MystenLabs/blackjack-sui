@@ -1,5 +1,5 @@
-import { SuiClient, SuiObjectChangeCreated } from "@mysten/sui.js/client";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { SuiClient, SuiObjectChangeCreated } from "@mysten/sui/client";
+import { Transaction } from "@mysten/sui/transactions";
 import { getKeypair } from "../keypair/getKeyPair";
 import { getBLSPublicKey } from "../bls/getBLSPublicKey";
 import {
@@ -7,7 +7,7 @@ import {
   HOUSE_ADMIN_CAP,
   ADMIN_SECRET_KEY,
 } from "../../config";
-import { MIST_PER_SUI } from "@mysten/sui.js/utils";
+import { MIST_PER_SUI } from "@mysten/sui/utils";
 
 interface InitializeHouseBalanceProps {
   suiClient: SuiClient;
@@ -17,10 +17,10 @@ export const initializeHouseData = async ({
   suiClient,
 }: InitializeHouseBalanceProps): Promise<string | undefined> => {
   console.log("Initializing HouseData...");
-  const tx = new TransactionBlock();
+  const tx = new Transaction();
 
   const houseCoin = tx.splitCoins(tx.gas, [
-    tx.pure(10 * Number(MIST_PER_SUI)),
+    tx.pure.u64(10 * Number(MIST_PER_SUI)),
   ]);
   let adminBLSPublicKey = getBLSPublicKey(ADMIN_SECRET_KEY!);
 
@@ -29,14 +29,14 @@ export const initializeHouseData = async ({
     arguments: [
       tx.object(HOUSE_ADMIN_CAP),
       houseCoin,
-      tx.pure(Array.from(adminBLSPublicKey)),
+      tx.pure(adminBLSPublicKey),
     ],
   });
 
   return suiClient
-    .signAndExecuteTransactionBlock({
+    .signAndExecuteTransaction({
       signer: getKeypair(ADMIN_SECRET_KEY!),
-      transactionBlock: tx,
+      transaction: tx,
       requestType: "WaitForLocalExecution",
       options: {
         showObjectChanges: true,

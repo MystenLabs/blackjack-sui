@@ -1,4 +1,4 @@
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient } from "@mysten/sui/client";
 import { GAME_ID, HOUSE_DATA_ID, SUI_NETWORK } from "../config";
 import { houseHitOrStand } from "../helpers/actions/houseHitOrStand";
 

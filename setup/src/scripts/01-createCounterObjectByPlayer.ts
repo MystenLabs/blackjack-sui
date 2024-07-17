@@ -1,4 +1,4 @@
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient } from "@mysten/sui/client";
 import { createCounterObjectByPlayer } from "../helpers/actions/createCounterObjectByPlayer";
 import { BJ_PLAYER_SECRET_KEY, SUI_NETWORK } from "../config";
 
