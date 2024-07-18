@@ -1,7 +1,8 @@
-import { SuiClient } from "@mysten/sui.js/client";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { SuiClient } from "@mysten/sui/client";
+import { Transaction } from "@mysten/sui/transactions";
 import { PACKAGE_ADDRESS } from "../../config";
 import { getKeypair } from "../keypair/getKeyPair";
+import { MIST_PER_SUI } from "@mysten/sui/utils";
 
 interface TopUpHouseDataProps {
   adminSecretKey: string;
@@ -14,18 +15,18 @@ export const topUpHouseData = async ({
   houseDataId,
   suiClient,
 }: TopUpHouseDataProps) => {
-  const tx = new TransactionBlock();
+  const tx = new Transaction();
 
-  const coin = tx.splitCoins(tx.gas, [tx.pure(1000_000_000_000)]);
+  const coin = tx.splitCoins(tx.gas, [tx.pure.u64(1000 * Number(MIST_PER_SUI))]);
   tx.moveCall({
     target: `${PACKAGE_ADDRESS}::single_player_blackjack::top_up`,
     arguments: [tx.object(houseDataId), coin],
   });
 
   return suiClient
-    .signAndExecuteTransactionBlock({
+    .signAndExecuteTransaction({
       signer: getKeypair(adminSecretKey),
-      transactionBlock: tx,
+      transaction: tx,
       requestType: "WaitForLocalExecution",
       options: {
         showObjectChanges: true,

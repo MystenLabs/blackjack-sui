@@ -1,4 +1,4 @@
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient } from "@mysten/sui/client";
 import { ADMIN_SECRET_KEY, HOUSE_DATA_ID, SUI_NETWORK } from "../config";
 import { withdrawFromHouse } from "../helpers/actions/withdrawFromHouse";
 

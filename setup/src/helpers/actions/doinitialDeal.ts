@@ -1,5 +1,5 @@
-import { SuiClient } from "@mysten/sui.js/client";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { SuiClient } from "@mysten/sui/client";
+import { Transaction } from "@mysten/sui/transactions";
 import { getKeypair } from "../keypair/getKeyPair";
 import { bytesToHex } from "@noble/hashes/utils";
 import { bls12_381 } from "@noble/curves/bls12-381";
@@ -30,7 +30,7 @@ export const doInitialDeal = async ({
   const adminKeypair = getKeypair(ADMIN_SECRET_KEY!);
   const cards = generateCards();
 
-  const tx = new TransactionBlock();
+  const tx = new Transaction();
   await getGameObject({ suiClient, gameId })
     .then(async (resp) => {
       const { counter, user_randomness } = resp;
@@ -46,15 +46,15 @@ export const doInitialDeal = async ({
         target: `${PACKAGE_ADDRESS}::single_player_blackjack::first_deal`,
         arguments: [
           tx.object(gameId),
-          tx.pure(Array.from(signedHouseHash), "vector<u8>"),
+          tx.pure(signedHouseHash),
           tx.object(houseDataId),
         ],
       });
 
       await suiClient
-        .signAndExecuteTransactionBlock({
+        .signAndExecuteTransaction({
           signer: adminKeypair,
-          transactionBlock: tx,
+          transaction: tx,
           requestType: "WaitForLocalExecution",
           options: {
             showObjectChanges: true,

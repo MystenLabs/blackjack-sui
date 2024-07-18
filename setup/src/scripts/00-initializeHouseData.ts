@@ -1,4 +1,4 @@
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient } from "@mysten/sui/client";
 import { initializeHouseData } from "../helpers/actions/initializeHouseData";
 import fs from "fs";
 import { SUI_NETWORK } from "../config";

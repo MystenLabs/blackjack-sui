@@ -3,12 +3,12 @@ import {
   SuiEvent,
   SuiObjectChange,
   SuiObjectChangeCreated,
-} from "@mysten/sui.js/client";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+} from "@mysten/sui/client";
+import { Transaction } from "@mysten/sui/transactions";
 import { getKeypair } from "../keypair/getKeyPair";
 import { ADMIN_SECRET_KEY, PACKAGE_ADDRESS } from "../../config";
 import { getGameObject } from "../getObject/getGameObject";
-import { formatAddress } from "@mysten/sui.js/utils";
+import { formatAddress } from "@mysten/sui/utils";
 import { getAddress } from "../keypair/getAddress";
 
 interface DoPlayerHitProps {
@@ -33,17 +33,17 @@ export const doPlayerHitOrStand = async ({
   await getGameObject({ suiClient, gameId }).then(async (resp) => {
     const { player_sum } = resp;
 
-    const tx = new TransactionBlock();
+    const tx = new Transaction();
     let request = tx.moveCall({
       target: `${PACKAGE_ADDRESS}::single_player_blackjack::do_${move}`,
-      arguments: [tx.object(gameId), tx.pure(player_sum, "u8")],
+      arguments: [tx.object(gameId), tx.pure.u8(player_sum)],
     });
     tx.transferObjects([request], getAddress(ADMIN_SECRET_KEY));
 
     await suiClient
-      .signAndExecuteTransactionBlock({
+      .signAndExecuteTransaction({
         signer: playerKeypair,
-        transactionBlock: tx,
+        transaction: tx,
         requestType: "WaitForLocalExecution",
         options: {
           showObjectChanges: true,

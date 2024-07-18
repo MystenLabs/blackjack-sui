@@ -1,4 +1,4 @@
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient } from "@mysten/sui/client";
 import { ScenarioState } from "../../types/ScenarioState";
 import { getGameObject } from "../getObject/getGameObject";
 import { ScenarioStep, UserScenarioStep } from "../../types/ScenarioStep";

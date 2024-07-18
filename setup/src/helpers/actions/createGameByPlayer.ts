@@ -1,10 +1,11 @@
-import { SuiClient, SuiObjectChangeCreated } from "@mysten/sui.js/client";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { SuiClient, SuiObjectChangeCreated } from "@mysten/sui/client";
+import { Transaction } from "@mysten/sui/transactions";
 import { getKeypair } from "../keypair/getKeyPair";
 import { getUserRandomnessAsHexString } from "../bls/getUserRandomBytesAsHex";
 import { createCounterObjectByPlayer } from "./createCounterObjectByPlayer";
 import { PACKAGE_ADDRESS } from "../../config";
 import { getCounterNftId } from "../getObject/getCounterNftId";
+import { MIST_PER_SUI } from "@mysten/sui/utils";
 
 interface CreateGameByPlayerProps {
   suiClient: SuiClient;
@@ -21,7 +22,7 @@ export const createGameByPlayer = async ({
   const playerAddress = playerKeypair.getPublicKey().toSuiAddress();
   console.log(`Creating game for player ${playerAddress} ...`);
 
-  const tx = new TransactionBlock();
+  const tx = new Transaction();
   let counterNftId = await getCounterNftId({
     suiClient,
     address: playerAddress,
@@ -38,13 +39,13 @@ export const createGameByPlayer = async ({
     throw new Error("Counter NFT creation didn't work");
   }
 
-  const betAmountCoin = tx.splitCoins(tx.gas, [tx.pure("200000000")]);
+  const betAmountCoin = tx.splitCoins(tx.gas, [tx.pure.u64(0.2 * Number(MIST_PER_SUI))]);
   const randomBytesAsHexString = getUserRandomnessAsHexString();
 
   tx.moveCall({
     target: `${PACKAGE_ADDRESS}::single_player_blackjack::place_bet_and_create_game`,
     arguments: [
-      tx.pure(randomBytesAsHexString),
+      tx.pure.string(randomBytesAsHexString),
       tx.object(counterNftId!),
       betAmountCoin,
       tx.object(houseDataId),
@@ -52,9 +53,9 @@ export const createGameByPlayer = async ({
   });
 
   return suiClient
-    .signAndExecuteTransactionBlock({
+    .signAndExecuteTransaction({
       signer: playerKeypair,
-      transactionBlock: tx,
+      transaction: tx,
       requestType: "WaitForLocalExecution",
       options: {
         showObjectChanges: true,

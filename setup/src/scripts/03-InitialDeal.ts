@@ -1,4 +1,4 @@
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient } from "@mysten/sui/client";
 import { doInitialDeal } from "../helpers/actions/doinitialDeal";
 import { GAME_ID, HOUSE_DATA_ID, SUI_NETWORK } from "../config";
 

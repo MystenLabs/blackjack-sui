@@ -1,4 +1,4 @@
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient } from "@mysten/sui/client";
 import { getKeypair } from "../keypair/getKeyPair";
 import { ADMIN_SECRET_KEY, PACKAGE_ADDRESS } from "../../config";
 
