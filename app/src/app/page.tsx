@@ -118,6 +118,7 @@ const HomePage = () => {
             handleHit={handleHit}
             handleStand={handleStand}
             isMoveLoading={isMoveLoading || isInitialDealLoading}
+            playerPoints={game.player_sum}
           />
         )}
         {game.status !== 0 && (

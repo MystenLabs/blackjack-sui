@@ -6,12 +6,14 @@ interface GameActionsProps {
   handleHit: () => void;
   handleStand: () => void;
   isMoveLoading: boolean;
+  playerPoints: number;
 }
 
 export const GameActions = ({
   handleHit,
   handleStand,
   isMoveLoading,
+  playerPoints,
 }: GameActionsProps) => {
   return (
     <div className="flex justify-center space-x-[15px] items-center py-5">
@@ -19,6 +21,7 @@ export const GameActions = ({
         onClick={handleHit}
         isLoading={isMoveLoading}
         showSpinner={false}
+        disabled={playerPoints === 21}
         className="flex space-x-2 w-[150px] bg-transparent hover:bg-[#14C57A] border-[2px] rounded-[38px] !py-[16px] !px-[20px]"
       >
         <Image

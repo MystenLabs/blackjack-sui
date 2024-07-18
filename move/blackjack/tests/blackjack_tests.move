@@ -563,6 +563,119 @@ module blackjack::single_player_blackjack_tests {
         scenario.end();
     }
 
+    // Test a whole flow where player stands at 21 and dealer < 21. Player wins.
+    #[test]
+    fun test_player_stand_at_21_and_win() {
+        let mut scenario = test_scenario::begin(PLAYER);
+
+        scenario.initialize_house_data_for_test(ADMIN, INITIAL_HOUSE_BALANCE);
+        scenario.initialize_game_for_test(PLAYER, PLAYER_BET);
+        scenario.do_first_deal_for_test(ADMIN, BLS_SIG_0, false);
+        //give player 21
+        scenario.pop_card_for_test(PLAYER, false/*is_dealer*/, false);
+        scenario.pop_card_for_test(PLAYER, false/*is_dealer*/, false);
+        scenario.draw_card_for_test(PLAYER, false/*is_dealer*/, 5, false);
+        scenario.draw_card_for_test(PLAYER, false/*is_dealer*/, 6, false);
+        scenario.draw_card_for_test(PLAYER, false/*is_dealer*/, 7, false);
+
+        scenario.do_stand_for_test(PLAYER, ADMIN);
+        scenario.stand_for_test(ADMIN, BLS_SIG_1);
+
+        //check player stand
+        scenario.next_tx(ADMIN);
+        {
+            let game = scenario.take_shared<Game>();
+            let owned_stand_requests_by_admin = scenario.ids_for_sender<StandRequest>();
+            assert!(owned_stand_requests_by_admin.length() == 0, 1);
+            test_scenario::return_shared(game);
+        };
+        //check player wins
+        scenario.next_tx(ADMIN);
+        {
+            let house_data = scenario.take_shared<HouseData>();
+            let game = scenario.take_shared<Game>();
+            assert!(game.status() == 1, 2);
+            assert!(house_data.balance() == INITIAL_HOUSE_BALANCE - HOUSE_BET, 3);
+
+            test_scenario::return_shared(house_data);
+            test_scenario::return_shared(game);
+        };
+        scenario.end();
+    }
+
+    // Test a whole flow where player has 21 but dealer has bj. Dealer wins.
+    #[test]
+    fun test_player_stand_at_21_dealer_bj_and_win() {
+        let mut scenario = test_scenario::begin(PLAYER);
+
+        scenario.initialize_house_data_for_test(ADMIN, INITIAL_HOUSE_BALANCE);
+        scenario.initialize_game_for_test(PLAYER, PLAYER_BET);
+        scenario.do_first_deal_for_test(ADMIN, BLS_SIG_0, false);
+        //give player 21
+        scenario.pop_card_for_test(PLAYER, false/*is_dealer*/, false);
+        scenario.pop_card_for_test(PLAYER, false/*is_dealer*/, false);
+        scenario.draw_card_for_test(PLAYER, false/*is_dealer*/, 5, false);
+        scenario.draw_card_for_test(PLAYER, false/*is_dealer*/, 6, false);
+        scenario.draw_card_for_test(PLAYER, false/*is_dealer*/, 7, false);
+        //give dealer bj
+        scenario.pop_card_for_test(ADMIN, true/*is_dealer*/, false);
+        scenario.draw_card_for_test(ADMIN, true/*is_dealer*/, 0, false);
+        scenario.draw_card_for_test(ADMIN, true/*is_dealer*/, 9, false);
+
+        scenario.do_stand_for_test(PLAYER, ADMIN);
+        scenario.stand_for_test(ADMIN, BLS_SIG_1);
+
+        //check dealer wins
+        scenario.next_tx(ADMIN);
+        {
+            let house_data = scenario.take_shared<HouseData>();
+            let game = scenario.take_shared<Game>();
+            assert!(game.status() == 2, 1);
+            assert!(house_data.balance() == INITIAL_HOUSE_BALANCE + HOUSE_BET, 2);
+
+            test_scenario::return_shared(house_data);
+            test_scenario::return_shared(game);
+        };
+        scenario.end();
+    }
+
+    // Test a whole flow where both player and dealer have 21. It's a tie.
+    #[test]
+    fun test_player_dealer_both_have_21_tie() {
+        let mut scenario = test_scenario::begin(PLAYER);
+
+        scenario.initialize_house_data_for_test(ADMIN, INITIAL_HOUSE_BALANCE);
+        scenario.initialize_game_for_test(PLAYER, PLAYER_BET);
+        scenario.do_first_deal_for_test(ADMIN, BLS_SIG_0, false);
+        //give player 21
+        scenario.pop_card_for_test(PLAYER, false/*is_dealer*/, false);
+        scenario.pop_card_for_test(PLAYER, false/*is_dealer*/, false);
+        scenario.draw_card_for_test(PLAYER, false/*is_dealer*/, 5, false);
+        scenario.draw_card_for_test(PLAYER, false/*is_dealer*/, 6, false);
+        scenario.draw_card_for_test(PLAYER, false/*is_dealer*/, 7, false);
+        //give dealer 21
+        scenario.pop_card_for_test(ADMIN, true/*is_dealer*/, false);
+        scenario.draw_card_for_test(ADMIN, true/*is_dealer*/, 5, false);
+        scenario.draw_card_for_test(ADMIN, true/*is_dealer*/, 6, false);
+        scenario.draw_card_for_test(ADMIN, true/*is_dealer*/, 7, false);
+
+        scenario.do_stand_for_test(PLAYER, ADMIN);
+        scenario.stand_for_test(ADMIN, BLS_SIG_1);
+
+        //check for tie
+        scenario.next_tx(ADMIN);
+        {
+            let house_data = scenario.take_shared<HouseData>();
+            let game = scenario.take_shared<Game>();
+            assert!(game.status() == 3, 1);
+            assert!(house_data.balance() == INITIAL_HOUSE_BALANCE, 2);
+
+            test_scenario::return_shared(house_data);
+            test_scenario::return_shared(game);
+        };
+        scenario.end();
+    }
+
     // Test a whole flow where the user exceeds total sum of 21.
     #[test]
     fun test_player_exceeds_21() {
@@ -571,7 +684,7 @@ module blackjack::single_player_blackjack_tests {
         scenario.initialize_house_data_for_test(ADMIN, INITIAL_HOUSE_BALANCE);
         scenario.initialize_game_for_test(PLAYER, PLAYER_BET);
         scenario.do_first_deal_for_test(ADMIN, BLS_SIG_0, false);
-        scenario.draw_card_seven_for_player_for_test(PLAYER, false);
+        scenario.draw_card_for_test(PLAYER, false/*is_dealer*/, 6, false);
         scenario.do_hit_for_test(PLAYER, ADMIN);
         scenario.hit_for_test(ADMIN, BLS_SIG_1);
 
@@ -684,6 +797,8 @@ module blackjack::single_player_blackjack_tests {
                 let game = scenario.take_shared<Game>();
                 debug::print(&b"player points after first deal:".to_string());
                 debug::print(&game.player_sum());
+                debug::print(&b"dealer points after first deal:".to_string());
+                debug::print(&game.dealer_sum());
                 test_scenario::return_shared(game);
             };
         }
@@ -782,19 +897,24 @@ module blackjack::single_player_blackjack_tests {
         };
     }
 
-    use fun draw_card_seven_for_player_for_test as Scenario.draw_card_seven_for_player_for_test;
+    use fun draw_card_for_test as Scenario.draw_card_for_test;
 
-    fun draw_card_seven_for_player_for_test(
+    //card idx is based on index table in get_card_sum function
+    //e.g. card with idx 6 has a value of 7
+    //card is drawn for either the dealer or the player
+    fun draw_card_for_test(
         scenario: &mut Scenario,
-        player: address,
+        player: address, //player or dealer
+        is_dealer: bool,
+        card_idx: u8,
         log_points: bool,
     ) {
         scenario.next_tx(player);
         {
             let mut game = scenario.take_shared<Game>();
-            let card = 6; // calculated value for card is 7
-            game.draw_player_card_for_testing(
-                card,
+            game.draw_card_for_testing(
+                is_dealer,
+                card_idx,
             );
             test_scenario::return_shared(game);
         };
@@ -803,12 +923,50 @@ module blackjack::single_player_blackjack_tests {
             scenario.next_tx(player);
             {
                 let game = scenario.take_shared<Game>();
-                debug::print(&b"player points after drawing seven:".to_string());
-                debug::print(&game.player_sum());
+                if (!is_dealer) {
+                    debug::print(&b"player points after card draw:".to_string());
+                    debug::print(&game.player_sum());
+                }
+                else {
+                    debug::print(&b"dealer points after card draw:".to_string());
+                    debug::print(&game.dealer_sum());
+                };
                 test_scenario::return_shared(game);
             };
         }
     }
+
+    use fun pop_card_for_test as Scenario.pop_card_for_test;
+
+    fun pop_card_for_test(
+        scenario: &mut Scenario,
+        player: address, //player or dealer
+        is_dealer: bool,
+        log_points: bool,
+    ) {
+        scenario.next_tx(player);
+        {
+            let mut game = scenario.take_shared<Game>();
+            game.pop_card_for_testing(is_dealer);
+            test_scenario::return_shared(game);
+        };
+
+        if (log_points) {
+            scenario.next_tx(player);
+            {
+                let game = scenario.take_shared<Game>();
+                if (!is_dealer) {
+                    debug::print(&b"player points after card pop:".to_string());
+                    debug::print(&game.player_sum());
+                } else {
+                    debug::print(&b"dealer points after card pop:".to_string());
+                    debug::print(&game.dealer_sum());
+                };
+                test_scenario::return_shared(game);
+            };
+        }
+    }
+
 
     use fun player_won_post_handling_for_test as Scenario.player_won_post_handling_for_test;
 
