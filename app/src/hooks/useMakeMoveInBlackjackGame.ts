@@ -1,10 +1,11 @@
 import { useSui } from "./useSui";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { SuiObjectChangeCreated } from "@mysten/sui.js/client";
+import { Transaction } from "@mysten/sui/transactions";
+import { SuiObjectChangeCreated } from "@mysten/sui/client";
 import { useCallback, useState } from "react";
 import { GameOnChain } from "@/types/GameOnChain";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { getAddress } from "@/app/api/helpers/getAddress";
 
 interface HandleHitOrStandProps {
   move: "hit" | "stand";
@@ -42,17 +43,17 @@ export const useMakeMoveInBlackjackGame = () => {
 
       setIsMoveLoading(true);
       const { player_sum } = game;
-      const tx = new TransactionBlock();
+      const tx = new Transaction();
       let request = tx.moveCall({
         target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::do_${move}`,
-        arguments: [tx.object(gameId), tx.pure(player_sum, "u8")],
+        arguments: [tx.object(gameId), tx.pure.u8(player_sum)],
       });
       tx.transferObjects(
         [request],
-        tx.pure(process.env.NEXT_PUBLIC_ADMIN_ADDRESS!)
+        tx.pure.address(process.env.NEXT_PUBLIC_ADMIN_ADDRESS!)
       );
       return enokiSponsorExecute({
-        transactionBlock: tx,
+        transaction: tx,
         options: {
           showObjectChanges: true,
           showEffects: true,

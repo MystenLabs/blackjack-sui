@@ -1,12 +1,12 @@
 import {
   SuiClient,
   SuiTransactionBlockResponseOptions,
-} from "@mysten/sui.js/client";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+} from "@mysten/sui/client";
+import { Transaction } from "@mysten/sui/transactions";
 import { useEnokiFlow } from "@mysten/enoki/react";
 
 interface EnokiSponsorExecuteProps {
-  transactionBlock: TransactionBlock;
+  transaction: Transaction;
   options?: SuiTransactionBlockResponseOptions;
 }
 
@@ -16,16 +16,16 @@ export const useSui = () => {
   const enokiFlow = useEnokiFlow();
 
   const enokiSponsorExecute = async ({
-    transactionBlock,
+    transaction,
     options,
   }: EnokiSponsorExecuteProps) => {
     return enokiFlow
-      .sponsorAndExecuteTransactionBlock({
+      .sponsorAndExecuteTransaction({
         network: process.env.NEXT_PUBLIC_SUI_NETWORK?.includes("testnet")
           ? "testnet"
           : "mainnet",
+        transaction: transaction as any,
         client: suiClient as any,
-        transactionBlock: transactionBlock as any,
       })
       .then((resp) => {
         return suiClient.getTransactionBlock({

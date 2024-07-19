@@ -1,5 +1,5 @@
 import { houseHitOrStand } from "@/app/api/services/houseHitOrStand";
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient } from "@mysten/sui/client";
 import { NextRequest, NextResponse } from "next/server";
 
 // Waits for the transaction block that made the hit request
@@ -15,7 +15,7 @@ export const POST = async (
   });
   const { requestObjectId, txDigest } = await req.json();
 
-  await suiClient.waitForTransactionBlock({
+  await suiClient.waitForTransaction({
     digest: txDigest,
     timeout: 10_000,
   });

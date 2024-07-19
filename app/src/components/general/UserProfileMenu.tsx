@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { formatAddress } from "@mysten/sui.js/utils";
+import { formatAddress } from "@mysten/sui/utils";
 import { LogOut } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import Image from "next/image";

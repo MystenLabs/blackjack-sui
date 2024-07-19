@@ -1,5 +1,5 @@
 import { GameOnChain } from "@/types/GameOnChain";
-import { SuiClient, SuiMoveObject } from "@mysten/sui.js/client";
+import { SuiClient, SuiMoveObject } from "@mysten/sui/client";
 
 interface GetGameObjectProps {
   suiClient: SuiClient;

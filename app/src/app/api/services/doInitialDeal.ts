@@ -1,11 +1,12 @@
-import { SuiClient } from "@mysten/sui.js/client";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { SuiClient } from "@mysten/sui/client";
+import { Transaction } from "@mysten/sui/transactions";
 import { getKeypair } from "../helpers/getKeyPair";
 import { bytesToHex } from "@noble/hashes/utils";
 import { bls12_381 } from "@noble/curves/bls12-381";
 import { getBLSSecreyKey } from "../helpers/getBLSSecretKey";
 import { getGameObject } from "../helpers/getGameObject";
 import { sponsorAndSignTransaction } from "../utils/sponsorAndSignTransaction";
+import { bcs } from "@mysten/sui/bcs";
 
 interface DoInitialDealProps {
   suiClient: SuiClient;
@@ -23,7 +24,7 @@ export const doInitialDeal = async ({
 
   const adminKeypair = getKeypair(process.env.ADMIN_SECRET_KEY!);
 
-  const tx = new TransactionBlock();
+  const tx = new Transaction();
   return getGameObject({ suiClient, gameId }).then(async (resp) => {
     const { counter, user_randomness } = resp;
     const counterHex = bytesToHex(Uint8Array.from([counter]));
@@ -45,7 +46,7 @@ export const doInitialDeal = async ({
       target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::first_deal`,
       arguments: [
         tx.object(gameId),
-        tx.pure(Array.from(signedHouseHash), "vector<u8>"),
+        tx.pure(bcs.vector(bcs.u8()).serialize(signedHouseHash)),
         tx.object(houseDataId),
       ],
     });

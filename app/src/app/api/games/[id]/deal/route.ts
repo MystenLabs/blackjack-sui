@@ -1,5 +1,5 @@
 import { doInitialDeal } from "@/app/api/services/doInitialDeal";
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient } from "@mysten/sui/client";
 import { NextRequest, NextResponse } from "next/server";
 
 // Waits for the transaction block that created the game
@@ -15,7 +15,7 @@ export const POST = async (
   const { id: gameId } = params;
   const { txDigest } = await req.json();
 
-  await suiClient.waitForTransactionBlock({
+  await suiClient.waitForTransaction({
     digest: txDigest,
     timeout: 10_000,
   });

@@ -2,7 +2,7 @@ import { useContext, useEffect, useState, createContext } from "react";
 import { ChildrenProps } from "@/types/ChildrenProps";
 import BigNumber from "bignumber.js";
 import { useZkLogin } from "@mysten/enoki/react";
-import { MIST_PER_SUI } from "@mysten/sui.js/utils";
+import { MIST_PER_SUI } from "@mysten/sui/utils";
 import { useSui } from "@/hooks/useSui";
 
 export const useBalance = () => {
