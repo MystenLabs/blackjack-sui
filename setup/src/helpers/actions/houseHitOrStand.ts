@@ -8,6 +8,7 @@ import { getKeypair } from "../keypair/getKeyPair";
 import { ADMIN_SECRET_KEY, PACKAGE_ADDRESS } from "../../config";
 import { getBLSSecreyKey } from "../bls/getBLSSecretKey";
 import { getHitOrStandRequestForGameAndSum } from "../getObject/getHitOrStandRequestForGameAndSum";
+import { bcs } from "@mysten/sui/bcs";
 
 interface HouseHitOrStandProps {
   gameId: string;
@@ -65,7 +66,7 @@ export const houseHitOrStand = async ({
         target: `${PACKAGE_ADDRESS}::single_player_blackjack::${move}`,
         arguments: [
           tx.object(gameId),
-          tx.pure(signedHouseHash),
+          tx.pure(bcs.vector(bcs.u8()).serialize(signedHouseHash)),
           tx.object(houseDataId),
           tx.object(hitOrStandRequest),
         ],
