@@ -6,6 +6,7 @@ import { bls12_381 } from "@noble/curves/bls12-381";
 import { generateCards } from "../cards/generateCards";
 import { getGameObject } from "../getObject/getGameObject";
 import { getPlayerHand } from "../cards/getPlayerHand";
+import { bcs } from "@mysten/sui/bcs";
 import {
   PACKAGE_ADDRESS,
   ADMIN_SECRET_KEY,
@@ -45,7 +46,7 @@ export const doInitialDeal = async ({
         target: `${PACKAGE_ADDRESS}::single_player_blackjack::first_deal`,
         arguments: [
           tx.object(gameId),
-          tx.pure(signedHouseHash),
+          tx.pure(bcs.vector(bcs.u8()).serialize(signedHouseHash)),
           tx.object(houseDataId),
         ],
       });
