@@ -17,6 +17,8 @@ export const topUpHouseData = async ({
 }: TopUpHouseDataProps) => {
   const tx = new Transaction();
 
+  // 1000 sui needed for initial house setup
+  // if this is not possible, adjust the number of sui needed here
   const coin = tx.splitCoins(tx.gas, [tx.pure.u64(1000 * Number(MIST_PER_SUI))]);
   tx.moveCall({
     target: `${PACKAGE_ADDRESS}::single_player_blackjack::top_up`,
