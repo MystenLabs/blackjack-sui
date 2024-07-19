@@ -21,7 +21,7 @@ export const GameActions = ({
         onClick={handleHit}
         isLoading={isMoveLoading}
         showSpinner={false}
-        disabled={playerPoints === 21}
+        disabled={playerPoints === 21 || isMoveLoading}
         className="flex space-x-2 w-[150px] bg-transparent hover:bg-[#14C57A] border-[2px] rounded-[38px] !py-[16px] !px-[20px]"
       >
         <Image
