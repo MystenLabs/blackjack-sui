@@ -1,11 +1,11 @@
-import { SuiClient } from "@mysten/sui.js/client";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { SuiClient } from "@mysten/sui/client";
+import { Transaction } from "@mysten/sui/transactions";
 import { sponsorTransaction } from "./sponsorTransaction";
 import { getKeypair } from "../helpers/getKeyPair";
 
 interface SponsorAndSignTransactionProps {
   suiClient: SuiClient;
-  tx: TransactionBlock;
+  tx: Transaction;
 }
 
 export const sponsorAndSignTransaction = async ({
@@ -24,8 +24,8 @@ export const sponsorAndSignTransaction = async ({
   if (!sponsoredTransaction) {
     throw new Error("Sponsoring transaction failed");
   }
-  const signedTransaction = await adminKeypair.signTransactionBlock(
-    await TransactionBlock.from(sponsoredTransaction.txBytes).build({
+  const signedTransaction = await adminKeypair.signTransaction(
+    await Transaction.from(sponsoredTransaction.txBytes).build({
       client: suiClient,
     })
   );

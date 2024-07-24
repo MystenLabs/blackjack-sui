@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSui } from "./useSui";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { SuiObjectChangeCreated } from "@mysten/sui.js/client";
+import { Transaction } from "@mysten/sui/transactions";
+import { SuiObjectChangeCreated } from "@mysten/sui/client";
 import toast from "react-hot-toast";
 import { getCounterId } from "@/utils/getCounterId";
 import { useZkLogin } from "@mysten/enoki/react";
@@ -15,14 +15,14 @@ export const usePlayerCounter = () => {
 
   const handleCreateCounter = async () => {
     setIsCreateLoading(true);
-    const tx = new TransactionBlock();
+    const tx = new Transaction();
     tx.moveCall({
       target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::counter_nft::mint_and_transfer`,
       arguments: [],
     });
 
     return enokiSponsorExecute({
-      transactionBlock: tx,
+      transaction: tx,
       options: {
         showObjectChanges: true,
         showEffects: true,

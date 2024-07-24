@@ -41,7 +41,7 @@ export const useBlackjackGame = () => {
     }
     setIsLoading(true);
     if (!!txDigest) {
-      await suiClient.waitForTransactionBlock({
+      await suiClient.waitForTransaction({
         digest: txDigest,
         timeout: 10_000,
       });

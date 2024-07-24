@@ -31,7 +31,7 @@ export const useRequestSui = () => {
       })
       .then(async (resp) => {
         setIsLoading(false);
-        await suiClient.waitForTransactionBlock({
+        await suiClient.waitForTransaction({
           digest: resp.data.txDigest,
         });
         handleRefreshBalance();
