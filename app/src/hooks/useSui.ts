@@ -15,6 +15,7 @@ export const useSui = () => {
   const suiClient = new SuiClient({ url: FULL_NODE });
   const enokiFlow = useEnokiFlow();
 
+  //TODO: Change approach here since this is deprecated
   const enokiSponsorExecute = async ({
     transaction,
     options,
