@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.1",
-    "@mysten/enoki": "^0.3.11",
+    "@mysten/enoki": "^0.3.16",
     "@mysten/sui": "^1.3.0",
     "@noble/curves": "^1.3.0",
     "@noble/hashes": "^1.3.3",
