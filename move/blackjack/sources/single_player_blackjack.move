@@ -150,12 +150,10 @@ module blackjack::single_player_blackjack {
 
     /// Function used to create a new game. The player must provide a random vector of bytes.
     /// Stake is taken from the player's coin and added to the game's stake. The house's stake is also added to the game's stake.
-    /// @param user_randomness: A vector of randomly produced bytes that will be used to calculate the result of the VRF
     /// @param user_counter: A user counter object that serves as additional source of randomness.
     /// @param user_bet: The coin object that will be used to take the player's stake
     /// @param house_data: The HouseData object
     public entry fun place_bet_and_create_game(
-        user_randomness: vector<u8>,
         user_counter: &mut Counter,
         user_bet: Coin<SUI>,
         house_data: &mut HouseData,
@@ -172,7 +170,9 @@ module blackjack::single_player_blackjack {
         let house_stake = house_data.balance.split(STAKE);
         stake.join(house_stake);
 
-        let mut initial_randomness = user_randomness;
+        let mut generator = new_generator(r, ctx);
+        let mut initial_randomness = generator.generate_u8_in_range(1, 256);
+
         initial_randomness.append(user_counter.increment_and_get());
 
         let new_game = Game {
