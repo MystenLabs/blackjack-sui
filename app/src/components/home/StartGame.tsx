@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { LoadingButton } from "../general/LoadingButton";
-import { CollectMouseRandomness } from "./CollectMouseRandomness";
 import Link from "next/link";
 
 interface StartGameProps {
