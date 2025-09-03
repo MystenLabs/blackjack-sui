@@ -22,7 +22,6 @@ export const useCreateBlackjackGame = () => {
   const handleCreateGameAndDeal = useCallback(
     async (
       counterId: string | null,
-      randomBytesAsHexString: string,
       reFetchGame: (gameId: string, txDigest?: string) => Promise<void>
     ): Promise<HandleCreateGameSuccessResponse | null> => {
       if (!counterId) {
@@ -36,7 +35,6 @@ export const useCreateBlackjackGame = () => {
       tx.moveCall({
         target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::place_bet_and_create_game`,
         arguments: [
-          tx.pure.string(randomBytesAsHexString),
           tx.object(counterId!),
           betAmountCoin,
           tx.object(process.env.NEXT_PUBLIC_HOUSE_DATA_ID!),

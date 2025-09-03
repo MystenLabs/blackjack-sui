@@ -58,8 +58,8 @@ export const useBlackjackGame = () => {
       });
   };
 
-  const handleCreateGameAndRefresh = async (userRandomness: string) => {
-    handleCreateGameAndDeal(counterId, userRandomness, reFetchGame).then(
+  const handleCreateGameAndRefresh = async () => {
+    handleCreateGameAndDeal(counterId, reFetchGame).then(
       (resp) => {
         if (!resp) {
           return;

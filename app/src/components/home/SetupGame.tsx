@@ -14,7 +14,7 @@ interface SetupGameProps {
   isCreateCounterLoading: boolean;
   game: GameOnChain | null;
   isLoading: boolean;
-  handleCreateGame: (userRandomness: string) => Promise<void>;
+  handleCreateGame: () => Promise<void>;
   isCreateGameLoading: boolean;
 }
 
