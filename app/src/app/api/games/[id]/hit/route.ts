@@ -1,6 +1,7 @@
 import { houseHitOrStand } from "@/app/api/services/houseHitOrStand";
 import { SuiClient } from "@mysten/sui/client";
 import { NextRequest, NextResponse } from "next/server";
+import {suiClient} from "@/helpers/suiClient";
 
 // Waits for the transaction block that made the hit request
 // And then executes the hit move
@@ -10,9 +11,6 @@ export const POST = async (
   { params }: { params: { id: string } }
 ) => {
   const { id: gameId } = params;
-  const suiClient = new SuiClient({
-    url: process.env.NEXT_PUBLIC_SUI_NETWORK!,
-  });
   const { requestObjectId, txDigest } = await req.json();
 
   await suiClient.waitForTransaction({

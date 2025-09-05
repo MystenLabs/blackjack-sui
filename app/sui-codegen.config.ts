@@ -1,4 +1,4 @@
-import { SuiCodegenConfig } from '@mysten/codegen'
+import type { SuiCodegenConfig } from "@mysten/codegen";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -11,7 +11,7 @@ const config: SuiCodegenConfig = {
 	prune: true,
 	packages: [
 		{
-			package: 'blackjack',
+			package: '@local-pkg/blackjack',
 			path: path.join(__dirname, '../move/blackjack'),
 		},
 	],
