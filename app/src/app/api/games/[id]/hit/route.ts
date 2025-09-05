@@ -1,7 +1,6 @@
 import { houseHitOrStand } from "@/app/api/services/houseHitOrStand";
-import { SuiClient } from "@mysten/sui/client";
 import { NextRequest, NextResponse } from "next/server";
-import {suiClient} from "@/helpers/suiClient";
+import { suiClient } from "@/helpers/suiClient";
 
 // Waits for the transaction block that made the hit request
 // And then executes the hit move

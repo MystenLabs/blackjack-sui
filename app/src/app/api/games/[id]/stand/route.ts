@@ -1,6 +1,6 @@
 import { houseHitOrStand } from "@/app/api/services/houseHitOrStand";
 import { NextRequest, NextResponse } from "next/server";
-import {suiClient} from "@/helpers/suiClient";
+import { suiClient } from "@/helpers/suiClient";
 
 // Waits for the transaction block that made the stand request
 // And then executes the stand move

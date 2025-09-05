@@ -9,4 +9,4 @@ export const suiClient = new SuiClient({
 			},
 		},
 	},
-})
+});

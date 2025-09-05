@@ -35,3 +35,4 @@ setup/*.env
 .vercel
 
 move/**/package_summaries/
+**/**/__generated__/

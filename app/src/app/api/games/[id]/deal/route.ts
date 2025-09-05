@@ -1,7 +1,6 @@
 import { doInitialDeal } from "@/app/api/services/doInitialDeal";
-import { SuiClient } from "@mysten/sui/client";
 import { NextRequest, NextResponse } from "next/server";
-import {suiClient} from "@/helpers/suiClient";
+import { suiClient } from "@/helpers/suiClient";
 
 // Waits for the transaction block that created the game
 // And then executes the initial deal

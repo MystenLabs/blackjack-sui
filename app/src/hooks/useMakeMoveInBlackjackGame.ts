@@ -7,7 +7,7 @@ import axios from "axios";
 import { useEnokiFlow, useZkLogin } from "@mysten/enoki/react";
 import { fromB64, toB64 } from "@mysten/sui/utils";
 import { useSui } from "./useSui";
-import {doHit, doStand} from "@/__generated__/blackjack/single_player_blackjack";
+import { doHit, doStand } from "@/__generated__/blackjack/single_player_blackjack";
 
 interface HandleHitOrStandProps {
   move: "hit" | "stand";
