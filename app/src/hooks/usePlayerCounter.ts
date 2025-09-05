@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { getCounterId } from "@/utils/getCounterId";
 import { useEnokiFlow, useZkLogin } from "@mysten/enoki/react";
 import { fromB64, toB64 } from "@mysten/sui/utils";
+import { mintAndTransfer } from "@/__generated__/blackjack/counter_nft";
 
 export const usePlayerCounter = () => {
   const enokiFlow = useEnokiFlow();
@@ -21,10 +22,7 @@ export const usePlayerCounter = () => {
 
       // Step 1: Create the transaction and get TxBytes
       const tx = new Transaction();
-      tx.moveCall({
-        target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::counter_nft::mint_and_transfer`,
-        arguments: [],
-      });
+      tx.add(mintAndTransfer({ arguments: [] }));
       const txBytes = await tx.build({
         client: suiClient,
         onlyTransactionKind: true,

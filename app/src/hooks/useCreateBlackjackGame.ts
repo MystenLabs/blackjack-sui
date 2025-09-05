@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { useEnokiFlow } from "@mysten/enoki/react";
 import { MIST_PER_SUI } from "@mysten/sui/utils";
-import { bcs } from "@mysten/sui/bcs";
+import { placeBetAndCreateGame } from '@/__generated__/blackjack/single_player_blackjack';
 
 interface HandleCreateGameSuccessResponse {
   gameId: string;
@@ -33,15 +33,14 @@ export const useCreateBlackjackGame = () => {
       setIsCreateGameLoading(true);
       const tx = new Transaction();
       const betAmountCoin = tx.splitCoins(tx.gas, [tx.pure.u64(0.2 * Number(MIST_PER_SUI))]);
-      tx.moveCall({
-        target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::place_bet_and_create_game`,
+      tx.add(placeBetAndCreateGame({
         arguments: [
           tx.pure.string(randomBytesAsHexString),
           tx.object(counterId!),
           betAmountCoin,
           tx.object(process.env.NEXT_PUBLIC_HOUSE_DATA_ID!),
         ],
-      });
+      }))
       console.log("Executing transaction...");
       const signer = await enokiFlow.getKeypair({network: "testnet"});
       return suiClient.signAndExecuteTransaction({

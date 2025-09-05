@@ -7,6 +7,7 @@ import axios from "axios";
 import { useEnokiFlow, useZkLogin } from "@mysten/enoki/react";
 import { fromB64, toB64 } from "@mysten/sui/utils";
 import { useSui } from "./useSui";
+import {doHit, doStand} from "@/__generated__/blackjack/single_player_blackjack";
 
 interface HandleHitOrStandProps {
   move: "hit" | "stand";
@@ -51,10 +52,13 @@ export const useMakeMoveInBlackjackGame = () => {
 
         // Step 1: Create the transaction and get TxBytes
         const tx = new Transaction();
-        let request = tx.moveCall({
-          target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::do_${move}`,
-          arguments: [tx.object(gameId), tx.pure.u8(player_sum)],
-        });
+        const request = tx.add(
+            move === 'hit' ? doHit({
+              arguments: [tx.object(gameId), tx.pure.u8(player_sum)],
+            }) : doStand({
+              arguments: [tx.object(gameId), tx.pure.u8(player_sum)],
+            })
+        );
         tx.transferObjects(
           [request],
           tx.pure.address(process.env.NEXT_PUBLIC_ADMIN_ADDRESS!)
@@ -133,6 +137,8 @@ export const useMakeMoveInBlackjackGame = () => {
           ({ type }) => type === "created"
         ) as SuiObjectChangeCreated[];
 
+        // TODO Verify if there is a better way to check for the created `objectType`
+        //      instead of using directly the package address
         const hitOrStandRequest = createdObjects.find(
           ({ objectType }) =>
             objectType ===
