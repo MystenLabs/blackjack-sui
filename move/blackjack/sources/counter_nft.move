@@ -7,6 +7,8 @@
 module blackjack::counter_nft {
     // Imports
     use sui::bcs::{Self};
+    use sui::object::{Self, UID};
+    use sui::transfer;
 
     // Structs
     public struct Counter has key {
@@ -40,7 +42,7 @@ module blackjack::counter_nft {
     }
 
     /// Deletes the counter object.
-    public entry fun burn(self: Counter) {
+    public fun burn(self: Counter) {
         let Counter { id, count: _ } = self;
         object::delete(id);
     }
