@@ -61,7 +61,7 @@ export const houseHitOrStand = async ({
       signature: signedTransaction.signature,
       digest: sponsoredTransaction.digest,
     });
-    await suiClient
+    return suiClient
       .waitForTransaction({
         digest: result.digest,
         options: {
