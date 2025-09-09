@@ -35,4 +35,6 @@ setup/*.env
 .vercel
 
 move/**/package_summaries/
-**/**/__generated__/
+
+# TODO Uncomment this once codegen stops throwing errors when importing .js files
+# **/**/__generated__/
