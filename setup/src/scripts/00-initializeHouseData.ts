@@ -9,7 +9,7 @@ const initializeHouse = async () => {
   });
   fs.appendFileSync("./.env", `HOUSE_DATA_ID=${houseDataId}\n`);
   fs.appendFileSync(
-    "../app/.env",
+    "../app/.env.local",
     `NEXT_PUBLIC_HOUSE_DATA_ID=${houseDataId}\n`
   );
 };
