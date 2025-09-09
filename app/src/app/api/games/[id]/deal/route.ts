@@ -20,7 +20,6 @@ export const POST = async (
   return doInitialDeal({
     gameId,
     suiClient,
-    houseDataId: process.env.NEXT_PUBLIC_HOUSE_DATA_ID!,
   })
     .then((resp) => {
       const { txDigest } = resp;

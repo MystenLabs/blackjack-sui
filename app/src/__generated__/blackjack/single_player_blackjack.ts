@@ -32,7 +32,6 @@ export const HouseData = new MoveStruct({ name: `${$moduleName}::HouseData`, fie
     } });
 export const Game = new MoveStruct({ name: `${$moduleName}::Game`, fields: {
         id: object.UID,
-        user_randomness: bcs.vector(bcs.u8()),
         total_stake: balance_1.Balance,
         player: bcs.Address,
         player_cards: bcs.vector(bcs.u8()),
@@ -40,7 +39,8 @@ export const Game = new MoveStruct({ name: `${$moduleName}::Game`, fields: {
         dealer_cards: bcs.vector(bcs.u8()),
         dealer_sum: bcs.u8(),
         status: bcs.u8(),
-        counter: bcs.u8()
+        counter: bcs.u8(),
+        used_cards: bcs.vector(bcs.u8())
     } });
 export const HitRequest = new MoveStruct({ name: `${$moduleName}::HitRequest`, fields: {
         id: object.UID,
@@ -145,38 +145,29 @@ export function withdraw(options: WithdrawOptions) {
     });
 }
 export interface PlaceBetAndCreateGameArguments {
-    userRandomness: RawTransactionArgument<number[]>;
-    userCounter: RawTransactionArgument<string>;
     userBet: RawTransactionArgument<string>;
     houseData: RawTransactionArgument<string>;
 }
 export interface PlaceBetAndCreateGameOptions {
     package?: string;
     arguments: PlaceBetAndCreateGameArguments | [
-        userRandomness: RawTransactionArgument<number[]>,
-        userCounter: RawTransactionArgument<string>,
         userBet: RawTransactionArgument<string>,
         houseData: RawTransactionArgument<string>
     ];
 }
 /**
- * Function used to create a new game. The player must provide a random vector of
- * bytes. Stake is taken from the player's coin and added to the game's stake. The
- * house's stake is also added to the game's stake. @param user_randomness: A
- * vector of randomly produced bytes that will be used to calculate the result of
- * the VRF @param user_counter: A user counter object that serves as additional
- * source of randomness. @param user_bet: The coin object that will be used to take
- * the player's stake @param house_data: The HouseData object
+ * Function used to create a new game. Stake is taken from the player's coin and
+ * added to the game's stake. The house's stake is also added to the game's stake.
+ * @param user_bet: The coin object that will be used to take the player's stake
+ * @param house_data: The HouseData object
  */
 export function placeBetAndCreateGame(options: PlaceBetAndCreateGameOptions) {
     const packageAddress = options.package ?? '@local-pkg/blackjack';
     const argumentsTypes = [
-        'vector<u8>',
-        `${packageAddress}::counter_nft::Counter`,
         '0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>',
         `${packageAddress}::single_player_blackjack::HouseData`
     ] satisfies string[];
-    const parameterNames = ["userRandomness", "userCounter", "userBet", "houseData"];
+    const parameterNames = ["userBet", "houseData"];
     return (tx: Transaction) => tx.moveCall({
         package: packageAddress,
         module: 'single_player_blackjack',
@@ -186,33 +177,27 @@ export function placeBetAndCreateGame(options: PlaceBetAndCreateGameOptions) {
 }
 export interface FirstDealArguments {
     game: RawTransactionArgument<string>;
-    blsSig: RawTransactionArgument<number[]>;
-    houseData: RawTransactionArgument<string>;
 }
 export interface FirstDealOptions {
     package?: string;
     arguments: FirstDealArguments | [
-        game: RawTransactionArgument<string>,
-        blsSig: RawTransactionArgument<number[]>,
-        houseData: RawTransactionArgument<string>
+        game: RawTransactionArgument<string>
     ];
 }
 /**
- * Function that is invoked by the house (Dealer) to deal cards. If an incorrect
- * bls sig is passed the function will abort.
+ * Function that is invoked by the house (Dealer) to deal cards. Uses on-chain
+ * randomness to generate cards.
  *
- * @param game: The Game object @param bls_sig: The bls signature of the game id
- * and the player's randomn bytes and the counter appended together @param
- * house_data: The HouseData object
+ * @param game: The Game object @param r: The Random object for generating
+ * randomness
  */
 export function firstDeal(options: FirstDealOptions) {
     const packageAddress = options.package ?? '@local-pkg/blackjack';
     const argumentsTypes = [
         `${packageAddress}::single_player_blackjack::Game`,
-        'vector<u8>',
-        `${packageAddress}::single_player_blackjack::HouseData`
+        '0x0000000000000000000000000000000000000000000000000000000000000002::random::Random'
     ] satisfies string[];
-    const parameterNames = ["game", "blsSig", "houseData"];
+    const parameterNames = ["game"];
     return (tx: Transaction) => tx.moveCall({
         package: packageAddress,
         module: 'single_player_blackjack',
@@ -222,7 +207,6 @@ export function firstDeal(options: FirstDealOptions) {
 }
 export interface HitArguments {
     game: RawTransactionArgument<string>;
-    blsSig: RawTransactionArgument<number[]>;
     houseData: RawTransactionArgument<string>;
     hitRequest: RawTransactionArgument<string>;
 }
@@ -230,29 +214,28 @@ export interface HitOptions {
     package?: string;
     arguments: HitArguments | [
         game: RawTransactionArgument<string>,
-        blsSig: RawTransactionArgument<number[]>,
         houseData: RawTransactionArgument<string>,
         hitRequest: RawTransactionArgument<string>
     ];
 }
 /**
  * Function that is invoked when the player selects hit, so the dealer deals
- * another card. We use the player's randomness to generate the next card. Dealer
- * (house) signs the game id, the randomness and the game counter appended
- * together. If an incorrect bls sig is passed the function will abort.
+ * another card. Uses on-chain randomness to generate the next card.
  *
  * Function checks if the latest draw has caused the player to bust and deals with
  * proper handling after that.
+ *
+ * @param r: The Random object for generating randomness
  */
 export function hit(options: HitOptions) {
     const packageAddress = options.package ?? '@local-pkg/blackjack';
     const argumentsTypes = [
         `${packageAddress}::single_player_blackjack::Game`,
-        'vector<u8>',
         `${packageAddress}::single_player_blackjack::HouseData`,
-        `${packageAddress}::single_player_blackjack::HitRequest`
+        `${packageAddress}::single_player_blackjack::HitRequest`,
+        '0x0000000000000000000000000000000000000000000000000000000000000002::random::Random'
     ] satisfies string[];
-    const parameterNames = ["game", "blsSig", "houseData", "hitRequest"];
+    const parameterNames = ["game", "houseData", "hitRequest"];
     return (tx: Transaction) => tx.moveCall({
         package: packageAddress,
         module: 'single_player_blackjack',
@@ -262,7 +245,6 @@ export function hit(options: HitOptions) {
 }
 export interface StandArguments {
     game: RawTransactionArgument<string>;
-    blsSig: RawTransactionArgument<number[]>;
     houseData: RawTransactionArgument<string>;
     standRequest: RawTransactionArgument<string>;
 }
@@ -270,29 +252,28 @@ export interface StandOptions {
     package?: string;
     arguments: StandArguments | [
         game: RawTransactionArgument<string>,
-        blsSig: RawTransactionArgument<number[]>,
         houseData: RawTransactionArgument<string>,
         standRequest: RawTransactionArgument<string>
     ];
 }
 /**
  * Function that is invoked when the player has finished asking for cards. Now its
- * the dealer's turn to start drawing cards. We use the player's randomness to
- * generate the next card. Dealer (house) signs the game id, the randomness and the
- * game counter appended together. If an incorrect bls sig is passed the function
- * will abort.
+ * the dealer's turn to start drawing cards. Uses on-chain randomness to generate
+ * cards.
  *
  * Dealer should keep drawing cards until the sum of the cards is greater than 17.
+ *
+ * @param r: The Random object for generating randomness
  */
 export function stand(options: StandOptions) {
     const packageAddress = options.package ?? '@local-pkg/blackjack';
     const argumentsTypes = [
         `${packageAddress}::single_player_blackjack::Game`,
-        'vector<u8>',
         `${packageAddress}::single_player_blackjack::HouseData`,
-        `${packageAddress}::single_player_blackjack::StandRequest`
+        `${packageAddress}::single_player_blackjack::StandRequest`,
+        '0x0000000000000000000000000000000000000000000000000000000000000002::random::Random'
     ] satisfies string[];
-    const parameterNames = ["game", "blsSig", "houseData", "standRequest"];
+    const parameterNames = ["game", "houseData", "standRequest"];
     return (tx: Transaction) => tx.moveCall({
         package: packageAddress,
         module: 'single_player_blackjack',
@@ -352,81 +333,6 @@ export function doStand(options: DoStandOptions) {
         package: packageAddress,
         module: 'single_player_blackjack',
         function: 'do_stand',
-        arguments: normalizeMoveArguments(options.arguments, argumentsTypes, parameterNames),
-    });
-}
-export interface GetNextRandomCardArguments {
-    inputHash: RawTransactionArgument<number[]>;
-}
-export interface GetNextRandomCardOptions {
-    package?: string;
-    arguments: GetNextRandomCardArguments | [
-        inputHash: RawTransactionArgument<number[]>
-    ];
-}
-/**
- * Returns next Card from the hashed byte array after re-hashing it
- *
- * @param hashed_byte_array: The hashed byte array @return: The next random card
- *
- * ---
- */
-export function getNextRandomCard(options: GetNextRandomCardOptions) {
-    const packageAddress = options.package ?? '@local-pkg/blackjack';
-    const argumentsTypes = [
-        'vector<u8>'
-    ] satisfies string[];
-    const parameterNames = ["inputHash"];
-    return (tx: Transaction) => tx.moveCall({
-        package: packageAddress,
-        module: 'single_player_blackjack',
-        function: 'get_next_random_card',
-        arguments: normalizeMoveArguments(options.arguments, argumentsTypes, parameterNames),
-    });
-}
-export interface GameCounterVectorArguments {
-    game: RawTransactionArgument<string>;
-}
-export interface GameCounterVectorOptions {
-    package?: string;
-    arguments: GameCounterVectorArguments | [
-        game: RawTransactionArgument<string>
-    ];
-}
-/** Returns a vector containing the game counter @param game: A Game object */
-export function gameCounterVector(options: GameCounterVectorOptions) {
-    const packageAddress = options.package ?? '@local-pkg/blackjack';
-    const argumentsTypes = [
-        `${packageAddress}::single_player_blackjack::Game`
-    ] satisfies string[];
-    const parameterNames = ["game"];
-    return (tx: Transaction) => tx.moveCall({
-        package: packageAddress,
-        module: 'single_player_blackjack',
-        function: 'game_counter_vector',
-        arguments: normalizeMoveArguments(options.arguments, argumentsTypes, parameterNames),
-    });
-}
-export interface UserRandomnessArguments {
-    game: RawTransactionArgument<string>;
-}
-export interface UserRandomnessOptions {
-    package?: string;
-    arguments: UserRandomnessArguments | [
-        game: RawTransactionArgument<string>
-    ];
-}
-/** Returns the player's randomn bytes input @param game: A Game object */
-export function userRandomness(options: UserRandomnessOptions) {
-    const packageAddress = options.package ?? '@local-pkg/blackjack';
-    const argumentsTypes = [
-        `${packageAddress}::single_player_blackjack::Game`
-    ] satisfies string[];
-    const parameterNames = ["game"];
-    return (tx: Transaction) => tx.moveCall({
-        package: packageAddress,
-        module: 'single_player_blackjack',
-        function: 'user_randomness',
         arguments: normalizeMoveArguments(options.arguments, argumentsTypes, parameterNames),
     });
 }
@@ -496,6 +402,29 @@ export function publicKey(options: PublicKeyOptions) {
         package: packageAddress,
         module: 'single_player_blackjack',
         function: 'public_key',
+        arguments: normalizeMoveArguments(options.arguments, argumentsTypes, parameterNames),
+    });
+}
+export interface UsedCardsArguments {
+    game: RawTransactionArgument<string>;
+}
+export interface UsedCardsOptions {
+    package?: string;
+    arguments: UsedCardsArguments | [
+        game: RawTransactionArgument<string>
+    ];
+}
+/** Returns the used cards in the current game @param game: A Game object */
+export function usedCards(options: UsedCardsOptions) {
+    const packageAddress = options.package ?? '@local-pkg/blackjack';
+    const argumentsTypes = [
+        `${packageAddress}::single_player_blackjack::Game`
+    ] satisfies string[];
+    const parameterNames = ["game"];
+    return (tx: Transaction) => tx.moveCall({
+        package: packageAddress,
+        module: 'single_player_blackjack',
+        function: 'used_cards',
         arguments: normalizeMoveArguments(options.arguments, argumentsTypes, parameterNames),
     });
 }

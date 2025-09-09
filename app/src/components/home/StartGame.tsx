@@ -1,26 +1,14 @@
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import { LoadingButton } from "../general/LoadingButton";
-import { CollectMouseRandomness } from "./CollectMouseRandomness";
 import Link from "next/link";
 
 interface StartGameProps {
-  handleCreateGame: (randomness: string) => Promise<void>;
+  handleCreateGame: () => Promise<void>;
   isLoading: boolean;
 }
 
 export const StartGame = ({ handleCreateGame, isLoading }: StartGameProps) => {
-  const [isGeneratingRandomness, setIsGeneratingRandomness] = useState(false);
-
-  if (isGeneratingRandomness) {
-    return (
-      <CollectMouseRandomness
-        handleStartGame={handleCreateGame}
-        isLoading={isLoading}
-      />
-    );
-  }
-
   return (
     <div className="bg-white flex flex-col p-[50px] w-full rounded-[24px] items-center space-y-[50px]">
       <div className="text-[25px] font-semibold text-center">Ready for a New Game?</div>
@@ -53,7 +41,7 @@ export const StartGame = ({ handleCreateGame, isLoading }: StartGameProps) => {
       <LoadingButton
         className="rounded-full py-[10px] px-[14px]"
         spinnerClassName="text-white !w-5 !h-5 mr-2"
-        onClick={() => setIsGeneratingRandomness(true)}
+        onClick={() => handleCreateGame()}
         isLoading={isLoading}
       >
         New Game

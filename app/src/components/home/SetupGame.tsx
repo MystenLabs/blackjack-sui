@@ -14,7 +14,7 @@ interface SetupGameProps {
   isCreateCounterLoading: boolean;
   game: GameOnChain | null;
   isLoading: boolean;
-  handleCreateGame: (userRandomness: string) => Promise<void>;
+  handleCreateGame: () => Promise<void>;
   isCreateGameLoading: boolean;
 }
 
@@ -59,6 +59,7 @@ export const SetupGame = ({
       if (isLoading) {
         return <Spinner />;
       }
+
       return (
         <StartGame
           handleCreateGame={handleCreateGame}

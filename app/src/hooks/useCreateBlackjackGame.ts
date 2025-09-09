@@ -22,7 +22,6 @@ export const useCreateBlackjackGame = () => {
   const handleCreateGameAndDeal = useCallback(
     async (
       counterId: string | null,
-      randomBytesAsHexString: string,
       reFetchGame: (gameId: string, txDigest?: string) => Promise<void>
     ): Promise<HandleCreateGameSuccessResponse | null> => {
       if (!counterId) {
@@ -35,8 +34,6 @@ export const useCreateBlackjackGame = () => {
       const betAmountCoin = tx.splitCoins(tx.gas, [tx.pure.u64(0.2 * Number(MIST_PER_SUI))]);
       tx.add(placeBetAndCreateGame({
         arguments: [
-          tx.pure.string(randomBytesAsHexString),
-          tx.object(counterId!),
           betAmountCoin,
           tx.object(process.env.NEXT_PUBLIC_HOUSE_DATA_ID!),
         ],
