@@ -1,3 +1,4 @@
+#[allow(duplicate_alias)]
 module blackjack::single_player_blackjack {
 
     // Imports
@@ -105,7 +106,7 @@ module blackjack::single_player_blackjack {
     /// @param house_cap: The HouseCap object
     /// @param coin: The coin object that will be used to initialize the house balance. Acts as a treasury
     /// @param public_key: The public key of the house
-    public entry fun initialize_house_data(
+    public fun initialize_house_data(
         house_cap: HouseAdminCap,
         coin: Coin<SUI>,
         public_key: vector<u8>,
@@ -130,14 +131,14 @@ module blackjack::single_player_blackjack {
     /// House can have multiple accounts so giving the treasury balance is not limited.
     /// @param house_data: The HouseData object
     /// @param coin: The coin object that will be used to top up the house balance. The entire coin is consumed
-    public entry fun top_up(house_data: &mut HouseData, coin: Coin<SUI>, _: &mut TxContext) {
+    public fun top_up(house_data: &mut HouseData, coin: Coin<SUI>, _: &mut TxContext) {
         let balance = coin.into_balance();
         house_data.balance.join(balance);
     }
 
     /// House can withdraw the entire balance of the house object
     /// @param house_data: The HouseData object
-    public entry fun withdraw(house_data: &mut HouseData, ctx: &mut TxContext) {
+    public fun withdraw(house_data: &mut HouseData, ctx: &mut TxContext) {
         // only the house address can withdraw funds
         assert!(ctx.sender() == house_data.house, ECallerNotHouse);
         let total_balance = house_data.balance.value();
@@ -149,7 +150,7 @@ module blackjack::single_player_blackjack {
     /// Stake is taken from the player's coin and added to the game's stake. The house's stake is also added to the game's stake.
     /// @param user_bet: The coin object that will be used to take the player's stake
     /// @param house_data: The HouseData object
-    public entry fun place_bet_and_create_game(
+    public fun place_bet_and_create_game(
         user_bet: Coin<SUI>,
         house_data: &mut HouseData,
         ctx: &mut TxContext
@@ -190,6 +191,7 @@ module blackjack::single_player_blackjack {
     ///
     /// @param game: The Game object
     /// @param r: The Random object for generating randomness
+    #[allow(lint(public_random))]
     public fun first_deal(
         game: &mut Game,
         r: &Random,
@@ -228,6 +230,7 @@ module blackjack::single_player_blackjack {
     /// Function checks if the latest draw has caused the player to bust and deals with proper handling after that.
     ///
     /// @param r: The Random object for generating randomness
+    #[allow(lint(public_random))]
     public fun hit(
         game: &mut Game,
         house_data: &mut HouseData,
@@ -269,6 +272,7 @@ module blackjack::single_player_blackjack {
     /// Dealer should keep drawing cards until the sum of the cards is greater than 17.
     ///
     /// @param r: The Random object for generating randomness
+    #[allow(lint(public_random))]
     public fun stand(
         game: &mut Game,
         house_data: &mut HouseData,

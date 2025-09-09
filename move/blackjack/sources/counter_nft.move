@@ -4,6 +4,7 @@
 /// This module implements a simple, non transferable counter NFT.
 /// Creates a counter object that can be incremented and burned.
 /// The counter NFT is non transferable, i.e. it can only be ever owned by one account.
+#[allow(duplicate_alias)]
 module blackjack::counter_nft {
     // Imports
     use sui::bcs::{Self};
@@ -18,7 +19,7 @@ module blackjack::counter_nft {
 
     // Functions
     /// Creates a new counter object & transfers it to the sender.
-    public entry fun mint_and_transfer(ctx: &mut TxContext) {
+    public fun mint_and_transfer(ctx: &mut TxContext) {
         let counter = Counter {
             id: object::new(ctx),
             count: 0
