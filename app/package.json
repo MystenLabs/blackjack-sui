@@ -7,11 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "codegen": "pnpm sui-ts-codegen generate",
-    "postinstall": "pnpm run codegen"
+    "codegen": "pnpm sui-ts-codegen generate"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
+    "@mysten/bcs": "^1.7.0",
     "@mysten/codegen": "^0.4.5",
     "@mysten/enoki": "^0.11.8",
     "@mysten/sui": "^1.37.6",
@@ -50,7 +50,6 @@
     "react-hot-toast": "^2.6.0",
     "react-slick": "^0.29.0",
     "server-only": "^0.0.1",
-    "shinami": "^0.6.0",
     "slick-carousel": "^1.8.1",
     "tailwind-merge": "^1.14.0",
     "tailwindcss-animate": "^1.0.7",

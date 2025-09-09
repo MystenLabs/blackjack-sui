@@ -137,19 +137,13 @@ export const useMakeMoveInBlackjackGame = () => {
           ({ type }) => type === "created"
         ) as SuiObjectChangeCreated[];
 
-        // TODO Verify if there is a better way to check for the created `objectType`
-        //      instead of using directly the package address
         const hitOrStandRequest = createdObjects.find(
           ({ objectType }) =>
-            objectType ===
-            `${
-              process.env.NEXT_PUBLIC_PACKAGE_ADDRESS
-            }::single_player_blackjack::${move
-              .slice(0, 1)
-              .toUpperCase()
-              .concat(move.slice(1))}Request`
+            objectType.endsWith(`${move
+                .slice(0, 1)
+                .toUpperCase()
+                .concat(move.slice(1))}Request`),
         );
-
         if (!hitOrStandRequest) {
           throw new Error(
             `No ${move}Request found in the admin's owned objects`

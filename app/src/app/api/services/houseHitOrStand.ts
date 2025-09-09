@@ -7,6 +7,7 @@ import { getGameObject } from "../helpers/getGameObject";
 import { getBLSSecreyKey } from "../helpers/getBLSSecretKey";
 import { sponsorAndSignTransaction } from "../utils/sponsorAndSignTransaction";
 import { bcs } from "@mysten/sui/bcs";
+import {enokiClient} from "@/app/api/EnokiClient";
 
 interface HouseHitOrStandProps {
   gameId: string;
@@ -56,30 +57,28 @@ export const houseHitOrStand = async ({
         tx,
         suiClient,
       });
-
-    return suiClient
-      .executeTransactionBlock({
-        transactionBlock: signedTransaction.bytes,
-        signature: [
-          signedTransaction.signature,
-          sponsoredTransaction.signature,
-        ],
-        requestType: "WaitForLocalExecution",
+    const result = await enokiClient.executeSponsoredTransaction({
+      signature: signedTransaction.signature,
+      digest: sponsoredTransaction.digest,
+    });
+    await suiClient
+      .waitForTransaction({
+        digest: result.digest,
         options: {
           showObjectChanges: true,
           showEffects: true,
           showEvents: true,
         },
       })
-      .then((resp) => {
-        const status = resp?.effects?.status.status;
-        console.log(`status: ${status}`);
-        if (status !== "success") {
-          throw new Error("Transaction failed");
-        }
-        return {
-          txDigest: resp.effects?.transactionDigest!,
-        };
-      });
+    .then((resp) => {
+      const status = resp?.effects?.status.status;
+      console.log(`status: ${status}`);
+      if (status !== "success") {
+        throw new Error("Transaction failed");
+      }
+      return {
+        txDigest: resp.effects?.transactionDigest!,
+      };
+    });
   });
 };
