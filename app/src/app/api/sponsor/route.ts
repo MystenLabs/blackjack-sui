@@ -20,8 +20,9 @@ export async function POST(req: NextRequest) {
       ],
       allowedMoveCallTargets: [
         // These are only player interactions
-        getMoveTarget('do_hit'),
-        getMoveTarget('do_stand'),
+        getMoveTarget('single_player_blackjack', 'do_hit'),
+        getMoveTarget('single_player_blackjack', 'do_stand'),
+        getMoveTarget('counter_nft', 'mint_and_transfer'),
       ],
     });
 

@@ -1,3 +1,4 @@
-const getMoveTarget = (name: string) => `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::${name}`;
+
+const getMoveTarget = (pkg: string, fun: string) => `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::${pkg}::${fun}`;
 
 export default getMoveTarget;
