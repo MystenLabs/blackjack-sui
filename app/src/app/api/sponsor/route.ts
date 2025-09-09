@@ -1,19 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enokiClient } from "../EnokiClient";
 import { Transaction } from "@mysten/sui/transactions";
+import serverConfig from "@/config/serverConfig";
+import {getAddress} from "@/app/api/helpers/getAddress";
+import {firstDeal} from "@/__generated__/blackjack/single_player_blackjack";
+import getMoveTarget from "@/helpers/getMoveTarget";
 
 export async function POST(req: NextRequest) {
   try {
     const { transactionKindBytes, sender } = await req.json();
 
     const sponsored = await enokiClient.createSponsoredTransaction({
-      network: process.env.NEXT_PUBLIC_SUI_NETWORK_NAME as
-        | "mainnet"
-        | "testnet"
-        | "devnet",
+      network: serverConfig.NEXT_PUBLIC_SUI_NETWORK_NAME,
       transactionKindBytes,
       sender: sender,
-      allowedAddresses: [sender],
+      allowedAddresses: [
+          sender,
+          getAddress(serverConfig.ADMIN_SECRET_KEY),
+      ],
+      allowedMoveCallTargets: [
+        // These are only player interactions
+        getMoveTarget('do_hit'),
+        getMoveTarget('do_stand'),
+      ],
     });
 
     return NextResponse.json({

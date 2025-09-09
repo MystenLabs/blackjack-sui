@@ -5,9 +5,9 @@ import { GameOnChain } from "@/types/GameOnChain";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useEnokiFlow, useZkLogin } from "@mysten/enoki/react";
-import { fromB64, toB64 } from "@mysten/sui/utils";
 import { useSui } from "./useSui";
 import { doHit, doStand } from "@/__generated__/blackjack/single_player_blackjack";
+import { fromBase64, toBase64 } from "@mysten/bcs";
 
 interface HandleHitOrStandProps {
   move: "hit" | "stand";
@@ -74,7 +74,7 @@ export const useMakeMoveInBlackjackGame = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            transactionKindBytes: toB64(txBytes),
+            transactionKindBytes: toBase64(txBytes),
             sender: address,
           }),
         });
@@ -94,7 +94,7 @@ export const useMakeMoveInBlackjackGame = () => {
         });
 
         const { signature } = await signer.signTransaction(
-          fromB64(sponsoredBytes)
+          fromBase64(sponsoredBytes)
         );
 
         // Step 4: Send signed TxBytes and txDigest back to the backend for execution

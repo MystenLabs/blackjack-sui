@@ -4,6 +4,8 @@ import { getKeypair } from "../helpers/getKeyPair";
 import { enokiClient } from "@/app/api/EnokiClient";
 import serverConfig from "@/config/serverConfig";
 import { toBase64 } from "@mysten/bcs";
+import {getAddress} from "@/app/api/helpers/getAddress";
+import getMoveTarget from "@/helpers/getMoveTarget";
 
 interface SponsorAndSignTransactionProps {
   suiClient: SuiClient;
@@ -23,7 +25,14 @@ export const sponsorAndSignTransaction = async ({
   const sponsoredTransaction = await enokiClient.createSponsoredTransaction({
     network: serverConfig.NEXT_PUBLIC_SUI_NETWORK_NAME,
     transactionKindBytes: toBase64(txBytes),
-    sender: adminKeypair.toSuiAddress(),
+    sender: getAddress(serverConfig.ADMIN_SECRET_KEY),
+    allowedAddresses: [getAddress(serverConfig.ADMIN_SECRET_KEY)],
+    allowedMoveCallTargets: [
+      // dealer interactions
+      getMoveTarget('first_deal'),
+      getMoveTarget('hit'),
+      getMoveTarget('stand'),
+    ],
   });
 
   const signedTransaction = await adminKeypair.signTransaction(
