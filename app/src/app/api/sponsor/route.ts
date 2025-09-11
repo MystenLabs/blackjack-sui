@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
         // These are only player interactions
         getMoveTarget('single_player_blackjack', 'do_hit'),
         getMoveTarget('single_player_blackjack', 'do_stand'),
+        getMoveTarget('single_player_blackjack', 'place_bet_and_create_game'),
         getMoveTarget('counter_nft', 'mint_and_transfer'),
       ],
     });

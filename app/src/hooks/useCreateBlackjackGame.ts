@@ -1,12 +1,13 @@
 import { useCallback, useState } from "react";
 import { useSui } from "./useSui";
-import { Transaction } from "@mysten/sui/transactions";
+import { coinWithBalance, Transaction } from "@mysten/sui/transactions";
 import { SuiObjectChangeCreated } from "@mysten/sui/client";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { useEnokiFlow } from "@mysten/enoki/react";
+import {useEnokiFlow, useZkLogin} from "@mysten/enoki/react";
 import { MIST_PER_SUI } from "@mysten/sui/utils";
 import { placeBetAndCreateGame } from '@/__generated__/blackjack/single_player_blackjack';
+import useSponsoredTransaction from "@/hooks/useSponsoredTransaction";
 
 interface HandleCreateGameSuccessResponse {
   gameId: string;
@@ -14,8 +15,8 @@ interface HandleCreateGameSuccessResponse {
 }
 
 export const useCreateBlackjackGame = () => {
-  const { suiClient } = useSui();
-  const enokiFlow = useEnokiFlow();
+  const { address } = useZkLogin();
+  const { sponsorAndSignTransaction } = useSponsoredTransaction();
   const [isCreateGameLoading, setIsCreateGameLoading] = useState(false);
   const [isInitialDealLoading, setIsInitialDealLoading] = useState(false);
 
@@ -24,65 +25,54 @@ export const useCreateBlackjackGame = () => {
       counterId: string | null,
       reFetchGame: (gameId: string, txDigest?: string) => Promise<void>
     ): Promise<HandleCreateGameSuccessResponse | null> => {
-      if (!counterId) {
-        toast.error("You need to own a Counter NFT to play");
-        return null;
-      }
-      console.log("Creating game...");
-      setIsCreateGameLoading(true);
       const tx = new Transaction();
-      const betAmountCoin = tx.splitCoins(tx.gas, [tx.pure.u64(0.2 * Number(MIST_PER_SUI))]);
-      tx.add(placeBetAndCreateGame({
-        arguments: [
-          betAmountCoin,
-          tx.object(process.env.NEXT_PUBLIC_HOUSE_DATA_ID!),
-        ],
-      }))
-      console.log("Executing transaction...");
-      const signer = await enokiFlow.getKeypair({network: "testnet"});
-      return suiClient.signAndExecuteTransaction({
-        transaction: tx,
-        signer: signer as any,
-        requestType: "WaitForLocalExecution",
-        options: {
-          showObjectChanges: true,
-          showEffects: true,
-        },
-      })
-        .then((resp) => {
-          const status = resp?.effects?.status.status;
-          if (status !== "success") {
-            console.log(resp.effects);
-            throw new Error("Game not created");
-          }
-          const createdObjects = resp.objectChanges?.filter(
-            ({ type }) => type === "created"
-          ) as SuiObjectChangeCreated[];
-          const createdGame = createdObjects.find(({ objectType }) =>
-            objectType.endsWith("single_player_blackjack::Game")
-          );
-          if (!createdGame) {
-            throw new Error("Game not created");
-          }
-          const { objectId } = createdGame;
-          console.log("Created game id:", objectId);
-          reFetchGame(objectId, resp.effects?.transactionDigest!);
-          setIsCreateGameLoading(false);
-          setIsInitialDealLoading(true);
-          toast.success("Game created!");
-          return makeInitialDealRequest({
-            gameId: objectId,
-            txDigest: resp.effects?.transactionDigest!,
+      tx.setSender(address!)
+
+      const betAmountCoin = coinWithBalance({ balance: BigInt(0.2 * Number(MIST_PER_SUI)), useGasCoin: false })(tx);
+      tx.add(
+          placeBetAndCreateGame({
+            arguments: [
+              betAmountCoin,
+              tx.object(process.env.NEXT_PUBLIC_HOUSE_DATA_ID!),
+            ],
+          }),
+      );
+
+      return sponsorAndSignTransaction(tx, address!)
+          .then((resp) => {
+            const status = resp?.effects?.status.status;
+            if (status !== "success") {
+              console.log(resp.effects);
+              throw new Error("Game not created");
+            }
+            const createdObjects = resp.objectChanges?.filter(
+                ({ type }) => type === "created"
+            ) as SuiObjectChangeCreated[];
+            const createdGame = createdObjects.find(({ objectType }) =>
+                objectType.endsWith("single_player_blackjack::Game")
+            );
+            if (!createdGame) {
+              throw new Error("Game not created");
+            }
+            const { objectId } = createdGame;
+            console.log("Created game id:", objectId);
+            reFetchGame(objectId, resp.effects?.transactionDigest!);
+            setIsCreateGameLoading(false);
+            setIsInitialDealLoading(true);
+            toast.success("Game created!");
+            return makeInitialDealRequest({
+              gameId: objectId,
+              txDigest: resp.effects?.transactionDigest!,
+            });
+          })
+          .catch((err) => {
+            console.log(err);
+            setIsCreateGameLoading(false);
+            toast.error("Game creation failed");
+            return null;
           });
-        })
-        .catch((err) => {
-          console.log(err);
-          setIsCreateGameLoading(false);
-          toast.error("Game creation failed");
-          return null;
-        });
     },
-    []
+    [address, sponsorAndSignTransaction]
   );
 
   // Passes the txDigest from the game creation tx to the API
