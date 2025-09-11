@@ -25,10 +25,6 @@ const HomePage = () => {
     handleCreateGame,
     isCreateGameLoading,
     isInitialDealLoading,
-    counterId,
-    isCounterIdLoading,
-    isCreateCounterLoading,
-    handleCreateCounter,
     handleHit,
     handleStand,
     isMoveLoading,
@@ -58,17 +54,10 @@ const HomePage = () => {
     return <SignInBanner />;
   }
 
-  if (isCounterIdLoading) {
-    return <Spinner />;
-  }
-
-  if (balance.isLessThan(BigNumber(0.5)) || !counterId || !game) {
+  if (balance.isLessThan(BigNumber(0.5)) || !game) {
     return (
       <SetupGame
         balance={balance}
-        counterId={counterId}
-        handleCreateCounter={handleCreateCounter}
-        isCreateCounterLoading={isCreateCounterLoading}
         game={game}
         isLoading={isLoading}
         handleCreateGame={handleCreateGame}

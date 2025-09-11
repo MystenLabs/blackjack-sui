@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { GameOnChain } from "@/types/GameOnChain";
 import { useSui } from "./useSui";
-import { usePlayerCounter } from "./usePlayerCounter";
 import { getGameObject } from "@/utils/getGameObject";
 import { useCreateBlackjackGame } from "./useCreateBlackjackGame";
 import { useMakeMoveInBlackjackGame } from "./useMakeMoveInBlackjackGame";
@@ -12,12 +11,6 @@ export const useBlackjackGame = () => {
   const { suiClient } = useSui();
   const [game, setGame] = useState<GameOnChain | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const {
-    counterId,
-    handleCreateCounter,
-    isLoading: isCounterIdLoading,
-    isCreateLoading: isCreateCounterLoading,
-  } = usePlayerCounter();
   const { handleCreateGameAndDeal, isCreateGameLoading, isInitialDealLoading } =
     useCreateBlackjackGame();
   const { handleHitOrStand, isMoveLoading } = useMakeMoveInBlackjackGame();
@@ -59,7 +52,7 @@ export const useBlackjackGame = () => {
   };
 
   const handleCreateGameAndRefresh = async () => {
-    handleCreateGameAndDeal(counterId, reFetchGame).then(
+    handleCreateGameAndDeal(reFetchGame).then(
       (resp) => {
         if (!resp) {
           return;
@@ -81,13 +74,9 @@ export const useBlackjackGame = () => {
   return {
     game,
     isLoading,
-    counterId,
-    isCounterIdLoading,
-    isCreateCounterLoading,
-    handleCreateCounter,
     isCreateGameLoading,
     isInitialDealLoading,
-    canCreateGame: !isLoading && !isCounterIdLoading && !game?.id.id,
+    canCreateGame: !isLoading && !game?.id.id,
     handleCreateGame: handleCreateGameAndRefresh,
     isMoveLoading,
     handleHit: () => handleMakeMoveAndRefresh("hit"),

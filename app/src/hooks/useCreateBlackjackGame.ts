@@ -4,7 +4,7 @@ import { coinWithBalance, Transaction } from "@mysten/sui/transactions";
 import { SuiObjectChangeCreated } from "@mysten/sui/client";
 import toast from "react-hot-toast";
 import axios from "axios";
-import {useEnokiFlow, useZkLogin} from "@mysten/enoki/react";
+import { useZkLogin } from "@mysten/enoki/react";
 import { MIST_PER_SUI } from "@mysten/sui/utils";
 import { placeBetAndCreateGame } from '@/__generated__/blackjack/single_player_blackjack';
 import useSponsoredTransaction from "@/hooks/useSponsoredTransaction";
@@ -21,10 +21,7 @@ export const useCreateBlackjackGame = () => {
   const [isInitialDealLoading, setIsInitialDealLoading] = useState(false);
 
   const handleCreateGameAndDeal = useCallback(
-    async (
-      counterId: string | null,
-      reFetchGame: (gameId: string, txDigest?: string) => Promise<void>
-    ): Promise<HandleCreateGameSuccessResponse | null> => {
+    async (reFetchGame: (gameId: string, txDigest?: string) => Promise<void>): Promise<HandleCreateGameSuccessResponse | null> => {
       const tx = new Transaction();
       tx.setSender(address!)
 

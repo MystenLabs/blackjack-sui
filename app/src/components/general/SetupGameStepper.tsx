@@ -25,7 +25,6 @@ export const SetupGameStepper = ({ step }: SetupGameStepperProps) => {
       <Stepper
         steps={[
           { label: "Top Up" },
-          { label: "Get Counter NFT" },
           { label: "Prepare Game" },
         ]}
         activeStep={step}
