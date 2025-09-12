@@ -4,8 +4,6 @@ import { useCallback, useState } from "react";
 import { GameOnChain } from "@/types/GameOnChain";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { useEnokiFlow, useZkLogin } from "@mysten/enoki/react";
-import { useSui } from "./useSui";
 import { doHit, doStand } from "@/__generated__/blackjack/single_player_blackjack";
 import useSponsoredTransaction from "@/hooks/useSponsoredTransaction";
 
@@ -29,7 +27,6 @@ interface OnRequestMoveSuccessProps {
 
 export const useMakeMoveInBlackjackGame = () => {
   const { sponsorAndSignTransaction } = useSponsoredTransaction();
-  const { address } = useZkLogin();
   const [isMoveLoading, setIsMoveLoading] = useState(false);
 
   const handleHitOrStand = useCallback(
@@ -63,7 +60,7 @@ export const useMakeMoveInBlackjackGame = () => {
           tx.pure.address(process.env.NEXT_PUBLIC_ADMIN_ADDRESS!)
         );
 
-        const transactionResult = await sponsorAndSignTransaction(tx, address!);
+        const transactionResult = await sponsorAndSignTransaction(tx);
 
         if (transactionResult.effects?.status?.status !== "success") {
           throw new Error("Transaction failed");

@@ -4,10 +4,10 @@ import { useSui } from "./useSui";
 import { getGameObject } from "@/utils/getGameObject";
 import { useCreateBlackjackGame } from "./useCreateBlackjackGame";
 import { useMakeMoveInBlackjackGame } from "./useMakeMoveInBlackjackGame";
-import { useZkLogin } from "@mysten/enoki/react";
+import {useCurrentAccount} from "@mysten/dapp-kit";
 
 export const useBlackjackGame = () => {
-  const { address } = useZkLogin();
+  const currentAccount = useCurrentAccount();
   const { suiClient } = useSui();
   const [game, setGame] = useState<GameOnChain | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +22,7 @@ export const useBlackjackGame = () => {
 
   useEffect(() => {
     handleRestart();
-  }, [address]);
+  }, [currentAccount]);
 
   // Receives the txDigest of the transaction that updated the game
   // Waits for this transaction block, and then re-fetches the game object

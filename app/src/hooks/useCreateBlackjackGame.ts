@@ -1,13 +1,12 @@
 import { useCallback, useState } from "react";
-import { useSui } from "./useSui";
 import { coinWithBalance, Transaction } from "@mysten/sui/transactions";
 import { SuiObjectChangeCreated } from "@mysten/sui/client";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { useZkLogin } from "@mysten/enoki/react";
 import { MIST_PER_SUI } from "@mysten/sui/utils";
 import { placeBetAndCreateGame } from '@/__generated__/blackjack/single_player_blackjack';
 import useSponsoredTransaction from "@/hooks/useSponsoredTransaction";
+import { useCurrentAccount } from "@mysten/dapp-kit";
 
 interface HandleCreateGameSuccessResponse {
   gameId: string;
@@ -15,15 +14,19 @@ interface HandleCreateGameSuccessResponse {
 }
 
 export const useCreateBlackjackGame = () => {
-  const { address } = useZkLogin();
+  const currentAccount = useCurrentAccount();
   const { sponsorAndSignTransaction } = useSponsoredTransaction();
   const [isCreateGameLoading, setIsCreateGameLoading] = useState(false);
   const [isInitialDealLoading, setIsInitialDealLoading] = useState(false);
 
   const handleCreateGameAndDeal = useCallback(
     async (reFetchGame: (gameId: string, txDigest?: string) => Promise<void>): Promise<HandleCreateGameSuccessResponse | null> => {
+      if (!currentAccount) {
+        throw new Error('No account is available for creating the game');
+      }
+
       const tx = new Transaction();
-      tx.setSender(address!)
+      tx.setSender(currentAccount.address)
 
       const betAmountCoin = coinWithBalance({ balance: BigInt(0.2 * Number(MIST_PER_SUI)), useGasCoin: false })(tx);
       tx.add(
@@ -35,7 +38,7 @@ export const useCreateBlackjackGame = () => {
           }),
       );
 
-      return sponsorAndSignTransaction(tx, address!)
+      return sponsorAndSignTransaction(tx)
           .then((resp) => {
             const status = resp?.effects?.status.status;
             if (status !== "success") {
@@ -69,7 +72,7 @@ export const useCreateBlackjackGame = () => {
             return null;
           });
     },
-    [address, sponsorAndSignTransaction]
+    [currentAccount, sponsorAndSignTransaction]
   );
 
   // Passes the txDigest from the game creation tx to the API
