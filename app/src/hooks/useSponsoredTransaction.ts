@@ -2,12 +2,12 @@ import { useCallback } from "react";
 import { toBase64 } from "@mysten/bcs";
 import { Transaction } from "@mysten/sui/transactions";
 import { useSui } from "./useSui";
-import { useCurrentAccount, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
+import { useCurrentAccount, useSignTransaction } from '@mysten/dapp-kit';
 
 export default function useSponsoredTransaction() {
 	const { suiClient } = useSui();
 	const currentAccount = useCurrentAccount();
-	const { mutateAsync: signAndExecuteTransaction } = useSignAndExecuteTransaction();
+	const { mutateAsync: signTransaction } = useSignTransaction();
 
 	const sponsorAndSignTransaction = useCallback(async (tx: Transaction) => {
 		if (!currentAccount) {
@@ -32,14 +32,32 @@ export default function useSponsoredTransaction() {
 		if (!sponsorResponse.ok) {
 			throw new Error("Failed to sponsor transaction");
 		}
-		const { bytes: sponsoredBytes } = await sponsorResponse.json();
+		const { bytes: sponsoredBytes, digest: sponsoredDigest } = await sponsorResponse.json();
 
-		const { digest: executedDigest } = await signAndExecuteTransaction({
+		// 3) Sign the sponsored TxBytes
+		const { signature } = await signTransaction({
 			transaction: sponsoredBytes,
 		});
+
+		// 4) Execute the sponsored + signed TxBytes
+		const execResp = await fetch("/api/execute", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ digest: sponsoredDigest, signature }),
+		});
+
+		if (!execResp.ok) {
+			throw new Error(`Failed to execute transaction: ${execResp.status}`);
+			return;
+		}
+
+		const { digest: executedDigest } = (await execResp.json()) as {
+			digest: string;
+		};
+
 		await suiClient.waitForTransaction({
 			digest: executedDigest,
-			timeout: 60_000,
+			timeout: 10_000,
 		});
 
 		return suiClient
@@ -52,7 +70,7 @@ export default function useSponsoredTransaction() {
 				},
 			});
 
-	}, [currentAccount, signAndExecuteTransaction, suiClient]);
+	}, [currentAccount, signTransaction, suiClient]);
 
 	return {
 		sponsorAndSignTransaction,
