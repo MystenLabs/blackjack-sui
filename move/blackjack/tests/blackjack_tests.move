@@ -943,4 +943,191 @@ module blackjack::single_player_blackjack_tests {
             test_scenario::return_shared(house_data);
         };
     }
+
+    // Test get_next_random_card function to ensure no duplicate cards
+    #[test]
+    fun test_get_next_random_card_no_duplicates() {
+        let mut scenario = test_scenario::begin(ADMIN);
+
+        // Initialize house data and game
+        scenario.initialize_house_data_for_test(ADMIN, INITIAL_HOUSE_BALANCE);
+        scenario.initialize_game_for_test(PLAYER, PLAYER_BET);
+
+        scenario.next_tx(@0x0);
+        {
+            // Create Random object
+            sui::random::create_for_testing(scenario.ctx());
+        };
+
+        scenario.next_tx(ADMIN);
+        {
+            let mut game = scenario.take_shared<Game>();
+            let random = scenario.take_shared<sui::random::Random>();
+            
+            // Create random generator
+            let mut random_generator = sui::random::new_generator(&random, scenario.ctx());
+            
+            // Track all drawn cards
+            let mut drawn_cards = vector<u8>[];
+            let mut duplicate_found = false;
+            
+            // Draw all 52 cards from the deck
+            let mut i = 0;
+            while (i < 52) {
+                let card = bj::get_next_random_card_for_test(&mut game, &mut random_generator);
+                
+                // Check if this card was already drawn
+                let mut j = 0;
+                while (j < drawn_cards.length()) {
+                    if (drawn_cards[j] == card) {
+                        duplicate_found = true;
+                        break
+                    };
+                    j = j + 1;
+                };
+                
+                // If duplicate found, break out of loop
+                if (duplicate_found) {
+                    break
+                };
+                
+                // Add card to drawn cards list
+                drawn_cards.push_back(card);
+                
+                i = i + 1;
+            };
+            
+            // Assertions
+            assert!(!duplicate_found, 1); // No duplicate cards should be found
+            assert!(drawn_cards.length() == 52, 2); // All 52 cards should be drawn
+            assert!(game.used_cards().length() == 52, 3); // All 52 cards should be marked as used
+            
+            // Verify all cards are in valid range [0-51]
+            let mut k = 0;
+            while (k < drawn_cards.length()) {
+                assert!(drawn_cards[k] <= 51, 4);
+                k = k + 1;
+            };
+            
+            test_scenario::return_shared(random);
+            test_scenario::return_shared(game);
+        };
+
+        scenario.end();
+    }
+
+    // Test get_next_random_card function with partial deck
+    #[test]
+    fun test_get_next_random_card_partial_deck() {
+        let mut scenario = test_scenario::begin(ADMIN);
+
+        // Initialize house data and game
+        scenario.initialize_house_data_for_test(ADMIN, INITIAL_HOUSE_BALANCE);
+        scenario.initialize_game_for_test(PLAYER, PLAYER_BET);
+
+        scenario.next_tx(@0x0);
+        {
+            // Create Random object
+            sui::random::create_for_testing(scenario.ctx());
+        };
+
+        scenario.next_tx(ADMIN);
+        {
+            let mut game = scenario.take_shared<Game>();
+            let random = scenario.take_shared<sui::random::Random>();
+            
+            // Create random generator
+            let mut random_generator = sui::random::new_generator(&random, scenario.ctx());
+            
+            // Manually add some cards to used_cards to simulate partial deck
+            bj::add_used_card_for_test(&mut game, 5);   // Add card 5
+            bj::add_used_card_for_test(&mut game, 10);  // Add card 10
+            bj::add_used_card_for_test(&mut game, 25);  // Add card 25
+            
+            // Track drawn cards
+            let mut drawn_cards = vector<u8>[];
+            
+            // Draw 10 cards
+            let mut i = 0;
+            while (i < 10) {
+                let card = bj::get_next_random_card_for_test(&mut game, &mut random_generator);
+                drawn_cards.push_back(card);
+                i = i + 1;
+            };
+            
+            // Verify no duplicates
+            let mut j = 0;
+            let mut duplicate_found = false;
+            while (j < drawn_cards.length()) {
+                let mut k = j + 1;
+                while (k < drawn_cards.length()) {
+                    if (drawn_cards[j] == drawn_cards[k]) {
+                        duplicate_found = true;
+                        break
+                    };
+                    k = k + 1;
+                };
+                if (duplicate_found) {
+                    break
+                };
+                j = j + 1;
+            };
+            
+            // Assertions
+            assert!(!duplicate_found, 1); // No duplicate cards should be found
+            assert!(drawn_cards.length() == 10, 2); // Should draw exactly 10 cards
+            assert!(game.used_cards().length() == 13, 3); // Should have 13 total used cards (3 + 10)
+            
+            // Verify none of the drawn cards are the pre-used cards
+            let mut l = 0;
+            while (l < drawn_cards.length()) {
+                assert!(drawn_cards[l] != 5, 4);
+                assert!(drawn_cards[l] != 10, 5);
+                assert!(drawn_cards[l] != 25, 6);
+                l = l + 1;
+            };
+            
+            test_scenario::return_shared(random);
+            test_scenario::return_shared(game);
+        };
+
+        scenario.end();
+    }
+
+    // Test get_next_random_card function edge case - full deck
+    #[test]
+    #[expected_failure]
+    fun test_get_next_random_card_full_deck_abort() {
+        let mut scenario = test_scenario::begin(ADMIN);
+
+        // Initialize house data and game
+        scenario.initialize_house_data_for_test(ADMIN, INITIAL_HOUSE_BALANCE);
+        scenario.initialize_game_for_test(PLAYER, PLAYER_BET);
+
+        scenario.next_tx(@0x0);
+        {
+            // Create Random object
+            sui::random::create_for_testing(scenario.ctx());
+        };
+
+        scenario.next_tx(ADMIN);
+        {
+            let mut game = scenario.take_shared<Game>();
+            let random = scenario.take_shared<sui::random::Random>();
+            
+            // Create random generator
+            let mut random_generator = sui::random::new_generator(&random, scenario.ctx());
+            
+            // Manually mark all 52 cards as used
+            bj::mark_all_cards_used_for_test(&mut game);
+            
+            // Try to draw one more card - should abort after max attempts
+            let _card = bj::get_next_random_card_for_test(&mut game, &mut random_generator);
+            
+            test_scenario::return_shared(random);
+            test_scenario::return_shared(game);
+        };
+
+        scenario.end();
+    }
 }

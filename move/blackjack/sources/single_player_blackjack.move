@@ -703,4 +703,26 @@ module blackjack::single_player_blackjack {
     ) {
         tie_post_handling(game, house_data, ctx);
     }
+
+    #[test_only]
+    public fun get_next_random_card_for_test(
+        game: &mut Game,
+        random_generator: &mut RandomGenerator
+    ): u8 {
+        get_next_random_card(random_generator, game)
+    }
+
+    #[test_only]
+    public fun add_used_card_for_test(game: &mut Game, card: u8) {
+        game.used_cards.push_back(card);
+    }
+
+    #[test_only]
+    public fun mark_all_cards_used_for_test(game: &mut Game) {
+        let mut i = 0;
+        while (i < 52) {
+            game.used_cards.push_back(i);
+            i = i + 1;
+        };
+    }
 }
