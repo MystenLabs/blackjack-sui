@@ -5,7 +5,7 @@ module blackjack::single_player_blackjack {
     use sui::random::{Self, Random, RandomGenerator};
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
-    use sui::event::{Self};
+    use sui::event;
     use sui::sui::SUI;
     use sui::object::{Self, ID, UID};
     use sui::transfer;
@@ -229,6 +229,9 @@ module blackjack::single_player_blackjack {
     ///
     /// Function checks if the latest draw has caused the player to bust and deals with proper handling after that.
     ///
+    /// @param game: The Game object
+    /// @param house_data: The HouseData object
+    /// @param hit_request: The HitRequest object
     /// @param r: The Random object for generating randomness
     #[allow(lint(public_random))]
     public fun hit(
@@ -271,6 +274,9 @@ module blackjack::single_player_blackjack {
     ///
     /// Dealer should keep drawing cards until the sum of the cards is greater than 17.
     ///
+    /// @param game: The Game object
+    /// @param house_data: The HouseData object
+    /// @param stand_request: The StandRequest object
     /// @param r: The Random object for generating randomness
     #[allow(lint(public_random))]
     public fun stand(
@@ -327,6 +333,7 @@ module blackjack::single_player_blackjack {
 
     /// Function to be called by user who wants to ask for a hit.
     /// @param game: The Game object
+    /// @param current_player_sum: The current sum of player's cards
     public fun do_hit(game: &mut Game, current_player_sum: u8, ctx: &mut TxContext): HitRequest {
         assert!(game.status == IN_PROGRESS, EGameHasFinished);
         assert!(ctx.sender() == game.player, EUnauthorizedPlayer);
@@ -342,6 +349,7 @@ module blackjack::single_player_blackjack {
 
     /// Function to be called by user who wants to stand.
     /// @param game: The Game object
+    /// @param current_player_sum: The current sum of player's cards
     public fun do_stand(game: &mut Game, current_player_sum: u8, ctx: &mut TxContext): StandRequest {
         assert!(game.status == IN_PROGRESS, EGameHasFinished);
         assert!(ctx.sender() == game.player, EUnauthorizedPlayer);
@@ -433,18 +441,13 @@ module blackjack::single_player_blackjack {
             // Generate a random number between 0 and 51 (52 cards total)
             let card = random::generate_u8_in_range(random_generator, 0, 51);
             
-            // Check if this card has already been used
+            // Check if this card has already been used using macro
             let mut is_used = false;
-            let mut i = 0;
-            let used_cards_len = game.used_cards.length();
-            
-            while (i < used_cards_len) {
-                if (game.used_cards[i] == card) {
+            game.used_cards.do_ref!(|used_card| {
+                if (*used_card == card) {
                     is_used = true;
-                    break
-                };
-                i = i + 1;
-            };
+                }
+            });
             
             // If card is not used, mark it as used and return it
             if (!is_used) {
@@ -528,14 +531,11 @@ module blackjack::single_player_blackjack {
 
     fun get_card_sum(cards: &vector<u8>): u8 {
         let mut sum: u8 = 0;
-        let mut i: u8 = 0;
-        let n: u8 = (cards.length() as u8);
         let mut has_ace = false;
 
-        while (i < n) {
-            let cardIndex = cards[i as u64];
-
-            let mut value = (cardIndex % 13) + 1 ;  // this constraints index to the space [1-13]
+        // Use macro to iterate over cards
+        cards.do_ref!(|card_index| {
+            let mut value = (*card_index % 13) + 1;  // this constrains index to the space [1-13]
             // 1 = Ace
             // 2 = 2
             // 3 = 3
@@ -554,9 +554,7 @@ module blackjack::single_player_blackjack {
             };
 
             sum = sum + value;
-
-            i = i + 1;
-        };
+        });
 
         //We need to take care of the Aces case where value = 1 or 11 depending on the sum
         if (has_ace && sum + 10 <= 21) {
@@ -670,11 +668,11 @@ module blackjack::single_player_blackjack {
         is_dealer: bool
     ) {
         if (!is_dealer) {
-            assert!(!game.player_cards.is_empty(), 0);
+            assert!(!game.player_cards.is_empty());
             game.player_cards.pop_back();
             game.player_sum = get_card_sum(&game.player_cards);
         } else {
-            assert!(!game.dealer_cards.is_empty(), 0);
+            assert!(!game.dealer_cards.is_empty());
             game.dealer_cards.pop_back();
             game.dealer_sum = get_card_sum(&game.dealer_cards);
         };
