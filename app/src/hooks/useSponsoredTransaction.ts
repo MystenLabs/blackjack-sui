@@ -48,7 +48,6 @@ export default function useSponsoredTransaction() {
 
 		if (!execResp.ok) {
 			throw new Error(`Failed to execute transaction: ${execResp.status}`);
-			return;
 		}
 
 		const { digest: executedDigest } = (await execResp.json()) as {
