@@ -9,7 +9,7 @@ const NewGamePage = () => {
 
   useEffect(() => {
     router.push("/");
-  }, []);
+  }, [router]);
 
   return <Spinner />;
 };

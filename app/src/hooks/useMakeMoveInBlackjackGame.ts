@@ -103,7 +103,7 @@ export const useMakeMoveInBlackjackGame = () => {
         setIsMoveLoading(false);
       }
     },
-    []
+    [sponsorAndSignTransaction]
   );
 
   const onRequestMoveSuccess = async ({
