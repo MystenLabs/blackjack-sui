@@ -50,8 +50,6 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [PoC Template
 - Forms:
   - [React hook form](https://react-hook-form.com/)
   - [Zod](https://zod.dev/)
-- Carousels:
-  - [React slick](https://www.npmjs.com/package/react-slick)
 - PWA:
   - [Next PWA](https://www.npmjs.com/package/next-pwa)
 
