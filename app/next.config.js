@@ -17,6 +17,15 @@ const nextConfig = {
       },
     ],
   },
+  webpack: webpackConfig => {
+    webpackConfig.resolve.extensionAlias = {
+      // This is a workaround to fix issue with loading files with SWC (Next.js) compiler
+      // https://github.com/vercel/next.js/discussions/32237
+      '.js': ['.ts', '.js'],
+    }
+
+    return webpackConfig
+  },
 };
 
 module.exports = withPWA(nextConfig);

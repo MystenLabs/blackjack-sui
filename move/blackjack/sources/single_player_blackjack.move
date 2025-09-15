@@ -188,8 +188,7 @@ public fun place_bet_and_create_game(
 ///
 /// @param game: The Game object
 /// @param r: The Random object for generating randomness
-#[allow(lint(public_random))]
-public fun first_deal(game: &mut Game, r: &Random, ctx: &mut TxContext) {
+entry fun first_deal(game: &mut Game, r: &Random, ctx: &mut TxContext) {
     //Check that deal hasn't already happened.
     assert!(game.player_sum == 0, EDealAlreadyHappened);
 
@@ -226,8 +225,7 @@ public fun first_deal(game: &mut Game, r: &Random, ctx: &mut TxContext) {
 /// @param house_data: The HouseData object
 /// @param hit_request: The HitRequest object
 /// @param r: The Random object for generating randomness
-#[allow(lint(public_random))]
-public fun hit(
+entry fun hit(
     game: &mut Game,
     house_data: &mut HouseData,
     hit_request: HitRequest,
@@ -270,8 +268,7 @@ public fun hit(
 /// @param house_data: The HouseData object
 /// @param stand_request: The StandRequest object
 /// @param r: The Random object for generating randomness
-#[allow(lint(public_random))]
-public fun stand(
+entry fun stand(
     game: &mut Game,
     house_data: &mut HouseData,
     stand_request: StandRequest,

@@ -12,7 +12,7 @@
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
     "@mysten/bcs": "^1.7.0",
-    "@mysten/codegen": "^0.4.5",
+    "@mysten/codegen": "^0.5.0",
     "@mysten/dapp-kit": "^0.18.0",
     "@mysten/enoki": "^0.11.8",
     "@mysten/sui": "^1.37.6",
