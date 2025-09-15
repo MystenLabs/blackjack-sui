@@ -1,5 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  plugins: {
+    '@tailwindcss/postcss': {},
+  },
+
   darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
