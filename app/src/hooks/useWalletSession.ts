@@ -22,11 +22,9 @@ export default function useWalletSession() {
 			}
 
 			const session = await getSession(googleWallet);
-			if (!session?.jwt) {
-				throw new Error('Session JWT not available');
+			if (session?.jwt) {
+				setJwt(session.jwt);
 			}
-
-			setJwt(session.jwt);
 		})();
 	}, [wallets, currentAccount]);
 
