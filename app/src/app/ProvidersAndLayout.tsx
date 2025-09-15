@@ -4,11 +4,10 @@ import { LargeScreenLayout } from "@/components/layouts/LargeScreenLayout";
 import { BalanceProvider } from "@/contexts/BalanceContext";
 import { useRegisterServiceWorker } from "@/hooks/useRegisterServiceWorker";
 import { ChildrenProps } from "@/types/ChildrenProps";
-import React, {useEffect} from "react";
+import React from "react";
 import { Toaster } from "react-hot-toast";
-import {createNetworkConfig, SuiClientProvider, useSuiClientContext, WalletProvider} from "@mysten/dapp-kit";
+import {createNetworkConfig, SuiClientProvider, WalletProvider} from "@mysten/dapp-kit";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
-import {isEnokiNetwork, registerEnokiWallets} from "@mysten/enoki";
 import EnokiWalletProvider from "@/contexts/EnokiWalletProvider";
 
 // Config options for the networks you want to connect to

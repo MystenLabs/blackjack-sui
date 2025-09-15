@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enokiClient } from "../EnokiClient";
-import { Transaction } from "@mysten/sui/transactions";
 import serverConfig from "@/config/serverConfig";
-import {getAddress} from "@/app/api/helpers/getAddress";
-import {firstDeal} from "@/__generated__/blackjack/single_player_blackjack";
 import getMoveTarget from "@/helpers/getMoveTarget";
 
 export async function POST(req: NextRequest) {

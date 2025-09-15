@@ -1,4 +1,3 @@
-import {fromBase64, toBase64} from "@mysten/bcs";
 import { SuiClient } from "@mysten/sui/src/client";
 import { Transaction} from "@mysten/sui/src/transactions";
 
