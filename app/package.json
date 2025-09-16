@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "codegen": "pnpm sui-ts-codegen generate"
   },
   "dependencies": {
@@ -45,6 +45,8 @@
     "zod": "^4.1.8"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.35.0",
     "@tailwindcss/postcss": "^4.1.13",
     "@types/node": "24.5.0",
     "@types/react": "19.1.13",
