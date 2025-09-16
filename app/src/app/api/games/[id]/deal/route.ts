@@ -9,7 +9,7 @@ export const POST = async (
   req: NextRequest,
   { params }: { params: { id: string } }
 ) => {
-  const { id: gameId } = params;
+  const { id: gameId } = await params;
   const { txDigest } = await req.json();
 
   await suiClient.waitForTransaction({
