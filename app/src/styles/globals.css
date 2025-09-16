@@ -98,13 +98,13 @@
   bottom: 0px !important;
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+
+body {
+  @apply bg-background text-foreground;
+}
+
+button {
+  @apply cursor-pointer;
 }
 
 #RFS-Label {

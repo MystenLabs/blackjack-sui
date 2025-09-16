@@ -25,6 +25,8 @@ export const useCreateBlackjackGame = () => {
         throw new Error('No account is available for creating the game');
       }
 
+      setIsCreateGameLoading(true);
+
       const tx = new Transaction();
       tx.setSender(currentAccount.address)
 
