@@ -1,9 +1,5 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  plugins: {
-    '@tailwindcss/postcss': {},
-  },
-
   darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
@@ -100,7 +96,4 @@ module.exports = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-  experimental: {
-    backdropFilter: true,
-  },
 };
