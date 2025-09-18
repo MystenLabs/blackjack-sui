@@ -1,11 +1,11 @@
 import React from "react";
 import Link from "next/link";
-import { useZkLogin } from "@mysten/enoki/react";
 import { UserProfileMenu } from "../general/UserProfileMenu";
 import { Balance } from "../general/Balance";
+import {useCurrentAccount} from "@mysten/dapp-kit";
 
 export const TopNavbar = () => {
-  const { address } = useZkLogin();
+  const currentAccount = useCurrentAccount();
 
   return (
     <>
@@ -19,7 +19,7 @@ export const TopNavbar = () => {
           </Link>
         </div>
         <div className="col-span-3 flex justify-end">
-          {!!address && (
+          {!!currentAccount?.address && (
             <div className="flex space-x-2 items-center">
               <Balance/>
               <UserProfileMenu/>

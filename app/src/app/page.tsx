@@ -9,26 +9,22 @@ import { PlayerCards } from "../components/home/PlayerCards";
 import { GameActions } from "../components/home/GameActions";
 import Image from "next/image";
 import { BlackjackBanner } from "@/components/home/BlackjackBanner";
-import { useZkLogin } from "@mysten/enoki/react";
 import { useBalance } from "@/contexts/BalanceContext";
 import { SuiExplorerLink } from "@/components/general/SuiExplorerLink";
 import BigNumber from "bignumber.js";
 import { SetupGame } from "@/components/home/SetupGame";
 import Link from "next/link";
+import {useCurrentWallet} from "@mysten/dapp-kit";
 
 const HomePage = () => {
-  const { address } = useZkLogin();
-  const { balance, handleRefreshBalance } = useBalance();
+  const { currentWallet } = useCurrentWallet();
+  const { balance } = useBalance();
   const {
     game,
     isLoading,
     handleCreateGame,
     isCreateGameLoading,
     isInitialDealLoading,
-    counterId,
-    isCounterIdLoading,
-    isCreateCounterLoading,
-    handleCreateCounter,
     handleHit,
     handleStand,
     isMoveLoading,
@@ -39,12 +35,6 @@ const HomePage = () => {
   const handleHideBlackjackBanner = () => setShowingBlackjackBanner(false);
 
   useEffect(() => {
-    setTimeout(() => {
-      handleRefreshBalance();
-    }, 2000);
-  }, [game?.status]);
-
-  useEffect(() => {
     if (
       game?.player_sum === 21 &&
       game?.player_cards?.length === 2 &&
@@ -52,23 +42,16 @@ const HomePage = () => {
     ) {
       handleShowBlackjackBanner();
     }
-  }, [game?.player_sum, game?.status]);
+  }, [game?.player_sum, game?.status, game?.player_cards]);
 
-  if (!address) {
+  if (!currentWallet) {
     return <SignInBanner />;
   }
 
-  if (isCounterIdLoading) {
-    return <Spinner />;
-  }
-
-  if (balance.isLessThan(BigNumber(0.5)) || !counterId || !game) {
+  if (balance.isLessThan(BigNumber(0.5)) || !game) {
     return (
       <SetupGame
         balance={balance}
-        counterId={counterId}
-        handleCreateCounter={handleCreateCounter}
-        isCreateCounterLoading={isCreateCounterLoading}
         game={game}
         isLoading={isLoading}
         handleCreateGame={handleCreateGame}

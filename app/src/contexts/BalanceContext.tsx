@@ -1,13 +1,12 @@
-import { useContext, useEffect, useState, createContext } from "react";
+import {useContext, useEffect, useState, createContext, useCallback} from "react";
 import { ChildrenProps } from "@/types/ChildrenProps";
 import BigNumber from "bignumber.js";
-import { useZkLogin } from "@mysten/enoki/react";
 import { MIST_PER_SUI } from "@mysten/sui/utils";
 import { useSui } from "@/hooks/useSui";
+import {useCurrentAccount} from "@mysten/dapp-kit";
 
 export const useBalance = () => {
-  const context = useContext(BalanceContext);
-  return context;
+  return useContext(BalanceContext);
 };
 
 interface BalanceContextProps {
@@ -26,19 +25,16 @@ export const BalanceProvider = ({ children }: ChildrenProps) => {
   const [balance, setBalance] = useState(BigNumber(0));
   const [isLoading, setIsLoading] = useState(false);
   const { suiClient } = useSui();
-  const { address } = useZkLogin();
+  const currentAccount = useCurrentAccount();
 
-  useEffect(() => {
-    if (address) handleRefreshBalance();
-  }, [address]);
+  const handleRefreshBalance = useCallback(async () => {
+    if (!currentAccount?.address) return;
 
-  const handleRefreshBalance = async () => {
-    if (!address) return;
-    console.log(`Refreshing balance for ${address}...`);
+    console.log(`Refreshing balance for ${currentAccount.address}...`);
     setIsLoading(true);
     await suiClient
       .getBalance({
-        owner: address!,
+        owner: currentAccount.address,
       })
       .then((resp) => {
         setIsLoading(false);
@@ -53,7 +49,13 @@ export const BalanceProvider = ({ children }: ChildrenProps) => {
         setIsLoading(false);
         setBalance(BigNumber(0));
       });
-  };
+  }, [currentAccount, suiClient]);
+
+  useEffect(() => {
+    if (currentAccount) {
+      handleRefreshBalance();
+    }
+  }, [currentAccount, handleRefreshBalance]);
 
   return (
     <BalanceContext.Provider

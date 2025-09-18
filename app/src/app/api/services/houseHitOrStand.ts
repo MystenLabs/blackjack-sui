@@ -1,13 +1,10 @@
 import { SuiClient } from "@mysten/sui/client";
 import { formatAddress } from "@mysten/sui/utils";
 import { Transaction } from "@mysten/sui/transactions";
-import { bytesToHex } from "@noble/curves/abstract/utils";
-import { bls12_381 } from "@noble/curves/bls12-381";
 import { getGameObject } from "../helpers/getGameObject";
-import { getBLSSecreyKey } from "../helpers/getBLSSecretKey";
 import { sponsorAndSignTransaction } from "../utils/sponsorAndSignTransaction";
-import { bcs } from "@mysten/sui/bcs";
-import {enokiClient} from "@/app/api/EnokiClient";
+import { enokiClient } from "@/app/api/EnokiClient";
+import { hit, stand } from "@/__generated__/blackjack/single_player_blackjack";
 
 interface HouseHitOrStandProps {
   gameId: string;
@@ -33,24 +30,28 @@ export const houseHitOrStand = async ({
 
   return getGameObject({ suiClient, gameId }).then(async (resp) => {
     const tx = new Transaction();
-    const { counter, user_randomness } = resp;
-    const counterHex = bytesToHex(Uint8Array.from([counter]));
-    const randomnessHexString = bytesToHex(Uint8Array.from(user_randomness));
-    const messageToSign = randomnessHexString.concat(counterHex);
-    let signedHouseHash = bls12_381.sign(
-      messageToSign,
-      getBLSSecreyKey(process.env.ADMIN_SECRET_KEY!)
-    );
 
-    tx.moveCall({
-      target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::${move}`,
-      arguments: [
-        tx.object(gameId),
-        tx.pure(bcs.vector(bcs.u8()).serialize(signedHouseHash)),
-        tx.object(houseDataId),
-        tx.object(requestObjectId),
-      ],
-    });
+    if (move === 'hit') {
+      tx.add(
+        hit({
+          arguments: [
+            tx.object(gameId),
+            tx.object(houseDataId),
+            tx.object(requestObjectId),
+          ],
+        }),
+      );
+    } else {
+      tx.add(
+          stand({
+            arguments: [
+              tx.object(gameId),
+              tx.object(houseDataId),
+              tx.object(requestObjectId),
+            ],
+          }),
+      );
+    }
 
     const { signedTransaction, sponsoredTransaction } =
       await sponsorAndSignTransaction({

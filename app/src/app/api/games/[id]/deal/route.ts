@@ -9,7 +9,7 @@ export const POST = async (
   req: NextRequest,
   { params }: { params: { id: string } }
 ) => {
-  const { id: gameId } = params;
+  const { id: gameId } = await params;
   const { txDigest } = await req.json();
 
   await suiClient.waitForTransaction({
@@ -20,7 +20,6 @@ export const POST = async (
   return doInitialDeal({
     gameId,
     suiClient,
-    houseDataId: process.env.NEXT_PUBLIC_HOUSE_DATA_ID!,
   })
     .then((resp) => {
       const { txDigest } = resp;

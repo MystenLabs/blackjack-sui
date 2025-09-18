@@ -29,9 +29,9 @@ export const sponsorAndSignTransaction = async ({
     allowedAddresses: [getAddress(serverConfig.ADMIN_SECRET_KEY)],
     allowedMoveCallTargets: [
       // dealer interactions
-      getMoveTarget('first_deal'),
-      getMoveTarget('hit'),
-      getMoveTarget('stand'),
+      getMoveTarget('single_player_blackjack', 'first_deal'),
+      getMoveTarget('single_player_blackjack', 'hit'),
+      getMoveTarget('single_player_blackjack', 'stand'),
     ],
   });
 

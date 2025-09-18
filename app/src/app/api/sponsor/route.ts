@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enokiClient } from "../EnokiClient";
-import { Transaction } from "@mysten/sui/transactions";
 import serverConfig from "@/config/serverConfig";
-import {getAddress} from "@/app/api/helpers/getAddress";
-import {firstDeal} from "@/__generated__/blackjack/single_player_blackjack";
 import getMoveTarget from "@/helpers/getMoveTarget";
 
 export async function POST(req: NextRequest) {
@@ -16,12 +13,12 @@ export async function POST(req: NextRequest) {
       sender: sender,
       allowedAddresses: [
           sender,
-          getAddress(serverConfig.ADMIN_SECRET_KEY),
       ],
       allowedMoveCallTargets: [
         // These are only player interactions
-        getMoveTarget('do_hit'),
-        getMoveTarget('do_stand'),
+        getMoveTarget('single_player_blackjack', 'do_hit'),
+        getMoveTarget('single_player_blackjack', 'do_stand'),
+        getMoveTarget('single_player_blackjack', 'place_bet_and_create_game'),
       ],
     });
 

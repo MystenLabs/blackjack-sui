@@ -1,9 +1,4 @@
 import React, { useMemo } from "react";
-import {
-  useEnokiFlow,
-  useZkLogin,
-  useZkLoginSession,
-} from "@mysten/enoki/react";
 import { CopyIcon } from "@radix-ui/react-icons";
 import toast from "react-hot-toast";
 import {
@@ -17,32 +12,38 @@ import {
 } from "../ui/dropdown-menu";
 import { formatAddress } from "@mysten/sui/utils";
 import { LogOut } from "lucide-react";
-import { jwtDecode } from "jwt-decode";
+import {jwtDecode, JwtPayload} from "jwt-decode";
 import Image from "next/image";
 import Link from "next/link";
 import { getSuiExplorerLink } from "@/helpers/getSuiExplorerLink";
 import { formatString } from "@/helpers/formatString";
+import useWalletSession from "@/hooks/useWalletSession";
+import { useCurrentAccount, useDisconnectWallet  } from "@mysten/dapp-kit";
+
+interface EnokiJwtPayload extends JwtPayload {
+  picture?: string;
+  given_name?: string;
+  family_name?: string;
+  email?: string;
+}
 
 export const UserProfileMenu = () => {
-  const { address } = useZkLogin();
-  const enokiFlow = useEnokiFlow();
-  const zkLoginSession = useZkLoginSession();
+  const { jwt } = useWalletSession();
+  const { mutateAsync: disconnectWallet } = useDisconnectWallet()
+  const currentAccount = useCurrentAccount();
 
-  const decodedJWT = useMemo(() => {
-    if (!zkLoginSession?.jwt) return null;
-    const decoded: any = jwtDecode(zkLoginSession?.jwt!);
-    return decoded;
-  }, [zkLoginSession?.jwt]);
-
-  console.log({ decodedJWT });
+  const decodedJWT = useMemo(() => jwt ? jwtDecode<EnokiJwtPayload>(jwt) : null, [jwt]);
 
   const handleCopyAddress = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(address!);
+    navigator.clipboard.writeText(currentAccount?.address!);
     toast.success("Address copied to clipboard");
   };
 
-  if (!address) return null;
+  if (!currentAccount) {
+    return null;
+  }
+
   return (
     <DropdownMenu>
       {!!decodedJWT?.picture && (
@@ -64,7 +65,7 @@ export const UserProfileMenu = () => {
             {decodedJWT?.given_name} {decodedJWT?.family_name}
           </div>
           <div className="text-black text-opacity-60 text-xs">
-            {decodedJWT?.email ? formatString(decodedJWT?.email, 25) : ""}
+            {decodedJWT?.email ? formatString(decodedJWT.email, 25) : ""}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -72,11 +73,11 @@ export const UserProfileMenu = () => {
           <DropdownMenuItem className="flex items-center justify-between w-full">
             <Link
               className="flex-1"
-              href={getSuiExplorerLink({ type: "address", objectId: address })}
+              href={getSuiExplorerLink({ type: "address", objectId: currentAccount.address })}
               target="_blank"
               rel="noopener noreferrer"
             >
-              <div>{formatAddress(address)}</div>
+              <div>{formatAddress(currentAccount.address)}</div>
             </Link>
             <button onClick={handleCopyAddress}>
               <CopyIcon className="w-4 h-4 text-black" />
@@ -84,7 +85,7 @@ export const UserProfileMenu = () => {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuItem
-          onClick={() => enokiFlow.logout()}
+          onClick={() => disconnectWallet()}
           className="flex items-center justify-between w-full"
         >
           <div>Log out</div>

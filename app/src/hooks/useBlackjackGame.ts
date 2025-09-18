@@ -1,23 +1,16 @@
 import { useEffect, useState } from "react";
 import { GameOnChain } from "@/types/GameOnChain";
 import { useSui } from "./useSui";
-import { usePlayerCounter } from "./usePlayerCounter";
 import { getGameObject } from "@/utils/getGameObject";
 import { useCreateBlackjackGame } from "./useCreateBlackjackGame";
 import { useMakeMoveInBlackjackGame } from "./useMakeMoveInBlackjackGame";
-import { useZkLogin } from "@mysten/enoki/react";
+import {useCurrentAccount} from "@mysten/dapp-kit";
 
 export const useBlackjackGame = () => {
-  const { address } = useZkLogin();
+  const currentAccount = useCurrentAccount();
   const { suiClient } = useSui();
   const [game, setGame] = useState<GameOnChain | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const {
-    counterId,
-    handleCreateCounter,
-    isLoading: isCounterIdLoading,
-    isCreateLoading: isCreateCounterLoading,
-  } = usePlayerCounter();
   const { handleCreateGameAndDeal, isCreateGameLoading, isInitialDealLoading } =
     useCreateBlackjackGame();
   const { handleHitOrStand, isMoveLoading } = useMakeMoveInBlackjackGame();
@@ -29,7 +22,7 @@ export const useBlackjackGame = () => {
 
   useEffect(() => {
     handleRestart();
-  }, [address]);
+  }, [currentAccount]);
 
   // Receives the txDigest of the transaction that updated the game
   // Waits for this transaction block, and then re-fetches the game object
@@ -58,8 +51,8 @@ export const useBlackjackGame = () => {
       });
   };
 
-  const handleCreateGameAndRefresh = async (userRandomness: string) => {
-    handleCreateGameAndDeal(counterId, userRandomness, reFetchGame).then(
+  const handleCreateGameAndRefresh = async () => {
+    handleCreateGameAndDeal(reFetchGame).then(
       (resp) => {
         if (!resp) {
           return;
@@ -81,13 +74,9 @@ export const useBlackjackGame = () => {
   return {
     game,
     isLoading,
-    counterId,
-    isCounterIdLoading,
-    isCreateCounterLoading,
-    handleCreateCounter,
     isCreateGameLoading,
     isInitialDealLoading,
-    canCreateGame: !isLoading && !isCounterIdLoading && !game?.id.id,
+    canCreateGame: !isLoading && !game?.id.id,
     handleCreateGame: handleCreateGameAndRefresh,
     isMoveLoading,
     handleHit: () => handleMakeMoveAndRefresh("hit"),

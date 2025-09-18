@@ -1,82 +1,58 @@
 import { SuiClient } from "@mysten/sui/client";
 import { Transaction } from "@mysten/sui/transactions";
-import { getKeypair } from "../helpers/getKeyPair";
-import { bytesToHex } from "@noble/hashes/utils";
-import { bls12_381 } from "@noble/curves/bls12-381";
-import { getBLSSecreyKey } from "../helpers/getBLSSecretKey";
 import { getGameObject } from "../helpers/getGameObject";
 import { sponsorAndSignTransaction } from "../utils/sponsorAndSignTransaction";
-import { bcs } from "@mysten/sui/bcs";
-import {enokiClient} from "@/app/api/EnokiClient";
-import {firstDeal} from "@/__generated__/blackjack/single_player_blackjack";
+import { enokiClient } from "@/app/api/EnokiClient";
+import { firstDeal } from "@/__generated__/blackjack/single_player_blackjack";
 
 interface DoInitialDealProps {
   suiClient: SuiClient;
   gameId: string;
-  houseDataId: string;
 }
 
 // Not catching errors on purpose, they will be caught and logged by the corresponding route.ts file
 export const doInitialDeal = async ({
   suiClient,
   gameId,
-  houseDataId,
 }: DoInitialDealProps): Promise<{ txDigest: string }> => {
   console.log("Doing initial deal as the house...");
 
   const tx = new Transaction();
-  return getGameObject({ suiClient, gameId }).then(async (resp) => {
-    const { counter, user_randomness } = resp;
-    const counterHex = bytesToHex(Uint8Array.from([counter]));
-    const randomnessHexString = bytesToHex(Uint8Array.from(user_randomness));
-    const messageToSign = randomnessHexString.concat(counterHex);
-    let signedHouseHash = bls12_381.sign(
-      messageToSign,
-      getBLSSecreyKey(process.env.ADMIN_SECRET_KEY!)
-    );
-
-    console.log({
-      package: process.env.NEXT_PUBLIC_PACKAGE_ADDRESS,
-      gameId,
-      signedHouseHash,
-      houseDataId,
-    });
-
-    tx.add(
+  return getGameObject({ suiClient, gameId })
+    .then(async () => {
+      tx.add(
         firstDeal({
           arguments: [
             tx.object(gameId),
-            tx.pure(bcs.vector(bcs.u8()).serialize(signedHouseHash)),
-            tx.object(houseDataId),
           ],
         }),
-    );
+      );
 
-    const { signedTransaction, sponsoredTransaction } =
-      await sponsorAndSignTransaction({
-        tx,
-        suiClient,
+      const { signedTransaction, sponsoredTransaction } =
+        await sponsorAndSignTransaction({
+          tx,
+          suiClient,
+        });
+
+      const result = await enokiClient.executeSponsoredTransaction({
+        signature: signedTransaction.signature,
+        digest: sponsoredTransaction.digest,
       });
 
-    const result = await enokiClient.executeSponsoredTransaction({
-      signature: signedTransaction.signature,
-      digest: sponsoredTransaction.digest,
+      return suiClient
+        .waitForTransaction({
+          digest: result.digest,
+          options: {
+            showObjectChanges: true,
+            showEffects: true,
+          },
+        })
+        .then(async (res) => {
+          const status = res?.effects?.status.status;
+          if (status !== "success") {
+            throw new Error("Transaction failed");
+          }
+          return { txDigest: res.effects?.transactionDigest! };
+        });
     });
-
-    return suiClient
-      .waitForTransaction({
-        digest: result.digest,
-        options: {
-          showObjectChanges: true,
-          showEffects: true,
-        },
-      })
-      .then(async (res) => {
-        const status = res?.effects?.status.status;
-        if (status !== "success") {
-          throw new Error("Transaction failed");
-        }
-        return { txDigest: res.effects?.transactionDigest! };
-      });
-  });
 };

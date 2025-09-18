@@ -96,7 +96,4 @@ module.exports = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-  experimental: {
-    backdropFilter: true,
-  },
 };
