@@ -23,15 +23,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@mysten/sui": "^1.2.1",
-    "@noble/curves": "^1.3.0",
-    "@noble/hashes": "^1.3.3",
-    "dotenv": "^16.0.3",
-    "futoin-hkdf": "^1.5.1",
-    "typescript": "^5.0.4"
+    "@mysten/sui": "^1.37.4",
+    "@noble/curves": "^1.9.7",
+    "@noble/hashes": "^1.8.0",
+    "dotenv": "^16.6.1",
+    "futoin-hkdf": "^1.5.3",
+    "typescript": "^5.5.3"
   },
   "devDependencies": {
     "env-cmd": "^10.1.0",
-    "ts-node": "^10.9.1"
+    "ts-node": "^10.9.2"
   }
 }

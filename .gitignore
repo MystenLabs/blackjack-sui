@@ -33,3 +33,8 @@ move/blackjack/build
 setup/*.env
 .publish.res.json
 .vercel
+
+# Codegen related stuff
+
+move/**/package_summaries/
+**/**/__generated__/

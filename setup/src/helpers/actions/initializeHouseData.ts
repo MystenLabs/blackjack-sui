@@ -29,7 +29,7 @@ export const initializeHouseData = async ({
     arguments: [
       tx.object(HOUSE_ADMIN_CAP),
       houseCoin,
-      tx.pure(adminBLSPublicKey),
+      tx.pure.vector('u8', adminBLSPublicKey),
     ],
   });
 

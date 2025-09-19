@@ -96,7 +96,6 @@ fi
 
 # setup network
 NETWORK=
-SUFFIX=
 
 case "$ENV" in
 "testnet")
@@ -107,7 +106,6 @@ case "$ENV" in
     ;;
 "local")
     NETWORK="http://localhost:9000"
-    SUFFIX=".local"
     ;;
 *)
     echo "Unknown env $ENV"
@@ -164,7 +162,7 @@ echo "Publish new env var to app/.env"
 echo "NEXT_PUBLIC_SUI_NETWORK=$NETWORK"
 echo "NEXT_PUBLIC_PACKAGE_ADDRESS=$PACKAGE_ID"
 echo "NEXT_PUBLIC_ADMIN_ADDRESS=$ADMIN_ADDRESS"
-cat >../app/.env$SUFFIX<<-VITE_API_ENV
+cat >../app/.env.local<<-VITE_API_ENV
 NEXT_PUBLIC_SUI_NETWORK=$NETWORK
 NEXT_PUBLIC_PACKAGE_ADDRESS=$PACKAGE_ID
 NEXT_PUBLIC_ADMIN_ADDRESS=$ADMIN_ADDRESS

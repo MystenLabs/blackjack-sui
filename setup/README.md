@@ -37,13 +37,12 @@ DO NOT ADD THE ADMIN SECRET KEY IN ANY PLACE INSIDE THE CODE BASE!
     1. publish the contracts with: `./publish.sh testnet`
     2. Run these scripts consecutively to prepare and run a custom game:
        1. `npm run init-house`
-       2. `npm run create-counter`
-       3. `npm run create-game`
-       4. `npm run initial-deal`
-       5. `npm run player-hit-request`
-       6. `npm run house-hit`
-       7. `npm run player-stand-request`
-       8. `npm run house-stand`
+       2. `npm run create-game`
+       3. `npm run initial-deal`
+       4. `npm run player-hit-request`
+       5. `npm run house-hit`
+       6. `npm run player-stand-request`
+       7. `npm run house-stand`
 
 ## Npm scripts to generate and run e2e flows
 
@@ -52,7 +51,6 @@ A first approach is executing the npm scripts that execute single steps of a who
 > In this approach the following scripts can be executed:
 >
 > - `npm run init-house`
-> - `npm run create-counter`
 > - `npm run create-game`
 > - `npm run initial-deal`
 > - `npm run player-hit-request`
@@ -91,8 +89,7 @@ Another approach is to use the custom `Scenario` class (as defined in `setup/src
     - `keypair/`: helper functions for handling the keypairs
     - `scenario/`: a custom `Scenario` class that is used to create and run easily e2e flows with as much reusability as possible
   - `scripts/`: typescript scripts that can be used to play the game in headless mode step by step, reading and writing the in between object IDs in the `setup/.env` file
-    - `00-initializeHouseData`: Invokes the `initialize_house_data` Move function that initializes the game. Should only run once.
-    - `01-createCounterObjectByPlayer`: Creates a Counter NFT object for the player. Should only run once if the player does not have a Counter NFT object.
+    - `01-initializeHouseData`: Invokes the `initialize_house_data` Move function that initializes the game. Should only run once.
     - `02-createGameByPlayer`: **Player** invokes the `place_bet_and_create_game` Move function that creates a game for the player.
     - `03-initialDeal`: **Dealer** invokes the `first_deal` Move function that performs the initial deal of the game.
     - `04-playerHitRequest`: **Player** invokes the `do_hit` Move function that records the player's intent to hit.

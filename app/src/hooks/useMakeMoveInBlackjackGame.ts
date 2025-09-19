@@ -4,9 +4,8 @@ import { useCallback, useState } from "react";
 import { GameOnChain } from "@/types/GameOnChain";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { useEnokiFlow, useZkLogin } from "@mysten/enoki/react";
-import { fromB64, toB64 } from "@mysten/sui/utils";
-import { useSui } from "./useSui";
+import { doHit, doStand } from "@/__generated__/blackjack/single_player_blackjack";
+import useSponsoredTransaction from "@/hooks/useSponsoredTransaction";
 
 interface HandleHitOrStandProps {
   move: "hit" | "stand";
@@ -27,9 +26,7 @@ interface OnRequestMoveSuccessProps {
 }
 
 export const useMakeMoveInBlackjackGame = () => {
-  const { suiClient } = useSui();
-  const enokiFlow = useEnokiFlow();
-  const { address } = useZkLogin();
+  const { sponsorAndSignTransaction } = useSponsoredTransaction();
   const [isMoveLoading, setIsMoveLoading] = useState(false);
 
   const handleHitOrStand = useCallback(
@@ -51,78 +48,19 @@ export const useMakeMoveInBlackjackGame = () => {
 
         // Step 1: Create the transaction and get TxBytes
         const tx = new Transaction();
-        let request = tx.moveCall({
-          target: `${process.env.NEXT_PUBLIC_PACKAGE_ADDRESS}::single_player_blackjack::do_${move}`,
-          arguments: [tx.object(gameId), tx.pure.u8(player_sum)],
-        });
+        const request = tx.add(
+            move === 'hit' ? doHit({
+              arguments: [tx.object(gameId), tx.pure.u8(player_sum)],
+            }) : doStand({
+              arguments: [tx.object(gameId), tx.pure.u8(player_sum)],
+            })
+        );
         tx.transferObjects(
           [request],
           tx.pure.address(process.env.NEXT_PUBLIC_ADMIN_ADDRESS!)
         );
 
-        const txBytes = await tx.build({
-          client: suiClient,
-          onlyTransactionKind: true,
-        });
-
-        // Step 2: Send TxBytes to the backend for sponsorship
-        const sponsorResponse = await fetch("/api/sponsor", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            transactionKindBytes: toB64(txBytes),
-            sender: address,
-          }),
-        });
-
-        if (!sponsorResponse.ok) {
-          throw new Error("Failed to sponsor transaction");
-        }
-
-        const { bytes: sponsoredBytes, digest: txDigest } =
-          await sponsorResponse.json();
-
-        // Step 3: User signs the sponsored TxBytes
-        const signer = await enokiFlow.getKeypair({
-          network: process.env.NEXT_PUBLIC_SUI_NETWORK_NAME! as
-            | "mainnet"
-            | "testnet",
-        });
-
-        const { signature } = await signer.signTransaction(
-          fromB64(sponsoredBytes)
-        );
-
-        // Step 4: Send signed TxBytes and txDigest back to the backend for execution
-        const executeResponse = await fetch("/api/execute", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            digest: txDigest,
-            signature: signature,
-          }),
-        });
-
-        if (!executeResponse.ok) {
-          throw new Error("Failed to execute transaction");
-        }
-
-        const { digest: executedDigest } = await executeResponse.json();
-
-        // Step 5: Wait for transaction confirmation
-        await suiClient.waitForTransaction({
-          digest: executedDigest,
-          timeout: 10_000,
-        });
-
-        const transactionResult = await suiClient.getTransactionBlock({
-          digest: executedDigest,
-          options: {
-            showEffects: true,
-            showObjectChanges: true,
-            showEvents: true,
-          },
-        });
+        const transactionResult = await sponsorAndSignTransaction(tx);
 
         if (transactionResult.effects?.status?.status !== "success") {
           throw new Error("Transaction failed");
@@ -135,15 +73,11 @@ export const useMakeMoveInBlackjackGame = () => {
 
         const hitOrStandRequest = createdObjects.find(
           ({ objectType }) =>
-            objectType ===
-            `${
-              process.env.NEXT_PUBLIC_PACKAGE_ADDRESS
-            }::single_player_blackjack::${move
-              .slice(0, 1)
-              .toUpperCase()
-              .concat(move.slice(1))}Request`
+            objectType.endsWith(`${move
+                .slice(0, 1)
+                .toUpperCase()
+                .concat(move.slice(1))}Request`),
         );
-
         if (!hitOrStandRequest) {
           throw new Error(
             `No ${move}Request found in the admin's owned objects`
@@ -169,7 +103,7 @@ export const useMakeMoveInBlackjackGame = () => {
         setIsMoveLoading(false);
       }
     },
-    []
+    [sponsorAndSignTransaction]
   );
 
   const onRequestMoveSuccess = async ({
