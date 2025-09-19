@@ -7,9 +7,9 @@ import { suiClient } from "@/helpers/suiClient";
 // It returns the txDigest, so that the UI will wait for this transaction block before re-fetching the game
 export const POST = async (
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) => {
-  const { id: gameId } = params;
+  const { id: gameId } = await params;
   const { requestObjectId, txDigest } = await req.json();
 
   await suiClient.waitForTransaction({
