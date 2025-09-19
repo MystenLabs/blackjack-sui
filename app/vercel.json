@@ -1,4 +1,0 @@
-{
-  "buildCommand": "pnpm codegen && pnpm build",
-  "installCommand": "pnpm install"
-}
