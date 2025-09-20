@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { toBase64 } from "@mysten/bcs";
+import { toBase64 } from "@mysten/sui/utils";
 import { Transaction } from "@mysten/sui/transactions";
 import { useSui } from "./useSui";
 import { useCurrentAccount, useSignTransaction } from '@mysten/dapp-kit';

@@ -7,11 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "codegen": "pnpm sui-ts-codegen generate",
-    "postinstall": "pnpm run codegen"
+    "codegen": "pnpm sui-ts-codegen generate"
   },
   "dependencies": {
-    "@mysten/bcs": "^1.8.0",
     "@mysten/codegen": "^0.5.0",
     "@mysten/dapp-kit": "^0.18.0",
     "@mysten/enoki": "^0.12.0",

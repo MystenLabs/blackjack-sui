@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "init-house": "env-cmd -f .env ts-node src/scripts/00-initializeHouseData",
-    "create-counter": "env-cmd -f .env ts-node src/scripts/01-createCounterObjectByPlayer",
+    "init-house": "env-cmd -f .env ts-node src/scripts/01-initializeHouseData",
     "create-game": "env-cmd -f .env ts-node src/scripts/02-createGameByPlayer",
     "initial-deal": "env-cmd -f .env ts-node src/scripts/03-InitialDeal",
     "player-hit-request": "env-cmd -f .env ts-node src/scripts/04-PlayerHitRequest",
@@ -23,7 +22,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@mysten/sui": "^1.37.4",
+    "@mysten/sui": "^1.38.0",
     "@noble/curves": "^1.9.7",
     "@noble/hashes": "^1.8.0",
     "dotenv": "^16.6.1",

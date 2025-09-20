@@ -37,4 +37,3 @@ setup/*.env
 # Codegen related stuff
 
 move/**/package_summaries/
-**/**/__generated__/
