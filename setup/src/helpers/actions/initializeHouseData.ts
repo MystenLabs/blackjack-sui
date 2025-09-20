@@ -1,7 +1,6 @@
 import { SuiClient, SuiObjectChangeCreated } from "@mysten/sui/client";
 import { Transaction } from "@mysten/sui/transactions";
 import { getKeypair } from "../keypair/getKeyPair";
-import { getBLSPublicKey } from "../bls/getBLSPublicKey";
 import {
   PACKAGE_ADDRESS,
   HOUSE_ADMIN_CAP,
@@ -22,14 +21,16 @@ export const initializeHouseData = async ({
   const houseCoin = tx.splitCoins(tx.gas, [
     tx.pure.u64(10 * Number(MIST_PER_SUI)),
   ]);
-  let adminBLSPublicKey = getBLSPublicKey(ADMIN_SECRET_KEY!);
+
+  // Use a dummy public key since we now use on-chain randomness
+  const dummyPublicKey = new Array(48).fill(0); // 48 bytes of zeros
 
   tx.moveCall({
     target: `${PACKAGE_ADDRESS}::single_player_blackjack::initialize_house_data`,
     arguments: [
       tx.object(HOUSE_ADMIN_CAP),
       houseCoin,
-      tx.pure.vector('u8', adminBLSPublicKey),
+      tx.pure.vector('u8', dummyPublicKey),
     ],
   });
 
