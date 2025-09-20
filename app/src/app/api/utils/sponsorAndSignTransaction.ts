@@ -25,8 +25,8 @@ export const sponsorAndSignTransaction = async ({
   const sponsoredTransaction = await enokiClient.createSponsoredTransaction({
     network: serverConfig.NEXT_PUBLIC_SUI_NETWORK_NAME,
     transactionKindBytes: toBase64(txBytes),
-    sender: getAddress(serverConfig.ADMIN_SECRET_KEY),
-    allowedAddresses: [getAddress(serverConfig.ADMIN_SECRET_KEY)],
+    sender: serverConfig.NEXT_PUBLIC_ADMIN_ADDRESS,
+    allowedAddresses: [serverConfig.NEXT_PUBLIC_ADMIN_ADDRESS],
     allowedMoveCallTargets: [
       // dealer interactions
       getMoveTarget('single_player_blackjack', 'first_deal'),

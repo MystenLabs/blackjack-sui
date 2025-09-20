@@ -12,6 +12,7 @@ import { z } from "zod";
 const serverConfigSchema = z.object({
   ENOKI_SECRET_KEY: z.string(),
   ADMIN_SECRET_KEY: z.string(),
+  NEXT_PUBLIC_ADMIN_ADDRESS: z.string(),
   NEXT_PUBLIC_SUI_NETWORK_NAME: z.enum(['mainnet', 'testnet', 'devnet']),
 });
 
@@ -19,6 +20,7 @@ const serverConfig = serverConfigSchema.safeParse({
   ENOKI_SECRET_KEY: process.env.ENOKI_SECRET_KEY,
   ADMIN_SECRET_KEY: process.env.ADMIN_SECRET_KEY,
   NEXT_PUBLIC_SUI_NETWORK_NAME: process.env.NEXT_PUBLIC_SUI_NETWORK_NAME,
+  NEXT_PUBLIC_ADMIN_ADDRESS: process.env.NEXT_PUBLIC_ADMIN_ADDRESS,
 });
 
 if (!serverConfig.success) {
