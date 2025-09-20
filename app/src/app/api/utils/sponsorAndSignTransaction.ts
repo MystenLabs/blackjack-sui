@@ -4,7 +4,6 @@ import { getKeypair } from "../helpers/getKeyPair";
 import { enokiClient } from "@/app/api/EnokiClient";
 import serverConfig from "@/config/serverConfig";
 import { toBase64 } from "@mysten/sui/utils";
-import {getAddress} from "@/app/api/helpers/getAddress";
 import getMoveTarget from "@/helpers/getMoveTarget";
 
 interface SponsorAndSignTransactionProps {
