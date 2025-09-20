@@ -13,12 +13,14 @@ export async function POST(req: NextRequest) {
       sender: sender,
       allowedAddresses: [
           sender,
+          serverConfig.NEXT_PUBLIC_ADMIN_ADDRESS
       ],
       allowedMoveCallTargets: [
         // These are only player interactions
         getMoveTarget('single_player_blackjack', 'do_hit'),
         getMoveTarget('single_player_blackjack', 'do_stand'),
         getMoveTarget('single_player_blackjack', 'place_bet_and_create_game'),
+        '0x2::transfer::transfer'
       ],
     });
 
