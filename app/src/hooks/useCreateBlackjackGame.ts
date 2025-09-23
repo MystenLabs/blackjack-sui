@@ -7,6 +7,7 @@ import { MIST_PER_SUI } from "@mysten/sui/utils";
 import { placeBetAndCreateGame } from '@/__generated__/blackjack/single_player_blackjack';
 import useSponsoredTransaction from "@/hooks/useSponsoredTransaction";
 import { useCurrentAccount } from "@mysten/dapp-kit";
+import { useBalance } from "@/contexts/BalanceContext";
 
 interface HandleCreateGameSuccessResponse {
   gameId: string;
@@ -18,6 +19,7 @@ export const useCreateBlackjackGame = () => {
   const { sponsorAndSignTransaction } = useSponsoredTransaction();
   const [isCreateGameLoading, setIsCreateGameLoading] = useState(false);
   const [isInitialDealLoading, setIsInitialDealLoading] = useState(false);
+  const { handleRefreshBalance } = useBalance();
 
   const handleCreateGameAndDeal = useCallback(
     async (reFetchGame: (gameId: string, txDigest?: string) => Promise<void>): Promise<HandleCreateGameSuccessResponse | null> => {
@@ -58,6 +60,7 @@ export const useCreateBlackjackGame = () => {
             }
             const { objectId } = createdGame;
             console.log("Created game id:", objectId);
+            handleRefreshBalance();
             reFetchGame(objectId, resp.effects?.transactionDigest!);
             setIsCreateGameLoading(false);
             setIsInitialDealLoading(true);
@@ -74,7 +77,7 @@ export const useCreateBlackjackGame = () => {
             return null;
           });
     },
-    [currentAccount, sponsorAndSignTransaction]
+    [currentAccount, sponsorAndSignTransaction, handleRefreshBalance]
   );
 
   // Passes the txDigest from the game creation tx to the API

@@ -5,21 +5,29 @@ import { formatSUIAmount } from "@/helpers/formatSUIAmount";
 import Image from "next/image";
 import { useBalance } from "@/contexts/BalanceContext";
 import BigNumber from "bignumber.js";
+import { Spinner } from "./Spinner";
 
+const BALANCE_LIMIT = BigNumber(0.5);
 export const Balance = () => {
   const { isLoading, handleRequestSui } = useRequestSui();
-  const { balance } = useBalance();
+  const { balance, isLoading: isBalanceLoading } = useBalance();
 
   return (
     <div className="flex space-x-2 items-center">
       <div className="flex space-x-2 items-center h-10 border-[1px] border-custom-border rounded-[36px] px-[10px] bg-[inherit]">
         <Image src="/general/sui.svg" alt="plus" width={10} height={10} />
         <div className="flex space-x-1 text-white text-opacity-90 text-sm font-semibold">
-          <span>{formatSUIAmount(balance)} </span>
-          <span className="hidden md:block">SUI</span>
+          {isBalanceLoading ? (
+            <Spinner className="!w-4 !h-4" />
+          ) : (
+            <>
+              <span>{formatSUIAmount(balance)} </span>
+              <span className="hidden md:block">SUI</span>
+            </>
+          )}
         </div>
       </div>
-      {balance <= BigNumber(0.5) && (
+      {balance.isLessThan(BALANCE_LIMIT) && (
         <LoadingButton
           onClick={handleRequestSui}
           isLoading={isLoading}

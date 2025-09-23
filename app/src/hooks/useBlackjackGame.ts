@@ -5,6 +5,7 @@ import { getGameObject } from "@/utils/getGameObject";
 import { useCreateBlackjackGame } from "./useCreateBlackjackGame";
 import { useMakeMoveInBlackjackGame } from "./useMakeMoveInBlackjackGame";
 import {useCurrentAccount} from "@mysten/dapp-kit";
+import { useBalance } from "@/contexts/BalanceContext";
 
 export const useBlackjackGame = () => {
   const currentAccount = useCurrentAccount();
@@ -14,6 +15,7 @@ export const useBlackjackGame = () => {
   const { handleCreateGameAndDeal, isCreateGameLoading, isInitialDealLoading } =
     useCreateBlackjackGame();
   const { handleHitOrStand, isMoveLoading } = useMakeMoveInBlackjackGame();
+  const { handleRefreshBalance } = useBalance();
 
   const handleRestart = () => {
     setGame(null);
@@ -26,7 +28,7 @@ export const useBlackjackGame = () => {
 
   // Receives the txDigest of the transaction that updated the game
   // Waits for this transaction block, and then re-fetches the game object
-  const reFetchGame = async (gameId: string, txDigest?: string) => {
+  const reFetchGame = async (gameId: string, txDigest?: string, shouldRefreshBalance?: boolean) => {
     if (!gameId) {
       setGame(null);
       setIsLoading(false);
@@ -43,6 +45,10 @@ export const useBlackjackGame = () => {
       .then((game) => {
         setGame(game);
         setIsLoading(false);
+        // Refresh balance if game is won and shouldRefreshBalance is true
+        if (shouldRefreshBalance && game && game.status === 1) {
+          handleRefreshBalance();
+        }
       })
       .catch((err) => {
         console.log(err);
@@ -67,7 +73,7 @@ export const useBlackjackGame = () => {
     handleHitOrStand({ move, game, gameId: game?.id.id! }).then((resp) => {
       if (!resp) return;
       const { gameId, txDigest } = resp;
-      reFetchGame(gameId, txDigest);
+      reFetchGame(gameId, txDigest, true);
     });
   };
 
