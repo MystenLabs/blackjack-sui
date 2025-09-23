@@ -98,9 +98,8 @@ export const useMakeMoveInBlackjackGame = () => {
       } catch (err) {
         console.error(err);
         toast.error(`Error executing ${move}`);
-        return null;
-      } finally {
         setIsMoveLoading(false);
+        return null;
       }
     },
     [sponsorAndSignTransaction]
